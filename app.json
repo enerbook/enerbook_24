@@ -4,7 +4,7 @@
     "slug": "Enerbook",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./public/img/Iconcolor.svg",
+    "icon": "./public/img/Iconcolor.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -23,7 +23,7 @@
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./public/img/Iconcolor.svg",
+      "favicon": "./public/img/Iconcolor.png",
       "bundler": "metro"
     },
     "plugins": [
