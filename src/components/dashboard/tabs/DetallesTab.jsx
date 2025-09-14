@@ -1,0 +1,92 @@
+import React from 'react';
+import { FiChevronRight } from 'react-icons/fi';
+
+const DetallesTab = () => {
+  return (
+    <main className="flex-1 px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
+      <div className="space-y-8">
+        {/* Top Section - Cotizar energía solar */}
+        <div className="w-1/2">
+          <div className="p-6 rounded-lg border border-gray-100 flex items-center justify-between" style={{ backgroundColor: '#fcfcfc' }}>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                Cotiza energía solar de forma segura
+              </h2>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                Recibe propuestas de instaladores verificados y selecciona la mejor opción para tu proyecto.
+              </p>
+            </div>
+            <div className="ml-8">
+              <button className="bg-gray-900 hover:bg-black text-white rounded-2xl px-5 py-3 transition-all group">
+                <div className="text-center">
+                  <h3 className="text-sm font-bold mb-1">SOLICITAR</h3>
+                  <h3 className="text-sm font-bold mb-2">COTIZACIONES</h3>
+                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <FiChevronRight className="w-3 h-3 text-gray-900" />
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Datos del Recibo CFE Section */}
+        <div className="w-1/2">
+          <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+            <h2 className="text-base font-bold text-gray-900 mb-4">Datos del Recibo CFE</h2>
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}><p className="text-gray-500 font-medium mb-1 text-sm">Cliente</p><p className="font-semibold text-gray-900 text-sm">Diego Herold Carranza Juárez</p></div>
+              <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}><p className="text-gray-500 font-medium mb-1 text-sm">RMU</p><p className="font-semibold text-gray-900 text-sm">FMUJ23</p></div>
+              <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}><p className="text-gray-500 font-medium mb-1 text-sm">Cuenta</p><p className="font-semibold text-gray-900 text-sm">CTA1234567890</p></div>
+              <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}><p className="text-gray-500 font-medium mb-1 text-sm">Tarifa</p><p className="font-semibold text-gray-900 text-sm">Tarifa A</p></div>
+              <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}><p className="text-gray-500 font-medium mb-1 text-sm">Multiplicador</p><p className="font-semibold text-gray-900 text-sm">10</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="py-4"></div>
+
+        {/* Barras de Resumen */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Resumen Energético */}
+          <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+            <h3 className="text-base font-bold text-orange-500 mb-3">Resumen Energético</h3>
+            <div className="space-y-3">
+              {[
+                { value: '225', label: 'Consumo Mensual (kWh)' },
+                { value: '310', label: 'Consumo Máximo (kWh)' },
+                { value: '272', label: 'Consumo Promedio (kWh)' },
+                { value: '4,000', label: 'Consumo Anual Máx (kWh)' }
+              ].map((item, index) => (
+                <div key={index} className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
+                  <span className="text-base">{item.value}</span>
+                  <span className="text-xs">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Dimensionamiento del Sistema Solar */}
+          <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+            <h3 className="text-base font-bold text-gray-900 mb-3">Dimensionamiento del Sistema Solar</h3>
+            <div className="space-y-3">
+              {[
+                { value: '3.73', label: 'kWp Requeridos' },
+                { value: '550', label: 'Wp por Panel' },
+                { value: '7', label: 'Número de Paneles' },
+                { value: '4,023', label: 'Producción Anual (kWh)' }
+              ].map((item, index) => (
+                <div key={index} className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
+                  <span className="text-base">{item.value}</span>
+                  <span className="text-xs">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+};
+
+export default DetallesTab;
