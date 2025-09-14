@@ -11,9 +11,11 @@ import Experts from "../src/components/landing/Experts";
 import Footer from "../src/components/landing/Footer";
 import InstallersCTA from "../src/components/landing/InstallersCTA";
 import ReceiptUploadModal from "../src/components/common/ReceiptUploadModal";
+import { useOcr } from "../src/hooks/useOcr";
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { ocrData, isLoading, setOcrData, handleReceiptUpload } = useOcr();
 
   const navigateToDashboard = (page) => {
     if (page === 'dashboard') {
@@ -21,12 +23,6 @@ export default function Home() {
     } else if (page === 'signup') {
       router.push('/signup');
     }
-  };
-
-  const handleReceiptUpload = (file) => {
-    console.log('Receipt uploaded:', file);
-    setIsModalOpen(false);
-    // Here you can add logic to process the uploaded file
   };
 
   return (
@@ -49,6 +45,9 @@ export default function Home() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleReceiptUpload}
+        ocrData={ocrData}
+        setOcrData={setOcrData}
+        isLoading={isLoading}
       />
     </>
   );
