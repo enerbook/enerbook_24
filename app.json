@@ -4,7 +4,7 @@
     "slug": "Enerbook",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./public/img/Iconcolor.svg",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
