@@ -8,6 +8,8 @@ export default function WebCamera({ isOpen, onClose, onCapture }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [stream, setStream] = useState(null);
+  const [capturedPhotos, setCapturedPhotos] = useState([]);
+  const [currentStep, setCurrentStep] = useState('frontal'); // 'frontal' | 'posterior' | 'complete'
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   
@@ -85,12 +87,20 @@ export default function WebCamera({ isOpen, onClose, onCapture }) {
     }
   }, [detectionState]);
 
+  // Resetear cuando se cierra
+  useEffect(() => {
+    if (!isOpen) {
+      setCapturedPhotos([]);
+      setCurrentStep('frontal');
+    }
+  }, [isOpen]);
+
   const handleCapture = async () => {
     if (videoRef.current && canvasRef.current) {
       try {
         // Vibración de feedback
         if (Platform.OS !== 'web') {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackStyle.Success);
         }
         
         const video = videoRef.current;
@@ -106,13 +116,25 @@ export default function WebCamera({ isOpen, onClose, onCapture }) {
         
         // Convertir canvas a blob
         canvas.toBlob((blob) => {
-          const file = new File([blob], 'receipt.jpg', { type: 'image/jpeg' });
+          const fileName = currentStep === 'frontal' ? 'receipt-front.jpg' : 'receipt-back.jpg';
+          const file = new File([blob], fileName, { type: 'image/jpeg' });
           
-          // Enviar la foto capturada
-          onCapture([file]);
+          const newPhotos = [...capturedPhotos, file];
+          setCapturedPhotos(newPhotos);
           
-          // Cerrar la cámara
-          handleClose();
+          // Si es la primera foto, pasar a la segunda
+          if (currentStep === 'frontal') {
+            setCurrentStep('posterior');
+            resetDetection(); // Resetear detección para la segunda foto
+            // Mostrar mensaje de instrucción
+            setTimeout(() => {
+              alert('¡Perfecto! Ahora captura la parte posterior del recibo.');
+            }, 500);
+          } else {
+            // Si ya tenemos ambas fotos, enviar y cerrar
+            onCapture(newPhotos);
+            handleClose();
+          }
         }, 'image/jpeg', 0.9);
         
       } catch (error) {
@@ -168,7 +190,24 @@ export default function WebCamera({ isOpen, onClose, onCapture }) {
           <CameraOverlay 
             detectionState={detectionState}
             detectionScore={detectionScore}
+            currentStep={currentStep}
           />
+          
+          {/* Indicador de paso actual */}
+          <div style={styles.stepIndicator}>
+            <div style={styles.stepBadge}>
+              <span style={styles.stepNumber}>{currentStep === 'frontal' ? '1' : '2'}</span>
+              <span style={styles.stepText}>
+                {currentStep === 'frontal' ? 'Parte frontal' : 'Parte posterior'}
+              </span>
+            </div>
+            <div style={styles.progressBar}>
+              <div style={{
+                ...styles.progressFill,
+                width: currentStep === 'frontal' ? '50%' : '100%'
+              }} />
+            </div>
+          </div>
           
           {/* Controles de la cámara */}
           <div style={styles.controls}>
@@ -289,5 +328,47 @@ const styles = {
     height: '50px',
     borderRadius: '25px',
     backgroundColor: 'white',
+  },
+  stepIndicator: {
+    position: 'absolute',
+    top: '100px',
+    left: '20px',
+    right: '20px',
+    zIndex: 5,
+  },
+  stepBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    marginBottom: '10px',
+  },
+  stepNumber: {
+    width: '30px',
+    height: '30px',
+    borderRadius: '15px',
+    backgroundColor: '#F59E0B',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 'bold',
+    fontSize: '16px',
+  },
+  stepText: {
+    color: 'white',
+    fontSize: '18px',
+    fontWeight: '600',
+    textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+  },
+  progressBar: {
+    height: '4px',
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: '2px',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#F59E0B',
+    transition: 'width 0.3s ease',
   },
 };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 
-export default function CameraOverlay({ detectionState, detectionScore }) {
+export default function CameraOverlay({ detectionState, detectionScore, currentStep }) {
   const [pulseAnim] = useState(new Animated.Value(1));
   const [countdownValue, setCountdownValue] = useState(null);
 

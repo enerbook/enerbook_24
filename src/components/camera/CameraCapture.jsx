@@ -8,6 +8,8 @@ import { useDocumentDetection } from '../../hooks/useDocumentDetection';
 export default function CameraCapture({ isOpen, onClose, onCapture }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [isReady, setIsReady] = useState(false);
+  const [capturedPhotos, setCapturedPhotos] = useState([]);
+  const [currentStep, setCurrentStep] = useState('frontal'); // 'frontal' | 'posterior'
   const cameraRef = useRef(null);
   
   const {
@@ -66,6 +68,14 @@ export default function CameraCapture({ isOpen, onClose, onCapture }) {
     }
   }, [detectionState]);
 
+  // Resetear cuando se cierra
+  useEffect(() => {
+    if (!isOpen) {
+      setCapturedPhotos([]);
+      setCurrentStep('frontal');
+    }
+  }, [isOpen]);
+
   const handleCapture = async () => {
     if (cameraRef.current) {
       try {
@@ -82,13 +92,26 @@ export default function CameraCapture({ isOpen, onClose, onCapture }) {
         // Convertir URI a File/Blob para mantener compatibilidad con el flujo existente
         const response = await fetch(photo.uri);
         const blob = await response.blob();
-        const file = new File([blob], 'receipt.jpg', { type: 'image/jpeg' });
+        const fileName = currentStep === 'frontal' ? 'receipt-front.jpg' : 'receipt-back.jpg';
+        const file = new File([blob], fileName, { type: 'image/jpeg' });
         
-        // Enviar la foto capturada
-        onCapture([file]);
+        const newPhotos = [...capturedPhotos, file];
+        setCapturedPhotos(newPhotos);
         
-        // Cerrar la cámara
-        handleClose();
+        // Si es la primera foto, pasar a la segunda
+        if (currentStep === 'frontal') {
+          setCurrentStep('posterior');
+          resetDetection(); // Resetear detección para la segunda foto
+          Alert.alert(
+            '¡Perfecto!',
+            'Ahora captura la parte posterior del recibo.',
+            [{ text: 'OK', onPress: () => {} }]
+          );
+        } else {
+          // Si ya tenemos ambas fotos, enviar y cerrar
+          onCapture(newPhotos);
+          handleClose();
+        }
       } catch (error) {
         console.error('Error capturing photo:', error);
         Alert.alert('Error', 'No se pudo capturar la foto. Intenta de nuevo.');
@@ -150,7 +173,28 @@ export default function CameraCapture({ isOpen, onClose, onCapture }) {
           <CameraOverlay 
             detectionState={detectionState}
             detectionScore={detectionScore}
+            currentStep={currentStep}
           />
+          
+          {/* Indicador de paso actual */}
+          <View style={styles.stepIndicator}>
+            <View style={styles.stepBadge}>
+              <View style={styles.stepNumber}>
+                <Text style={styles.stepNumberText}>
+                  {currentStep === 'frontal' ? '1' : '2'}
+                </Text>
+              </View>
+              <Text style={styles.stepText}>
+                {currentStep === 'frontal' ? 'Parte frontal' : 'Parte posterior'}
+              </Text>
+            </View>
+            <View style={styles.progressBar}>
+              <View style={[
+                styles.progressFill,
+                { width: currentStep === 'frontal' ? '50%' : '100%' }
+              ]} />
+            </View>
+          </View>
           
           {/* Controles de la cámara */}
           <View style={styles.controls}>
@@ -242,5 +286,49 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     backgroundColor: 'white',
+  },
+  stepIndicator: {
+    position: 'absolute',
+    top: 100,
+    left: 20,
+    right: 20,
+    zIndex: 5,
+  },
+  stepBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  stepNumber: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#F59E0B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  stepNumberText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  stepText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#F59E0B',
   },
 });
