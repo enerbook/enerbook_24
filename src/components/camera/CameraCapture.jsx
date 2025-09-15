@@ -61,8 +61,12 @@ export default function CameraCapture({ isOpen, onClose, onCapture }) {
 
   // Capturar automáticamente cuando el estado sea 'capturing'
   useEffect(() => {
+    console.log('🔄 CameraCapture: Estado de detección cambió a:', detectionState);
+
     if (detectionState === 'capturing') {
+      console.log('🚀 CameraCapture: Estado CAPTURING detectado, iniciando countdown de 3 segundos...');
       setTimeout(() => {
+        console.log('📷 CameraCapture: Ejecutando handleCapture ahora!');
         handleCapture();
       }, 3000); // Esperar 3 segundos del countdown
     }

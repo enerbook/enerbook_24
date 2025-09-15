@@ -159,44 +159,72 @@ export function useDocumentDetection() {
 
   // Procesar frame del video/cámara
   const processFrame = useCallback((videoRef) => {
-    if (!videoRef || !videoRef.current) return;
-    
+    if (!videoRef || !videoRef.current) {
+      console.log('❌ processFrame: videoRef no disponible');
+      return;
+    }
+
     frameCountRef.current++;
-    
+
     // Procesar cada 5 frames para optimizar rendimiento
     if (frameCountRef.current % 5 !== 0) return;
+
+    console.log('🎥 processFrame ejecutándose, frame:', frameCountRef.current);
     
     try {
       const video = videoRef.current;
       
       // Para web, necesitamos extraer el frame del video
       if (video.videoWidth && video.videoHeight) {
+        console.log('📹 Video dimensiones:', video.videoWidth, 'x', video.videoHeight);
+
         // Crear canvas temporal para extraer frame
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        
+
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        
+
         // Dibujar frame actual
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
+
         // Obtener datos de imagen
         const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        console.log('📊 ImageData obtenida:', imageData.width, 'x', imageData.height, 'píxeles');
         
         // Analizar frame
         const analysis = analyzeGreenPixels(imageData);
-        
+
+        // Log completo del análisis
+        console.log('🔍 Análisis completo:', {
+          score: analysis.score.toFixed(2),
+          greenPercentage: analysis.greenPercentage.toFixed(2),
+          contrastScore: analysis.contrastScore.toFixed(2),
+          greenPixels: analysis.details.greenPixels,
+          totalPixels: analysis.details.totalPixels,
+          edgeContrast: analysis.details.edgeContrast.toFixed(2)
+        });
+
         setDetectionScore(Math.round(analysis.score));
-        
+
         // Lógica de detección ultra sensible para captura automática
         const isDetected = analysis.greenPercentage >= 3 && analysis.score >= 8;
+
+        console.log('🎯 Detección:', {
+          isDetected,
+          greenPercentage: analysis.greenPercentage.toFixed(2),
+          score: analysis.score.toFixed(2),
+          consecutiveDetections: consecutiveDetectionsRef.current
+        });
         
         if (isDetected) {
           consecutiveDetectionsRef.current++;
-          
+
+          console.log('✅ DETECTADO! Consecutivos:', consecutiveDetectionsRef.current);
+
           // Captura inmediata con 1 sola detección
           if (consecutiveDetectionsRef.current >= 1 && !lastDetectionRef.current) {
+            console.log('🎉 CONFIRMANDO DETECCIÓN - Iniciando captura automática');
             // Primera detección confirmada
             setDetectionState('detected');
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -208,23 +236,25 @@ export function useDocumentDetection() {
             }
             
             captureTimerRef.current = setTimeout(() => {
+              console.log('📸 CAPTURANDO AHORA!');
               setDetectionState('capturing');
+              lastDetectionRef.current = false; // Resetear para permitir nueva detección
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            }, 1500); // 1.5 segundos de espera
+            }, 500); // 0.5 segundos de espera - captura rápida
+
+            console.log('⏰ Timer de captura configurado, esperando 0.5 segundos...');
           }
         } else {
           consecutiveDetectionsRef.current = 0;
-          
+
           if (lastDetectionRef.current) {
-            // Perdimos la detección
-            setDetectionState('searching');
-            lastDetectionRef.current = false;
-            
-            // Cancelar captura automática
-            if (captureTimerRef.current) {
-              clearTimeout(captureTimerRef.current);
-              captureTimerRef.current = null;
-            }
+            console.log('❌ Perdida de detección - PERO manteniendo timer de captura');
+            // Perdimos la detección, pero NO cancelamos el timer
+            // El usuario ya vio que se detectó, mantener captura programada
+            setDetectionState('detected'); // Mantener estado detected hasta captura
+
+            // NO cancelar captura automática - dejar que complete
+            console.log('✅ Timer de captura se mantiene activo a pesar de pérdida temporal');
           }
         }
         
