@@ -45,39 +45,27 @@ export function useDocumentDetection() {
     };
   }, []);
 
-  // Detectar si un píxel es verde CFE
+  // Detectar si un píxel es verde usando gama amplia
   const isGreenCFE = useCallback((r, g, b) => {
     const hsv = rgbToHsv(r, g, b);
 
-    // Rangos específicos basados en muestras reales de recibos CFE
-    // Verde principal CFE: más saturado y específico
-    // Hue: 120-145° (verde más puro, menos rango)
-    // Saturación: 45-95% (alta saturación característica)
-    // Valor: 30-85% (brillo medio-alto)
+    // Rangos amplios para detectar cualquier tipo de verde
+    // Hue: 80-160° (gama amplia de verdes)
+    // Saturación: 20-100% (desde muy poco saturado hasta muy saturado)
+    // Valor: 20-100% (desde oscuro hasta muy brillante)
 
-    const primaryGreenHue = hsv.h >= 120 && hsv.h <= 145;
-    const primaryGreenSat = hsv.s >= 45 && hsv.s <= 95;
-    const primaryGreenVal = hsv.v >= 30 && hsv.v <= 85;
-    const isPrimaryGreen = primaryGreenHue && primaryGreenSat && primaryGreenVal;
+    const hueInRange = hsv.h >= 80 && hsv.h <= 160;
+    const satInRange = hsv.s >= 20 && hsv.s <= 100;
+    const valInRange = hsv.v >= 20 && hsv.v <= 100;
+    const isGreenHSV = hueInRange && satInRange && valInRange;
 
-    // Verde secundario CFE (tonos más claros en tablas)
-    // Hue: 110-135° (rango ligeramente más amplio)
-    // Saturación: 25-60% (menos saturado)
-    // Valor: 50-90% (más brillante)
+    // Validación RGB: canal verde debe ser dominante
+    const greenDominant = g > r * 1.1 && g > b * 1.1;
 
-    const secondaryGreenHue = hsv.h >= 110 && hsv.h <= 135;
-    const secondaryGreenSat = hsv.s >= 25 && hsv.s <= 60;
-    const secondaryGreenVal = hsv.v >= 50 && hsv.v <= 90;
-    const isSecondaryGreen = secondaryGreenHue && secondaryGreenSat && secondaryGreenVal;
+    // Evitar falsos positivos en grises/blancos
+    const notGrayish = Math.abs(r - g) > 10 || Math.abs(g - b) > 10 || Math.abs(r - b) > 10;
 
-    // Verificación RGB mejorada: canal verde debe ser dominante
-    const greenDominant = g > r * 1.15 && g > b * 1.25;
-    const isGreenish = g > 80 && (g - r) > 20 && (g - b) > 15;
-
-    // Validación adicional: evitar falsos positivos con blancos/grises
-    const notGrayish = Math.abs(r - g) > 15 || Math.abs(g - b) > 15 || Math.abs(r - b) > 15;
-
-    return (isPrimaryGreen || isSecondaryGreen || (greenDominant && isGreenish)) && notGrayish;
+    return isGreenHSV && greenDominant && notGrayish;
   }, [rgbToHsv]);
 
   // Analizar píxeles verdes en el área
