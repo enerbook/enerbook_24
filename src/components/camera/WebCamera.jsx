@@ -116,7 +116,7 @@ export default function WebCamera({ isOpen, onClose, onCapture }) {
         
         // Convertir canvas a blob
         canvas.toBlob((blob) => {
-          const fileName = currentStep === 'frontal' ? 'receipt-front.jpg' : 'receipt-back.jpg';
+          const fileName = currentStep === 'frontal' ? 'data-frontal.jpg' : 'data-posterior.jpg';
           const file = new File([blob], fileName, { type: 'image/jpeg' });
           
           const newPhotos = [...capturedPhotos, file];

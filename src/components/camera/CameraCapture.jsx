@@ -92,7 +92,7 @@ export default function CameraCapture({ isOpen, onClose, onCapture }) {
         // Convertir URI a File/Blob para mantener compatibilidad con el flujo existente
         const response = await fetch(photo.uri);
         const blob = await response.blob();
-        const fileName = currentStep === 'frontal' ? 'receipt-front.jpg' : 'receipt-back.jpg';
+        const fileName = currentStep === 'frontal' ? 'data-frontal.jpg' : 'data-posterior.jpg';
         const file = new File([blob], fileName, { type: 'image/jpeg' });
         
         const newPhotos = [...capturedPhotos, file];
