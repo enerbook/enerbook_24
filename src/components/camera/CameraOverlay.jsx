@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 
 export default function CameraOverlay({ detectionState, detectionScore, currentStep }) {
   const [pulseAnim] = useState(new Animated.Value(1));
@@ -20,24 +20,27 @@ export default function CameraOverlay({ detectionState, detectionScore, currentS
   // Animación de pulso cuando detecta
   useEffect(() => {
     if (detectionState === 'detected') {
+      // Solo usar useNativeDriver en móvil
+      const useNative = Platform.OS !== 'web';
+      
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
             toValue: 1.05,
             duration: 500,
-            useNativeDriver: true,
+            useNativeDriver: useNative,
           }),
           Animated.timing(pulseAnim, {
             toValue: 1,
             duration: 500,
-            useNativeDriver: true,
+            useNativeDriver: useNative,
           }),
         ])
       ).start();
     } else {
       pulseAnim.setValue(1);
     }
-  }, [detectionState]);
+  }, [detectionState, pulseAnim]);
 
   // Countdown cuando está capturando
   useEffect(() => {
