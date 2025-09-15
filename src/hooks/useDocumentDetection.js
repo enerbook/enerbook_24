@@ -187,8 +187,8 @@ export function useDocumentDetection() {
         
         setDetectionScore(Math.round(analysis.score));
         
-        // Umbral de detección ajustado: score > 10 para ser más sensible con la nueva detección
-        const isDetected = analysis.score > 10;
+        // Nueva lógica de detección: porcentaje de verde como condición principal
+        const isDetected = analysis.greenPercentage >= 8 && analysis.score >= 20;
         
         if (isDetected) {
           consecutiveDetectionsRef.current++;
@@ -208,7 +208,7 @@ export function useDocumentDetection() {
             captureTimerRef.current = setTimeout(() => {
               setDetectionState('capturing');
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            }, 2000); // 2 segundos de espera
+            }, 1500); // 1.5 segundos de espera
           }
         } else {
           consecutiveDetectionsRef.current = 0;
