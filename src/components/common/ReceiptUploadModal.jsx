@@ -1,5 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
-import CameraCapture from '../camera/CameraCapture';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import { Platform } from 'react-native';
+
+// Importación condicional según la plataforma
+const CameraComponent = Platform.OS === 'web' 
+  ? lazy(() => import('../camera/WebCamera'))
+  : lazy(() => import('../camera/CameraCapture'));
 
 const Spinner = () => (
   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -244,11 +249,13 @@ export default function ReceiptUploadModal({ isOpen, onClose, onSubmit, ocrData,
       </div>
 
       {/* Camera Capture Modal */}
-      <CameraCapture
-        isOpen={showCamera}
-        onClose={handleCameraClose}
-        onCapture={handleCameraCapture}
-      />
+      <Suspense fallback={<div>Cargando cámara...</div>}>
+        <CameraComponent
+          isOpen={showCamera}
+          onClose={handleCameraClose}
+          onCapture={handleCameraCapture}
+        />
+      </Suspense>
     </div>
   );
 }

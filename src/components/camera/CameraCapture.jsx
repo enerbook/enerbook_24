@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Alert, Platform, Linking } from 'react-native';
-import { Camera, CameraType, FlashMode } from 'expo-camera';
+import { Camera } from 'expo-camera/legacy';
 import * as Haptics from 'expo-haptics';
 import CameraOverlay from './CameraOverlay';
 import { useDocumentDetection } from '../../hooks/useDocumentDetection';
@@ -141,8 +141,8 @@ export default function CameraCapture({ isOpen, onClose, onCapture }) {
         <Camera
           ref={cameraRef}
           style={styles.camera}
-          type={CameraType.back}
-          flashMode={FlashMode.on} // Flash siempre encendido
+          type={Camera.Constants?.Type?.back || 'back'}
+          flashMode={Camera.Constants?.FlashMode?.on || 'on'}
           onCameraReady={() => setIsReady(true)}
           ratio="4:3"
         >
