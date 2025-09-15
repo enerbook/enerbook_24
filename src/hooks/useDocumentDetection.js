@@ -48,20 +48,36 @@ export function useDocumentDetection() {
   // Detectar si un píxel es verde CFE
   const isGreenCFE = useCallback((r, g, b) => {
     const hsv = rgbToHsv(r, g, b);
-    
-    // Rangos de verde CFE (ajustados para el verde característico)
-    // Hue: 100-160° (verde con tendencia azulada)
-    // Saturación: 30-90% (moderadamente saturado)
-    // Valor: 25-75% (ni muy oscuro ni muy brillante)
-    
-    const hueInRange = hsv.h >= 100 && hsv.h <= 160;
-    const satInRange = hsv.s >= 30 && hsv.s <= 90;
-    const valInRange = hsv.v >= 25 && hsv.v <= 75;
-    
-    // También verificar predominancia del canal verde en RGB
-    const greenDominant = g > r * 1.3 && g > b * 1.2;
-    
-    return (hueInRange && satInRange && valInRange) || greenDominant;
+
+    // Rangos específicos basados en muestras reales de recibos CFE
+    // Verde principal CFE: más saturado y específico
+    // Hue: 120-145° (verde más puro, menos rango)
+    // Saturación: 45-95% (alta saturación característica)
+    // Valor: 30-85% (brillo medio-alto)
+
+    const primaryGreenHue = hsv.h >= 120 && hsv.h <= 145;
+    const primaryGreenSat = hsv.s >= 45 && hsv.s <= 95;
+    const primaryGreenVal = hsv.v >= 30 && hsv.v <= 85;
+    const isPrimaryGreen = primaryGreenHue && primaryGreenSat && primaryGreenVal;
+
+    // Verde secundario CFE (tonos más claros en tablas)
+    // Hue: 110-135° (rango ligeramente más amplio)
+    // Saturación: 25-60% (menos saturado)
+    // Valor: 50-90% (más brillante)
+
+    const secondaryGreenHue = hsv.h >= 110 && hsv.h <= 135;
+    const secondaryGreenSat = hsv.s >= 25 && hsv.s <= 60;
+    const secondaryGreenVal = hsv.v >= 50 && hsv.v <= 90;
+    const isSecondaryGreen = secondaryGreenHue && secondaryGreenSat && secondaryGreenVal;
+
+    // Verificación RGB mejorada: canal verde debe ser dominante
+    const greenDominant = g > r * 1.15 && g > b * 1.25;
+    const isGreenish = g > 80 && (g - r) > 20 && (g - b) > 15;
+
+    // Validación adicional: evitar falsos positivos con blancos/grises
+    const notGrayish = Math.abs(r - g) > 15 || Math.abs(g - b) > 15 || Math.abs(r - b) > 15;
+
+    return (isPrimaryGreen || isSecondaryGreen || (greenDominant && isGreenish)) && notGrayish;
   }, [rgbToHsv]);
 
   // Analizar píxeles verdes en el área
@@ -77,7 +93,6 @@ export function useDocumentDetection() {
     let totalPixels = 0;
     let greenPixels = 0;
     let edgeContrast = 0;
-    let rectangularScore = 0;
     
     // Muestrear píxeles en el área del recuadro (cada 5 píxeles para optimizar)
     const sampleStep = 5;
@@ -127,13 +142,17 @@ export function useDocumentDetection() {
     const greenPercentage = totalPixels > 0 ? (greenPixels / totalPixels) * 100 : 0;
     const contrastScore = Math.min(edgeContrast / 50 * 100, 100); // Normalizar a 0-100
     
-    // Score final ponderado
-    // 50% peso al verde, 30% al contraste, 20% bonus si hay suficiente verde
-    let finalScore = (greenPercentage * 0.5) + (contrastScore * 0.3);
-    
-    // Bonus si hay una cantidad significativa de verde (más del 15%)
-    if (greenPercentage > 15) {
-      finalScore += 20;
+    // Score final ponderado mejorado
+    // 60% peso al verde (más importante), 25% al contraste, 15% bonus por densidad
+    let finalScore = (greenPercentage * 0.6) + (contrastScore * 0.25);
+
+    // Bonus escalonado según densidad de verde detectado
+    if (greenPercentage > 20) {
+      finalScore += 25; // Muy probable que sea CFE
+    } else if (greenPercentage > 12) {
+      finalScore += 15; // Probable que sea CFE
+    } else if (greenPercentage > 8) {
+      finalScore += 8;  // Posible CFE
     }
     
     return {
@@ -180,8 +199,8 @@ export function useDocumentDetection() {
         
         setDetectionScore(Math.round(analysis.score));
         
-        // Umbral de detección: score > 70 para considerar que es un recibo CFE
-        const isDetected = analysis.score > 70;
+        // Umbral de detección ajustado: score > 65 para ser más sensible con la nueva detección
+        const isDetected = analysis.score > 65;
         
         if (isDetected) {
           consecutiveDetectionsRef.current++;
