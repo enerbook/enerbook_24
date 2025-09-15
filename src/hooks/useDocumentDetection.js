@@ -187,8 +187,8 @@ export function useDocumentDetection() {
         
         setDetectionScore(Math.round(analysis.score));
         
-        // Umbral de detección ajustado: score > 40 para ser más sensible con la nueva detección
-        const isDetected = analysis.score > 40;
+        // Umbral de detección ajustado: score > 10 para ser más sensible con la nueva detección
+        const isDetected = analysis.score > 10;
         
         if (isDetected) {
           consecutiveDetectionsRef.current++;
