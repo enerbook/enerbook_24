@@ -49,18 +49,18 @@ export function useDocumentDetection() {
   const isGreenCFE = useCallback((r, g, b) => {
     const hsv = rgbToHsv(r, g, b);
 
-    // Rangos amplios para detectar cualquier tipo de verde
-    // Hue: 80-160° (gama amplia de verdes)
-    // Saturación: 20-100% (desde muy poco saturado hasta muy saturado)
-    // Valor: 20-100% (desde oscuro hasta muy brillante)
+    // Rangos ultra amplios para máxima sensibilidad
+    // Hue: 70-170° (gama extra amplia de verdes)
+    // Saturación: 15-100% (desde muy poco saturado hasta muy saturado)
+    // Valor: 15-100% (desde muy oscuro hasta muy brillante)
 
-    const hueInRange = hsv.h >= 80 && hsv.h <= 160;
-    const satInRange = hsv.s >= 20 && hsv.s <= 100;
-    const valInRange = hsv.v >= 20 && hsv.v <= 100;
+    const hueInRange = hsv.h >= 70 && hsv.h <= 170;
+    const satInRange = hsv.s >= 15 && hsv.s <= 100;
+    const valInRange = hsv.v >= 15 && hsv.v <= 100;
     const isGreenHSV = hueInRange && satInRange && valInRange;
 
-    // Validación RGB: canal verde debe ser dominante
-    const greenDominant = g > r * 1.1 && g > b * 1.1;
+    // Validación RGB relajada: canal verde ligeramente dominante
+    const greenDominant = g > r * 1.05 && g > b * 1.05;
 
     // Evitar falsos positivos en grises/blancos
     const notGrayish = Math.abs(r - g) > 10 || Math.abs(g - b) > 10 || Math.abs(r - b) > 10;
@@ -134,15 +134,15 @@ export function useDocumentDetection() {
     // 60% peso al verde (más importante), 25% al contraste, 15% bonus por densidad
     let finalScore = (greenPercentage * 0.6) + (contrastScore * 0.25);
 
-    // Bonus escalonado optimizado para rangos más bajos
-    if (greenPercentage > 12) {
-      finalScore += 30; // Muy probable que sea CFE
-    } else if (greenPercentage > 8) {
-      finalScore += 20; // Probable que sea CFE
-    } else if (greenPercentage > 5) {
-      finalScore += 15; // Posible CFE
+    // Sistema de bonus ultra sensible
+    if (greenPercentage > 10) {
+      finalScore += 35; // Muy probable que sea CFE
+    } else if (greenPercentage > 6) {
+      finalScore += 25; // Probable que sea CFE
     } else if (greenPercentage > 3) {
-      finalScore += 8;  // Detección mínima
+      finalScore += 20; // Posible CFE
+    } else if (greenPercentage > 1) {
+      finalScore += 15; // Cualquier verde detectado
     }
     
     return {
@@ -189,14 +189,14 @@ export function useDocumentDetection() {
         
         setDetectionScore(Math.round(analysis.score));
         
-        // Nueva lógica de detección optimizada: umbrales más accesibles
-        const isDetected = analysis.greenPercentage >= 5 && analysis.score >= 12;
+        // Lógica de detección ultra sensible para captura automática
+        const isDetected = analysis.greenPercentage >= 3 && analysis.score >= 8;
         
         if (isDetected) {
           consecutiveDetectionsRef.current++;
           
-          // Necesitamos 2 detecciones consecutivas para confirmar
-          if (consecutiveDetectionsRef.current >= 2 && !lastDetectionRef.current) {
+          // Captura inmediata con 1 sola detección
+          if (consecutiveDetectionsRef.current >= 1 && !lastDetectionRef.current) {
             // Primera detección confirmada
             setDetectionState('detected');
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
