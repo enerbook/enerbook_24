@@ -134,13 +134,15 @@ export function useDocumentDetection() {
     // 60% peso al verde (más importante), 25% al contraste, 15% bonus por densidad
     let finalScore = (greenPercentage * 0.6) + (contrastScore * 0.25);
 
-    // Bonus escalonado según densidad de verde detectado
-    if (greenPercentage > 20) {
-      finalScore += 25; // Muy probable que sea CFE
-    } else if (greenPercentage > 12) {
-      finalScore += 15; // Probable que sea CFE
+    // Bonus escalonado optimizado para rangos más bajos
+    if (greenPercentage > 12) {
+      finalScore += 30; // Muy probable que sea CFE
     } else if (greenPercentage > 8) {
-      finalScore += 8;  // Posible CFE
+      finalScore += 20; // Probable que sea CFE
+    } else if (greenPercentage > 5) {
+      finalScore += 15; // Posible CFE
+    } else if (greenPercentage > 3) {
+      finalScore += 8;  // Detección mínima
     }
     
     return {
@@ -187,14 +189,14 @@ export function useDocumentDetection() {
         
         setDetectionScore(Math.round(analysis.score));
         
-        // Nueva lógica de detección: porcentaje de verde como condición principal
-        const isDetected = analysis.greenPercentage >= 8 && analysis.score >= 20;
+        // Nueva lógica de detección optimizada: umbrales más accesibles
+        const isDetected = analysis.greenPercentage >= 5 && analysis.score >= 12;
         
         if (isDetected) {
           consecutiveDetectionsRef.current++;
           
-          // Necesitamos 3 detecciones consecutivas para confirmar
-          if (consecutiveDetectionsRef.current >= 3 && !lastDetectionRef.current) {
+          // Necesitamos 2 detecciones consecutivas para confirmar
+          if (consecutiveDetectionsRef.current >= 2 && !lastDetectionRef.current) {
             // Primera detección confirmada
             setDetectionState('detected');
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
