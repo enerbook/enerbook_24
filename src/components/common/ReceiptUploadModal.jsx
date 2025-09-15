@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import CameraCapture from '../camera/CameraCapture';
 
 const Spinner = () => (
   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -7,12 +8,14 @@ const Spinner = () => (
 export default function ReceiptUploadModal({ isOpen, onClose, onSubmit, ocrData, setOcrData, isLoading }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) {
       setSelectedFiles([]);
       setOcrData(null);
+      setShowCamera(false);
     }
   }, [isOpen, setOcrData]);
 
@@ -63,6 +66,23 @@ export default function ReceiptUploadModal({ isOpen, onClose, onSubmit, ocrData,
 
   const handleBrowseFiles = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleOpenCamera = () => {
+    setShowCamera(true);
+  };
+
+  const handleCameraCapture = (capturedFiles) => {
+    setSelectedFiles(capturedFiles);
+    setShowCamera(false);
+    // Auto-submit después de capturar
+    if (capturedFiles.length > 0 && onSubmit) {
+      onSubmit(capturedFiles);
+    }
+  };
+
+  const handleCameraClose = () => {
+    setShowCamera(false);
   };
 
   const handleSubmit = () => {
@@ -140,7 +160,17 @@ export default function ReceiptUploadModal({ isOpen, onClose, onSubmit, ocrData,
         <p className="text-xs text-gray-400 text-center mt-3">
           Formatos aceptados: pdf, png o jpg
         </p>
-        <div className="mt-6">
+        <div className="mt-6 space-y-3">
+          <button
+            onClick={handleOpenCamera}
+            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium py-3 px-6 rounded-lg hover:from-amber-600 hover:to-amber-700 transition-all flex items-center justify-center gap-2"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            Tomar foto
+          </button>
           <button
             onClick={handleBrowseFiles}
             className="w-full bg-gray-900 text-white font-medium py-3 px-6 rounded-lg hover:bg-gray-800 transition-colors"
@@ -212,6 +242,13 @@ export default function ReceiptUploadModal({ isOpen, onClose, onSubmit, ocrData,
           className="hidden"
         />
       </div>
+
+      {/* Camera Capture Modal */}
+      <CameraCapture
+        isOpen={showCamera}
+        onClose={handleCameraClose}
+        onCapture={handleCameraCapture}
+      />
     </div>
   );
 }
