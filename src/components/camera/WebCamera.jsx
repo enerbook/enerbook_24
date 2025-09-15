@@ -73,10 +73,16 @@ export default function WebCamera({ isOpen, onClose, onCapture }) {
 
   // Iniciar detección cuando esté listo
   useEffect(() => {
-    if (isReady) {
+    if (isReady && videoRef.current) {
       startDetection(videoRef);
     }
-  }, [isReady]);
+    
+    return () => {
+      if (isReady) {
+        stopDetection();
+      }
+    };
+  }, [isReady, startDetection, stopDetection]);
 
   // Capturar automáticamente cuando el estado sea 'capturing'
   useEffect(() => {

@@ -110,16 +110,27 @@ export default function CameraOverlay({ detectionState, detectionScore, currentS
       <View style={styles.instructionsContainer}>
         <View style={[styles.statusBadge, { backgroundColor: overlayColor }]}>
           <Text style={styles.statusText}>
-            {detectionState === 'searching' && '🔍 Buscando recibo...'}
-            {detectionState === 'detected' && '✅ ¡Recibo detectado!'}
+            {detectionState === 'searching' && '🔍 Buscando recibo CFE...'}
+            {detectionState === 'detected' && '✅ ¡Recibo CFE detectado!'}
             {detectionState === 'capturing' && '📸 Capturando...'}
           </Text>
         </View>
         
         {detectionScore > 0 && detectionState === 'searching' && (
-          <Text style={styles.scoreText}>
-            Calidad: {Math.round(detectionScore)}%
-          </Text>
+          <View style={styles.scoreContainer}>
+            <Text style={styles.scoreText}>
+              Detección: {Math.round(detectionScore)}%
+            </Text>
+            <View style={styles.scoreBar}>
+              <View style={[
+                styles.scoreBarFill,
+                { 
+                  width: `${Math.min(detectionScore, 100)}%`,
+                  backgroundColor: detectionScore > 70 ? '#10B981' : detectionScore > 40 ? '#F59E0B' : '#EF4444'
+                }
+              ]} />
+            </View>
+          </View>
         )}
       </View>
 
@@ -254,10 +265,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  scoreContainer: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
   scoreText: {
     color: 'white',
     fontSize: 14,
-    opacity: 0.8,
+    opacity: 0.9,
+    marginBottom: 5,
+  },
+  scoreBar: {
+    width: 150,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  scoreBarFill: {
+    height: '100%',
+    borderRadius: 2,
+    transition: 'width 0.3s ease',
   },
   countdownContainer: {
     position: 'absolute',

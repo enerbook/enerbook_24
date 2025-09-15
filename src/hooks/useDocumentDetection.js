@@ -8,65 +8,149 @@ export function useDocumentDetection() {
   const captureTimerRef = useRef(null);
   const frameCountRef = useRef(0);
   const lastDetectionRef = useRef(false);
+  const consecutiveDetectionsRef = useRef(0);
 
-  const analyzeFrame = useCallback((imageData) => {
+  // Convertir RGB a HSV para mejor detección de color
+  const rgbToHsv = useCallback((r, g, b) => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const diff = max - min;
+
+    let h = 0;
+    let s = max === 0 ? 0 : diff / max;
+    let v = max;
+
+    if (diff !== 0) {
+      switch (max) {
+        case r:
+          h = ((g - b) / diff + (g < b ? 6 : 0)) / 6;
+          break;
+        case g:
+          h = ((b - r) / diff + 2) / 6;
+          break;
+        case b:
+          h = ((r - g) / diff + 4) / 6;
+          break;
+      }
+    }
+
+    return {
+      h: h * 360, // Hue en grados (0-360)
+      s: s * 100, // Saturación en porcentaje (0-100)
+      v: v * 100  // Valor en porcentaje (0-100)
+    };
+  }, []);
+
+  // Detectar si un píxel es verde CFE
+  const isGreenCFE = useCallback((r, g, b) => {
+    const hsv = rgbToHsv(r, g, b);
+    
+    // Rangos de verde CFE (ajustados para el verde característico)
+    // Hue: 100-160° (verde con tendencia azulada)
+    // Saturación: 30-90% (moderadamente saturado)
+    // Valor: 25-75% (ni muy oscuro ni muy brillante)
+    
+    const hueInRange = hsv.h >= 100 && hsv.h <= 160;
+    const satInRange = hsv.s >= 30 && hsv.s <= 90;
+    const valInRange = hsv.v >= 25 && hsv.v <= 75;
+    
+    // También verificar predominancia del canal verde en RGB
+    const greenDominant = g > r * 1.3 && g > b * 1.2;
+    
+    return (hueInRange && satInRange && valInRange) || greenDominant;
+  }, [rgbToHsv]);
+
+  // Analizar píxeles verdes en el área
+  const analyzeGreenPixels = useCallback((imageData) => {
     const { width, height, data } = imageData;
     
     // Definir área del recuadro (centro de la imagen, 80% del ancho/alto)
-    const boxX = width * 0.1;
-    const boxY = height * 0.15;
-    const boxWidth = width * 0.8;
-    const boxHeight = height * 0.7;
+    const boxX = Math.floor(width * 0.1);
+    const boxY = Math.floor(height * 0.15);
+    const boxWidth = Math.floor(width * 0.8);
+    const boxHeight = Math.floor(height * 0.7);
     
-    // Analizar bordes del recuadro
-    let edgePixels = 0;
-    let highContrastPixels = 0;
+    let totalPixels = 0;
+    let greenPixels = 0;
+    let edgeContrast = 0;
+    let rectangularScore = 0;
     
-    // Muestrear píxeles en los bordes del recuadro
-    const sampleStep = 5; // Muestrear cada 5 píxeles para optimizar
+    // Muestrear píxeles en el área del recuadro (cada 5 píxeles para optimizar)
+    const sampleStep = 5;
     
-    // Bordes horizontales
-    for (let x = boxX; x < boxX + boxWidth; x += sampleStep) {
-      // Borde superior
-      checkEdgeContrast(data, x, boxY, width);
-      // Borde inferior
-      checkEdgeContrast(data, x, boxY + boxHeight, width);
-    }
-    
-    // Bordes verticales
+    // Análisis del contenido del recuadro
     for (let y = boxY; y < boxY + boxHeight; y += sampleStep) {
-      // Borde izquierdo
-      checkEdgeContrast(data, boxX, y, width);
-      // Borde derecho
-      checkEdgeContrast(data, boxX + boxWidth, y, width);
-    }
-    
-    function checkEdgeContrast(data, x, y, width) {
-      const idx = (Math.floor(y) * width + Math.floor(x)) * 4;
-      
-      // Convertir a escala de grises
-      const gray = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
-      
-      // Verificar píxeles adyacentes para detectar bordes
-      const idxNext = idx + 4;
-      if (idxNext < data.length) {
-        const grayNext = (data[idxNext] + data[idxNext + 1] + data[idxNext + 2]) / 3;
-        const contrast = Math.abs(gray - grayNext);
+      for (let x = boxX; x < boxX + boxWidth; x += sampleStep) {
+        const idx = (y * width + x) * 4;
         
-        edgePixels++;
-        if (contrast > 50) { // Umbral de contraste
-          highContrastPixels++;
+        if (idx < data.length - 3) {
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          
+          totalPixels++;
+          
+          // Verificar si es verde CFE
+          if (isGreenCFE(r, g, b)) {
+            greenPixels++;
+          }
         }
       }
     }
     
-    // Calcular score de detección (0-100)
-    const score = edgePixels > 0 ? (highContrastPixels / edgePixels) * 100 : 0;
-    return score;
-  }, []);
+    // Análisis de bordes para detectar forma rectangular
+    const edgePixels = [];
+    
+    // Borde superior
+    for (let x = boxX; x < boxX + boxWidth; x += sampleStep) {
+      const idx = (boxY * width + x) * 4;
+      if (idx < data.length - 3) {
+        const brightness = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+        edgePixels.push(brightness);
+      }
+    }
+    
+    // Calcular contraste en los bordes
+    if (edgePixels.length > 1) {
+      let contrastSum = 0;
+      for (let i = 1; i < edgePixels.length; i++) {
+        contrastSum += Math.abs(edgePixels[i] - edgePixels[i - 1]);
+      }
+      edgeContrast = contrastSum / edgePixels.length;
+    }
+    
+    // Calcular scores
+    const greenPercentage = totalPixels > 0 ? (greenPixels / totalPixels) * 100 : 0;
+    const contrastScore = Math.min(edgeContrast / 50 * 100, 100); // Normalizar a 0-100
+    
+    // Score final ponderado
+    // 50% peso al verde, 30% al contraste, 20% bonus si hay suficiente verde
+    let finalScore = (greenPercentage * 0.5) + (contrastScore * 0.3);
+    
+    // Bonus si hay una cantidad significativa de verde (más del 15%)
+    if (greenPercentage > 15) {
+      finalScore += 20;
+    }
+    
+    return {
+      score: Math.min(finalScore, 100),
+      greenPercentage,
+      contrastScore,
+      details: {
+        greenPixels,
+        totalPixels,
+        edgeContrast
+      }
+    };
+  }, [isGreenCFE]);
 
-  const processFrame = useCallback((cameraRef) => {
-    if (!cameraRef || !cameraRef.current) return;
+  // Procesar frame del video/cámara
+  const processFrame = useCallback((videoRef) => {
+    if (!videoRef || !videoRef.current) return;
     
     frameCountRef.current++;
     
@@ -74,47 +158,90 @@ export function useDocumentDetection() {
     if (frameCountRef.current % 5 !== 0) return;
     
     try {
-      // Simular análisis de frame (en producción, esto vendría del canvas)
-      // Por ahora, usamos un score simulado basado en tiempo
-      const simulatedScore = Math.random() * 100;
+      const video = videoRef.current;
       
-      setDetectionScore(simulatedScore);
-      
-      // Umbral de detección: score > 70
-      const isDetected = simulatedScore > 70;
-      
-      if (isDetected && !lastDetectionRef.current) {
-        // Primera detección
-        setDetectionState('detected');
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        lastDetectionRef.current = true;
+      // Para web, necesitamos extraer el frame del video
+      if (video.videoWidth && video.videoHeight) {
+        // Crear canvas temporal para extraer frame
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
         
-        // Iniciar temporizador de captura automática
-        captureTimerRef.current = setTimeout(() => {
-          setDetectionState('capturing');
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }, 2000); // 2 segundos de espera
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
         
-      } else if (!isDetected && lastDetectionRef.current) {
-        // Perdimos la detección
-        setDetectionState('searching');
-        lastDetectionRef.current = false;
+        // Dibujar frame actual
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Cancelar captura automática
-        if (captureTimerRef.current) {
-          clearTimeout(captureTimerRef.current);
-          captureTimerRef.current = null;
+        // Obtener datos de imagen
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Analizar frame
+        const analysis = analyzeGreenPixels(imageData);
+        
+        setDetectionScore(Math.round(analysis.score));
+        
+        // Umbral de detección: score > 70 para considerar que es un recibo CFE
+        const isDetected = analysis.score > 70;
+        
+        if (isDetected) {
+          consecutiveDetectionsRef.current++;
+          
+          // Necesitamos 3 detecciones consecutivas para confirmar
+          if (consecutiveDetectionsRef.current >= 3 && !lastDetectionRef.current) {
+            // Primera detección confirmada
+            setDetectionState('detected');
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            lastDetectionRef.current = true;
+            
+            // Iniciar temporizador de captura automática
+            if (captureTimerRef.current) {
+              clearTimeout(captureTimerRef.current);
+            }
+            
+            captureTimerRef.current = setTimeout(() => {
+              setDetectionState('capturing');
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            }, 2000); // 2 segundos de espera
+          }
+        } else {
+          consecutiveDetectionsRef.current = 0;
+          
+          if (lastDetectionRef.current) {
+            // Perdimos la detección
+            setDetectionState('searching');
+            lastDetectionRef.current = false;
+            
+            // Cancelar captura automática
+            if (captureTimerRef.current) {
+              clearTimeout(captureTimerRef.current);
+              captureTimerRef.current = null;
+            }
+          }
+        }
+        
+        // Debug info (opcional)
+        if (frameCountRef.current % 30 === 0) { // Log cada ~1 segundo
+          console.log('Detection analysis:', {
+            score: analysis.score.toFixed(2),
+            greenPercentage: analysis.greenPercentage.toFixed(2),
+            contrastScore: analysis.contrastScore.toFixed(2),
+            state: detectionState
+          });
         }
       }
     } catch (error) {
       console.error('Error processing frame:', error);
     }
-  }, []);
+  }, [analyzeGreenPixels, detectionState]);
 
-  const startDetection = useCallback((cameraRef) => {
+  const startDetection = useCallback((videoRef) => {
+    // Resetear contadores
+    frameCountRef.current = 0;
+    consecutiveDetectionsRef.current = 0;
+    
     // Iniciar análisis periódico
     detectionTimerRef.current = setInterval(() => {
-      processFrame(cameraRef);
+      processFrame(videoRef);
     }, 200); // Cada 200ms
   }, [processFrame]);
 
@@ -135,11 +262,13 @@ export function useDocumentDetection() {
     setDetectionScore(0);
     frameCountRef.current = 0;
     lastDetectionRef.current = false;
+    consecutiveDetectionsRef.current = 0;
   }, []);
 
   const resetDetection = useCallback(() => {
     stopDetection();
     setDetectionState('searching');
+    consecutiveDetectionsRef.current = 0;
   }, [stopDetection]);
 
   return {
@@ -148,6 +277,6 @@ export function useDocumentDetection() {
     startDetection,
     stopDetection,
     resetDetection,
-    analyzeFrame
+    analyzeGreenPixels
   };
 }
