@@ -185,7 +185,7 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
 
             {showSuccessMessage && (
               <p style={styles.successMessage}>
-                ✅ ¡Frontal capturada! Ahora muestra la parte posterior
+                ¡Frontal capturada! Ahora muestra la parte posterior
               </p>
             )}
           </div>
@@ -232,7 +232,7 @@ const styles = {
   },
   stepIndicator: {
     position: 'absolute',
-    top: '100px',
+    bottom: '140px',
     left: '20px',
     right: '20px',
     zIndex: 25,
@@ -349,7 +349,7 @@ const styles = {
     margin: 0,
   },
   successMessage: {
-    color: '#10B981',
+    color: '#f59f0b',
     fontSize: '14px',
     fontWeight: 'bold',
     textShadow: '0 1px 3px rgba(0,0,0,0.5)',

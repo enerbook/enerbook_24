@@ -7,14 +7,14 @@ export default function AdvancedCameraOverlay({
 
   const getInstructionText = () => {
     if (currentStep === 'frontal') {
-      return '📄 Todo el recibo en el marco\n🎯 Logo CFE arriba izquierda';
+      return 'Todo el recibo en el marco\nLogo CFE arriba izquierda';
     } else {
-      return '📊 Todo el recibo en el marco\n📋 Tabla al centro';
+      return 'Todo el recibo en el marco\nTabla arriba izquierda';
     }
   };
 
   const getFrameColor = () => {
-    return '#10B981'; // Siempre verde para guías
+    return '#f59f0b'; // Color brand de Enerbook
   };
 
   return (
@@ -27,18 +27,12 @@ export default function AdvancedCameraOverlay({
         <div style={{ ...styles.corner, ...styles.cornerBottomLeft, borderColor: getFrameColor() }} />
         <div style={{ ...styles.corner, ...styles.cornerBottomRight, borderColor: getFrameColor() }} />
 
-        {/* Etiqueta del marco principal */}
-        <div style={styles.receiptLabel}>
-          <span style={styles.receiptLabelText}>
-            TODO EL RECIBO AQUÍ - {currentStep.toUpperCase()}
-          </span>
-        </div>
       </div>
 
       {/* Cuadro específico para logo CFE (solo frontal) */}
       {currentStep === 'frontal' && (
         <div style={styles.logoGuide}>
-          <div style={{ ...styles.logoFrame, borderColor: getFrameColor() }}>
+          <div style={{ ...styles.logoFrame, borderColor: '#090e1a' }}>
             <div style={styles.logoLabel}>
               <span style={styles.logoLabelText}>LOGO CFE</span>
             </div>
@@ -49,7 +43,7 @@ export default function AdvancedCameraOverlay({
       {/* Cuadro específico para tabla de consumo (solo posterior) */}
       {currentStep === 'posterior' && (
         <div style={styles.tableGuide}>
-          <div style={{ ...styles.tableFrame, borderColor: getFrameColor() }}>
+          <div style={{ ...styles.tableFrame, borderColor: '#090e1a' }}>
             <div style={styles.tableLabel}>
               <span style={styles.tableLabelText}>TABLA DE CONSUMO</span>
             </div>
@@ -146,32 +140,14 @@ const styles = {
     borderBottomRightRadius: '15px',
   },
 
-  // Etiqueta del marco principal
-  receiptLabel: {
-    position: 'absolute',
-    top: '-30px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    backgroundColor: 'rgba(16, 185, 129, 0.95)',
-    padding: '6px 16px',
-    borderRadius: '15px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-  },
-  receiptLabelText: {
-    color: 'white',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
 
   // Cuadro específico para logo CFE (frontal)
   logoGuide: {
     position: 'absolute',
     top: '20%',
     left: '15%',
-    width: '30%',
-    height: '15%',
+    width: '25%',
+    height: '12%',
     pointerEvents: 'none',
     zIndex: 22,
   },
@@ -182,15 +158,16 @@ const styles = {
     borderWidth: '2px',
     borderStyle: 'dashed',
     borderRadius: '8px',
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
-    opacity: 0.7,
+    borderColor: '#090e1a',
+    backgroundColor: 'rgba(9, 14, 26, 0.08)',
+    opacity: 0.8,
   },
   logoLabel: {
     position: 'absolute',
     top: '-25px',
     left: '50%',
     transform: 'translateX(-50%)',
-    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+    backgroundColor: 'rgba(9, 14, 26, 0.9)',
     padding: '4px 12px',
     borderRadius: '8px',
     boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
@@ -206,10 +183,10 @@ const styles = {
   // Cuadro específico para tabla de consumo (posterior)
   tableGuide: {
     position: 'absolute',
-    top: '50%',
+    top: '20%',
     left: '15%',
-    width: '70%',
-    height: '20%',
+    width: '50%',
+    height: '15%',
     pointerEvents: 'none',
     zIndex: 22,
   },
@@ -220,15 +197,16 @@ const styles = {
     borderWidth: '2px',
     borderStyle: 'dashed',
     borderRadius: '8px',
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
-    opacity: 0.7,
+    borderColor: '#090e1a',
+    backgroundColor: 'rgba(9, 14, 26, 0.08)',
+    opacity: 0.8,
   },
   tableLabel: {
     position: 'absolute',
     top: '-25px',
     left: '50%',
     transform: 'translateX(-50%)',
-    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+    backgroundColor: 'rgba(9, 14, 26, 0.9)',
     padding: '4px 12px',
     borderRadius: '8px',
     boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
@@ -259,22 +237,23 @@ const styles = {
   // Instrucciones
   instructionsContainer: {
     position: 'absolute',
-    top: '20px',
-    right: '15px',
-    maxWidth: '280px',
+    top: '30px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    maxWidth: '300px',
     zIndex: 25,
   },
   instructionBadge: {
     padding: '8px 16px',
     borderRadius: '15px',
-    backgroundColor: 'rgba(16, 185, 129, 0.95)',
+    backgroundColor: 'rgba(245, 159, 11, 0.95)',
     backdropFilter: 'blur(10px)',
     boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
   },
   instructionText: {
     fontSize: '12px',
     fontWeight: 'bold',
-    textAlign: 'right',
+    textAlign: 'center',
     margin: 0,
     color: 'white',
     lineHeight: '1.4',
