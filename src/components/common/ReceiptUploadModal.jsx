@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { Platform } from 'react-native';
 
-// Importación condicional según la plataforma
-const CameraComponent = Platform.OS === 'web'
-  ? lazy(() => import('../camera/SimpleWebCamera'))
-  : lazy(() => import('../camera/CameraCapture'));
+// Usar SimpleWebCamera para todas las plataformas
+const CameraComponent = lazy(() => import('../camera/SimpleWebCamera'));
 
 const Spinner = () => (
   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>

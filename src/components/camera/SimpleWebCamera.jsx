@@ -10,27 +10,11 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
   const [stream, setStream] = useState(null);
   const [capturedPhotos, setCapturedPhotos] = useState([]);
   const [currentStep, setCurrentStep] = useState('frontal');
-  const [autoCaptureCoundtown, setAutoCaptureCoundtown] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const videoRef = useRef(null);
-  const animationFrameId = useRef(null);
-  const autoCaptureTimeout = useRef(null);
-  const stableFrameCount = useRef(0);
 
-  const {
-    scannerState,
-    isGreenDetected,
-    greenPercentage,
-    brightness,
-    captureReady,
-    detectedPageType,
-    autoDetectedPage,
-    failedConditions,
-    allowManualCapture,
-    processFrame,
-    capturePhoto
-  } = useAdvancedReceiptScanner(currentStep);
+  const { capturePhoto } = useAdvancedReceiptScanner();
 
   // --- CÁMARA Y PERMISOS ---
   useEffect(() => {
@@ -74,87 +58,18 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
   };
 
   const stopCamera = useCallback(() => {
-    if (animationFrameId.current) {
-      cancelAnimationFrame(animationFrameId.current);
-    }
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
     setIsReady(false);
-    stableFrameCount.current = 0;
   }, [stream]);
 
-  // --- PROCESAMIENTO DE VIDEO ---
-  useEffect(() => {
-    const processVideo = () => {
-      if (videoRef.current && !isProcessing && isOpen && isReady) {
-        try {
-          processFrame(videoRef.current);
-        } catch (error) {
-          console.error('Error in processFrame:', error);
-        }
-      }
-
-      if (!isProcessing && isOpen && isReady) {
-        animationFrameId.current = requestAnimationFrame(processVideo);
-      }
-    };
-
-    if (isOpen && isReady && !isProcessing) {
-      animationFrameId.current = requestAnimationFrame(processVideo);
-    }
-
-    return () => {
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-        animationFrameId.current = null;
-      }
-    };
-  }, [isOpen, isReady, processFrame, isProcessing, currentStep]);
-
-  // --- AUTO-CAPTURA ---
-  useEffect(() => {
-    if (captureReady && !isProcessing) {
-      stableFrameCount.current++;
-
-      if (stableFrameCount.current > 15) { // Esperar 15 frames estables
-        let countdown = 3;
-        setAutoCaptureCoundtown(countdown);
-
-        const countdownInterval = setInterval(() => {
-          countdown -= 1;
-          setAutoCaptureCoundtown(countdown);
-
-          if (countdown === 0) {
-            clearInterval(countdownInterval);
-            handleAutoCapture();
-          }
-        }, 1000);
-
-        autoCaptureTimeout.current = countdownInterval;
-
-        return () => {
-          clearInterval(countdownInterval);
-          setAutoCaptureCoundtown(null);
-        };
-      }
-    } else {
-      stableFrameCount.current = 0;
-      if (autoCaptureTimeout.current) {
-        clearInterval(autoCaptureTimeout.current);
-        autoCaptureTimeout.current = null;
-      }
-      setAutoCaptureCoundtown(null);
-    }
-  }, [captureReady, isProcessing]);
-
-  // --- CAPTURA ---
-  const handleAutoCapture = useCallback(async () => {
+  // --- CAPTURA MANUAL ---
+  const handleCapture = useCallback(async () => {
     if (!videoRef.current || isProcessing) return;
 
     setIsProcessing(true);
-    setAutoCaptureCoundtown(null);
 
     try {
       if (Platform.OS !== 'web') {
@@ -169,22 +84,9 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
       setCapturedPhotos(newPhotos);
 
       if (currentStep === 'frontal') {
-        // Pausar procesamiento durante transición
-        setIsProcessing(true);
-
-        // Limpiar timers y counters
-        if (autoCaptureTimeout.current) {
-          clearInterval(autoCaptureTimeout.current);
-          autoCaptureTimeout.current = null;
-        }
-        setAutoCaptureCoundtown(null);
-        stableFrameCount.current = 0;
-
-        // Cambiar step y reanudar procesamiento
         setCurrentStep('posterior');
-
+        setIsProcessing(false);
         setTimeout(() => {
-          setIsProcessing(false); // Reanudar procesamiento
           alert('¡Excelente! Parte frontal capturada. Ahora muestra la parte posterior del recibo.');
         }, 300);
       } else {
@@ -192,58 +94,11 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
         handleClose();
       }
     } catch (error) {
-      console.error('Error en captura:', error);
+      console.error('Error al capturar:', error);
       alert('Error al capturar. Intenta de nuevo.');
       setIsProcessing(false);
     }
   }, [videoRef, currentStep, capturedPhotos, onCapture, capturePhoto, isProcessing]);
-
-  const handleManualCapture = useCallback(async () => {
-    if (!videoRef.current || isProcessing || autoCaptureCoundtown !== null) return;
-
-    setIsProcessing(true);
-
-    try {
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackStyle.Success);
-      }
-
-      const blob = await capturePhoto(videoRef.current);
-      const fileName = currentStep === 'frontal' ? 'receipt-frontal.jpg' : 'receipt-posterior.jpg';
-      const file = new File([blob], fileName, { type: 'image/jpeg' });
-
-      const newPhotos = [...capturedPhotos, file];
-      setCapturedPhotos(newPhotos);
-
-      if (currentStep === 'frontal') {
-        // Pausar procesamiento durante transición
-        setIsProcessing(true);
-
-        // Limpiar timers y counters
-        if (autoCaptureTimeout.current) {
-          clearInterval(autoCaptureTimeout.current);
-          autoCaptureTimeout.current = null;
-        }
-        setAutoCaptureCoundtown(null);
-        stableFrameCount.current = 0;
-
-        // Cambiar step y reanudar procesamiento
-        setCurrentStep('posterior');
-
-        setTimeout(() => {
-          setIsProcessing(false); // Reanudar procesamiento
-          alert('¡Bien! Ahora captura la parte posterior del recibo.');
-        }, 300);
-      } else {
-        onCapture(newPhotos);
-        handleClose();
-      }
-    } catch (error) {
-      console.error('Error capturing photo:', error);
-      alert('No se pudo capturar la foto. Intenta de nuevo.');
-      setIsProcessing(false);
-    }
-  }, [videoRef, currentStep, capturedPhotos, onCapture, capturePhoto, isProcessing, autoCaptureCoundtown]);
 
   const handleClose = () => {
     stopCamera();
@@ -255,20 +110,8 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
     if (!isOpen) {
       setCapturedPhotos([]);
       setCurrentStep('frontal');
-      stableFrameCount.current = 0;
     }
   }, [isOpen]);
-
-  // --- CLEANUP AL CAMBIAR STEP ---
-  useEffect(() => {
-    // Limpiar timers cuando cambia el step
-    if (autoCaptureTimeout.current) {
-      clearInterval(autoCaptureTimeout.current);
-      autoCaptureTimeout.current = null;
-    }
-    setAutoCaptureCoundtown(null);
-    stableFrameCount.current = 0;
-  }, [currentStep]);
 
   // --- RENDERIZADO ---
   if (!isOpen) return null;
@@ -291,17 +134,7 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
           <video ref={videoRef} autoPlay playsInline muted style={styles.video} />
 
           <AdvancedCameraOverlay
-            scannerState={scannerState}
-            isGreenDetected={isGreenDetected}
-            greenPercentage={greenPercentage}
-            brightness={brightness}
-            captureReady={captureReady}
-            autoCaptureCoundtown={autoCaptureCoundtown}
             currentStep={currentStep}
-            detectedPageType={detectedPageType}
-            autoDetectedPage={autoDetectedPage}
-            failedConditions={failedConditions}
-            allowManualCapture={allowManualCapture}
           />
 
           {/* Indicador de pasos */}
@@ -331,11 +164,10 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
             <button
               style={{
                 ...styles.captureButton,
-                ...(captureReady ? styles.captureButtonReady : allowManualCapture ? styles.captureButtonManual : {}),
-                ...(isProcessing || autoCaptureCoundtown ? styles.captureButtonDisabled : {})
+                ...(isProcessing ? styles.captureButtonDisabled : {})
               }}
-              onClick={handleManualCapture}
-              disabled={isProcessing || autoCaptureCoundtown !== null || (!captureReady && !allowManualCapture)}
+              onClick={handleCapture}
+              disabled={isProcessing}
             >
               {isProcessing ? (
                 <div style={styles.processingSpinner} />
@@ -344,11 +176,9 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
               )}
             </button>
 
-            {!autoCaptureCoundtown && !isProcessing && (
+            {!isProcessing && (
               <p style={styles.manualCaptureHint}>
-                {captureReady ? 'Toca para capturar ahora' :
-                 allowManualCapture ? 'Captura manual disponible' :
-                 'Posiciona el recibo correctamente'}
+                Toca para capturar foto
               </p>
             )}
           </div>
@@ -485,16 +315,6 @@ const styles = {
     alignItems: 'center',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-  },
-  captureButtonReady: {
-    borderColor: '#10B981',
-    backgroundColor: 'rgba(16, 185, 129, 0.3)',
-    transform: 'scale(1.1)',
-  },
-  captureButtonManual: {
-    borderColor: '#F59E0B',
-    backgroundColor: 'rgba(245, 158, 11, 0.3)',
-    transform: 'scale(1.05)',
   },
   captureButtonDisabled: {
     opacity: 0.5,
