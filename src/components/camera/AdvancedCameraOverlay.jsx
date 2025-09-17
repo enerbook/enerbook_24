@@ -7,9 +7,9 @@ export default function AdvancedCameraOverlay({
 
   const getInstructionText = () => {
     if (currentStep === 'frontal') {
-      return '📄 Coloca el recibo FRONTAL - Alinea el logo CFE en el cuadro verde';
+      return '📄 Encuadra TODO el recibo FRONTAL - Usa el logo CFE como guía de alineación';
     } else {
-      return '📊 Coloca el recibo POSTERIOR - Centra la tabla de consumo';
+      return '📊 Encuadra TODO el recibo POSTERIOR - Usa la tabla como guía de centrado';
     }
   };
 
@@ -30,7 +30,7 @@ export default function AdvancedCameraOverlay({
         {/* Etiqueta del marco principal */}
         <div style={styles.receiptLabel}>
           <span style={styles.receiptLabelText}>
-            RECIBO CFE {currentStep.toUpperCase()}
+            TODO EL RECIBO AQUÍ - {currentStep.toUpperCase()}
           </span>
         </div>
       </div>
@@ -111,38 +111,38 @@ const styles = {
   // Esquinas del marco
   corner: {
     position: 'absolute',
-    width: '60px',
-    height: '60px',
+    width: '80px',
+    height: '80px',
     borderStyle: 'solid',
-    borderWidth: '4px',
+    borderWidth: '6px',
     borderColor: 'transparent',
   },
   cornerTopLeft: {
     top: 0,
     left: 0,
-    borderTopWidth: '4px',
-    borderLeftWidth: '4px',
+    borderTopWidth: '6px',
+    borderLeftWidth: '6px',
     borderTopLeftRadius: '15px',
   },
   cornerTopRight: {
     top: 0,
     right: 0,
-    borderTopWidth: '4px',
-    borderRightWidth: '4px',
+    borderTopWidth: '6px',
+    borderRightWidth: '6px',
     borderTopRightRadius: '15px',
   },
   cornerBottomLeft: {
     bottom: 0,
     left: 0,
-    borderBottomWidth: '4px',
-    borderLeftWidth: '4px',
+    borderBottomWidth: '6px',
+    borderLeftWidth: '6px',
     borderBottomLeftRadius: '15px',
   },
   cornerBottomRight: {
     bottom: 0,
     right: 0,
-    borderBottomWidth: '4px',
-    borderRightWidth: '4px',
+    borderBottomWidth: '6px',
+    borderRightWidth: '6px',
     borderBottomRightRadius: '15px',
   },
 
@@ -159,9 +159,10 @@ const styles = {
   },
   receiptLabelText: {
     color: 'white',
-    fontSize: '16px',
+    fontSize: '14px',
     fontWeight: 'bold',
     textAlign: 'center',
+    textTransform: 'uppercase',
   },
 
   // Cuadro específico para logo CFE (frontal)
@@ -178,25 +179,27 @@ const styles = {
     position: 'relative',
     width: '100%',
     height: '100%',
-    borderWidth: '3px',
+    borderWidth: '2px',
     borderStyle: 'dashed',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderRadius: '8px',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    opacity: 0.7,
   },
   logoLabel: {
     position: 'absolute',
-    top: '-30px',
+    top: '-25px',
     left: '50%',
     transform: 'translateX(-50%)',
-    backgroundColor: 'rgba(16, 185, 129, 0.95)',
-    padding: '6px 16px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+    padding: '4px 12px',
+    borderRadius: '8px',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+    opacity: 0.9,
   },
   logoLabelText: {
     color: 'white',
-    fontSize: '12px',
-    fontWeight: 'bold',
+    fontSize: '10px',
+    fontWeight: '600',
     textAlign: 'center',
   },
 
@@ -214,25 +217,27 @@ const styles = {
     position: 'relative',
     width: '100%',
     height: '100%',
-    borderWidth: '3px',
+    borderWidth: '2px',
     borderStyle: 'dashed',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderRadius: '8px',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    opacity: 0.7,
   },
   tableLabel: {
     position: 'absolute',
-    top: '-30px',
+    top: '-25px',
     left: '50%',
     transform: 'translateX(-50%)',
-    backgroundColor: 'rgba(16, 185, 129, 0.95)',
-    padding: '6px 16px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+    padding: '4px 12px',
+    borderRadius: '8px',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+    opacity: 0.9,
   },
   tableLabelText: {
     color: 'white',
-    fontSize: '12px',
-    fontWeight: 'bold',
+    fontSize: '10px',
+    fontWeight: '600',
     textAlign: 'center',
   },
 
