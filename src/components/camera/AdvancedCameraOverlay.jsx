@@ -7,9 +7,9 @@ export default function AdvancedCameraOverlay({
 
   const getInstructionText = () => {
     if (currentStep === 'frontal') {
-      return '📄 Encuadra TODO el recibo FRONTAL - Usa el logo CFE como guía de alineación';
+      return '📄 Todo el recibo en el marco\n🎯 Logo CFE arriba izquierda';
     } else {
-      return '📊 Encuadra TODO el recibo POSTERIOR - Usa la tabla como guía de centrado';
+      return '📊 Todo el recibo en el marco\n📋 Tabla al centro';
     }
   };
 
@@ -149,17 +149,17 @@ const styles = {
   // Etiqueta del marco principal
   receiptLabel: {
     position: 'absolute',
-    top: '-40px',
+    top: '-30px',
     left: '50%',
     transform: 'translateX(-50%)',
     backgroundColor: 'rgba(16, 185, 129, 0.95)',
-    padding: '10px 24px',
-    borderRadius: '25px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    padding: '6px 16px',
+    borderRadius: '15px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
   },
   receiptLabelText: {
     color: 'white',
-    fontSize: '14px',
+    fontSize: '12px',
     fontWeight: 'bold',
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -168,10 +168,10 @@ const styles = {
   // Cuadro específico para logo CFE (frontal)
   logoGuide: {
     position: 'absolute',
-    top: '35%',
+    top: '20%',
     left: '15%',
-    width: '35%',
-    height: '18%',
+    width: '30%',
+    height: '15%',
     pointerEvents: 'none',
     zIndex: 22,
   },
@@ -206,10 +206,10 @@ const styles = {
   // Cuadro específico para tabla de consumo (posterior)
   tableGuide: {
     position: 'absolute',
-    top: '40%',
+    top: '50%',
     left: '15%',
     width: '70%',
-    height: '25%',
+    height: '20%',
     pointerEvents: 'none',
     zIndex: 22,
   },
@@ -259,23 +259,25 @@ const styles = {
   // Instrucciones
   instructionsContainer: {
     position: 'absolute',
-    top: '40px',
-    left: '50%',
-    transform: 'translateX(-50%)',
+    top: '20px',
+    right: '15px',
+    maxWidth: '280px',
     zIndex: 25,
   },
   instructionBadge: {
-    padding: '12px 24px',
-    borderRadius: '25px',
+    padding: '8px 16px',
+    borderRadius: '15px',
     backgroundColor: 'rgba(16, 185, 129, 0.95)',
     backdropFilter: 'blur(10px)',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
   },
   instructionText: {
-    fontSize: '16px',
+    fontSize: '12px',
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'right',
     margin: 0,
     color: 'white',
+    lineHeight: '1.4',
+    whiteSpace: 'pre-line',
   },
 };
