@@ -115,23 +115,23 @@ export function useAdvancedReceiptScanner(currentStep = 'frontal') {
     const blackRatio = (totalBlackPixels / totalPixels) * 100;
     const avgBrightness = totalBrightness / totalPixels / 255;
 
-    // Umbrales relajados para FRONTAL
-    const hasLogoGreen = zoneAnalysis.header.green > 0.8;      // Más permisivo
-    const hasAppGreen = zoneAnalysis.appSection.green > 2;     // Más permisivo
-    const hasBillingGreen = zoneAnalysis.billingTable.green > 1; // Más permisivo
-    const hasWhiteBackground = whiteRatio > 20;                // Más permisivo
-    const hasTextContent = blackRatio > 2;                     // Más permisivo
-    const goodLighting = avgBrightness > 0.25 && avgBrightness < 0.9; // Más permisivo
+    // Umbrales más estrictos para FRONTAL - recibo completo centrado
+    const hasLogoGreen = zoneAnalysis.header.green > 1.2;      // Más estricto
+    const hasAppGreen = zoneAnalysis.appSection.green > 3.5;   // Más estricto
+    const hasBillingGreen = zoneAnalysis.billingTable.green > 1.8; // Más estricto
+    const hasWhiteBackground = whiteRatio > 30;                // Más estricto
+    const hasTextContent = blackRatio > 3;                     // Más estricto
+    const goodLighting = avgBrightness > 0.3 && avgBrightness < 0.85; // Más estricto
 
     // Condiciones con feedback
     const conditions = {
-      hasLogoGreen: { passed: hasLogoGreen, value: zoneAnalysis.header.green, required: '>0.8%' },
-      hasAppGreen: { passed: hasAppGreen, value: zoneAnalysis.appSection.green, required: '>2%' },
-      hasBillingGreen: { passed: hasBillingGreen, value: zoneAnalysis.billingTable.green, required: '>1%' },
-      hasWhiteBackground: { passed: hasWhiteBackground, value: whiteRatio, required: '>20%' },
-      hasTextContent: { passed: hasTextContent, value: blackRatio, required: '>2%' },
-      goodLighting: { passed: goodLighting, value: avgBrightness, required: '0.25-0.9' },
-      greenRange: { passed: greenRatio > 1.5 && greenRatio < 25, value: greenRatio, required: '1.5-25%' }
+      hasLogoGreen: { passed: hasLogoGreen, value: zoneAnalysis.header.green, required: '>1.2%' },
+      hasAppGreen: { passed: hasAppGreen, value: zoneAnalysis.appSection.green, required: '>3.5%' },
+      hasBillingGreen: { passed: hasBillingGreen, value: zoneAnalysis.billingTable.green, required: '>1.8%' },
+      hasWhiteBackground: { passed: hasWhiteBackground, value: whiteRatio, required: '>30%' },
+      hasTextContent: { passed: hasTextContent, value: blackRatio, required: '>3%' },
+      goodLighting: { passed: goodLighting, value: avgBrightness, required: '0.3-0.85' },
+      greenRange: { passed: greenRatio > 2.5 && greenRatio < 20, value: greenRatio, required: '2.5-20%' }
     };
 
     const isFrontalValid =
@@ -141,7 +141,7 @@ export function useAdvancedReceiptScanner(currentStep = 'frontal') {
       hasWhiteBackground &&
       hasTextContent &&
       goodLighting &&
-      greenRatio > 1.5 && greenRatio < 25;
+      greenRatio > 2.5 && greenRatio < 20;
 
     // Calcular confianza de detección
     const frontalConfidence = [

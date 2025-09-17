@@ -161,12 +161,24 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
       setCapturedPhotos(newPhotos);
 
       if (currentStep === 'frontal') {
-        setCurrentStep('posterior');
-        setIsProcessing(false);
+        // Pausar procesamiento durante transición
+        setIsProcessing(true);
+
+        // Limpiar timers y counters
+        if (autoCaptureTimeout.current) {
+          clearInterval(autoCaptureTimeout.current);
+          autoCaptureTimeout.current = null;
+        }
+        setAutoCaptureCoundtown(null);
         stableFrameCount.current = 0;
+
+        // Cambiar step y reanudar procesamiento
+        setCurrentStep('posterior');
+
         setTimeout(() => {
+          setIsProcessing(false); // Reanudar procesamiento
           alert('¡Excelente! Parte frontal capturada. Ahora muestra la parte posterior del recibo.');
-        }, 500);
+        }, 300);
       } else {
         onCapture(newPhotos);
         handleClose();
@@ -196,12 +208,24 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
       setCapturedPhotos(newPhotos);
 
       if (currentStep === 'frontal') {
-        setCurrentStep('posterior');
-        setIsProcessing(false);
+        // Pausar procesamiento durante transición
+        setIsProcessing(true);
+
+        // Limpiar timers y counters
+        if (autoCaptureTimeout.current) {
+          clearInterval(autoCaptureTimeout.current);
+          autoCaptureTimeout.current = null;
+        }
+        setAutoCaptureCoundtown(null);
         stableFrameCount.current = 0;
+
+        // Cambiar step y reanudar procesamiento
+        setCurrentStep('posterior');
+
         setTimeout(() => {
+          setIsProcessing(false); // Reanudar procesamiento
           alert('¡Bien! Ahora captura la parte posterior del recibo.');
-        }, 500);
+        }, 300);
       } else {
         onCapture(newPhotos);
         handleClose();
@@ -226,6 +250,17 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
       stableFrameCount.current = 0;
     }
   }, [isOpen]);
+
+  // --- CLEANUP AL CAMBIAR STEP ---
+  useEffect(() => {
+    // Limpiar timers cuando cambia el step
+    if (autoCaptureTimeout.current) {
+      clearInterval(autoCaptureTimeout.current);
+      autoCaptureTimeout.current = null;
+    }
+    setAutoCaptureCoundtown(null);
+    stableFrameCount.current = 0;
+  }, [currentStep]);
 
   // --- RENDERIZADO ---
   if (!isOpen) return null;
