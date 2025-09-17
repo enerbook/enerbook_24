@@ -9,7 +9,7 @@ export default function AdvancedCameraOverlay({
     if (currentStep === 'frontal') {
       return 'Todo el recibo en el marco\nLogo CFE arriba izquierda';
     } else {
-      return 'Todo el recibo en el marco\nTabla arriba izquierda';
+      return 'Solo la tabla de consumo\nCentra los números claramente';
     }
   };
 
@@ -45,36 +45,12 @@ export default function AdvancedCameraOverlay({
         <div style={styles.tableGuide}>
           <div style={{ ...styles.tableFrame, borderColor: '#090e1a' }}>
             <div style={styles.tableLabel}>
-              <span style={styles.tableLabelText}>TABLA DE CONSUMO</span>
+              <span style={styles.tableLabelText}>TABLA DE CONSUMO - SOLO ESTA ÁREA</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Área oscura fuera del marco principal */}
-      <div style={styles.outerDarkness}>
-        <svg style={styles.svg}>
-          <defs>
-            <mask id="holeMask">
-              <rect width="100%" height="100%" fill="white" />
-              <rect
-                x="10%"
-                y="15%"
-                width="80%"
-                height="70%"
-                rx="15"
-                fill="black"
-              />
-            </mask>
-          </defs>
-          <rect
-            width="100%"
-            height="100%"
-            fill="rgba(0, 0, 0, 0.6)"
-            mask="url(#holeMask)"
-          />
-        </svg>
-      </div>
 
       {/* Instrucciones superiores */}
       <div style={styles.instructionsContainer}>
@@ -183,10 +159,10 @@ const styles = {
   // Cuadro específico para tabla de consumo (posterior)
   tableGuide: {
     position: 'absolute',
-    top: '20%',
-    left: '15%',
-    width: '50%',
-    height: '15%',
+    top: '35%',
+    left: '5%',
+    width: '90%',
+    height: '30%',
     pointerEvents: 'none',
     zIndex: 22,
   },
@@ -207,10 +183,11 @@ const styles = {
     left: '50%',
     transform: 'translateX(-50%)',
     backgroundColor: 'rgba(9, 14, 26, 0.9)',
-    padding: '4px 12px',
+    padding: '4px 16px',
     borderRadius: '8px',
     boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
     opacity: 0.9,
+    whiteSpace: 'nowrap',
   },
   tableLabelText: {
     color: 'white',
@@ -219,20 +196,6 @@ const styles = {
     textAlign: 'center',
   },
 
-  // Área oscura fuera del marco
-  outerDarkness: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    pointerEvents: 'none',
-    zIndex: 15,
-  },
-  svg: {
-    width: '100%',
-    height: '100%',
-  },
 
   // Instrucciones
   instructionsContainer: {
