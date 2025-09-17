@@ -30,8 +30,15 @@ export function useAdvancedReceiptScanner(currentStep = 'frontal') {
     const width = imageData.width;
     const height = imageData.height;
 
-    // Zonas específicas para página FRONTAL
+    // Zonas específicas para página FRONTAL - enfoque en tabla información personal
     const zones = {
+      // Tabla de información personal (superior izquierda, debajo del logo CFE)
+      personalInfoTable: {
+        x: Math.floor(width * 0.05),
+        y: Math.floor(height * 0.15),
+        width: Math.floor(width * 0.45),
+        height: Math.floor(height * 0.25)
+      },
       header: { y: 0, height: Math.floor(height * 0.25) },
       appSection: { y: Math.floor(height * 0.25), height: Math.floor(height * 0.35) },
       billingTable: { y: Math.floor(height * 0.6), height: Math.floor(height * 0.4) }
@@ -51,9 +58,16 @@ export function useAdvancedReceiptScanner(currentStep = 'frontal') {
       let zoneWhite = 0;
       let zoneBlack = 0;
       let zonePixels = 0;
+      let zoneTableStructure = 0; // Para tabla de información personal
 
-      for (let y = zone.y; y < zone.y + zone.height && y < height; y += 2) {
-        for (let x = 0; x < width; x += 2) {
+      // Manejar zona con coordenadas específicas
+      const startX = zone.x || 0;
+      const startY = zone.y || 0;
+      const zoneWidth = zone.width || width;
+      const zoneHeight = zone.height || zone.height;
+
+      for (let y = startY; y < startY + zoneHeight && y < height; y += 2) {
+        for (let x = startX; x < startX + zoneWidth && x < width; x += 2) {
           const idx = (y * width + x) * 4;
           const r = data[idx];
           const g = data[idx + 1];
@@ -100,13 +114,33 @@ export function useAdvancedReceiptScanner(currentStep = 'frontal') {
             totalGreenPixels++;
             zoneGreen++;
           }
+
+          // Detectar estructura de tabla de información personal
+          if (zoneName === 'personalInfoTable') {
+            const relativeX = x - startX;
+            const relativeY = y - startY;
+
+            const isPersonalInfoStructure = (
+              // Texto estructurado (nombre, dirección, etc.)
+              (r < 90 && g < 90 && b < 90) ||
+              // Líneas de separación
+              (pixelBrightness < 85 && (relativeY % 15 < 2 || relativeX % 120 < 3)) ||
+              // Campos de información
+              (pixelBrightness < 100 && rgbDiff < 20)
+            );
+
+            if (isPersonalInfoStructure) {
+              zoneTableStructure++;
+            }
+          }
         }
       }
 
       zoneAnalysis[zoneName] = {
         green: (zoneGreen / zonePixels) * 100,
         white: (zoneWhite / zonePixels) * 100,
-        black: (zoneBlack / zonePixels) * 100
+        black: (zoneBlack / zonePixels) * 100,
+        tableStructure: zoneName === 'personalInfoTable' ? (zoneTableStructure / zonePixels) * 100 : 0
       };
     });
 
@@ -115,42 +149,54 @@ export function useAdvancedReceiptScanner(currentStep = 'frontal') {
     const blackRatio = (totalBlackPixels / totalPixels) * 100;
     const avgBrightness = totalBrightness / totalPixels / 255;
 
-    // Umbrales más estrictos para FRONTAL - recibo completo centrado
-    const hasLogoGreen = zoneAnalysis.header.green > 1.2;      // Más estricto
-    const hasAppGreen = zoneAnalysis.appSection.green > 3.5;   // Más estricto
-    const hasBillingGreen = zoneAnalysis.billingTable.green > 1.8; // Más estricto
-    const hasWhiteBackground = whiteRatio > 30;                // Más estricto
-    const hasTextContent = blackRatio > 3;                     // Más estricto
-    const goodLighting = avgBrightness > 0.3 && avgBrightness < 0.85; // Más estricto
+    // Umbrales enfocados en tabla de información personal
+    const hasPersonalInfoTable = zoneAnalysis.personalInfoTable.tableStructure > 2; // Estructura de tabla detectada
+    const personalTableHasContent = zoneAnalysis.personalInfoTable.black > 5;        // Contenido visible
+    const personalTableWellFramed = zoneAnalysis.personalInfoTable.white > 25;       // Bien enmarcada
+    const hasLogoGreen = zoneAnalysis.header.green > 0.8;      // Logo CFE presente
+    const hasAppGreen = zoneAnalysis.appSection.green > 2;     // Sección app visible
+    const hasBillingGreen = zoneAnalysis.billingTable.green > 1.5; // Tabla facturación visible
+    const hasWhiteBackground = whiteRatio > 25;                // Fondo blanco
+    const hasTextContent = blackRatio > 2.5;                   // Texto visible
+    const goodLighting = avgBrightness > 0.25 && avgBrightness < 0.9; // Buena iluminación
 
     // Condiciones con feedback
     const conditions = {
-      hasLogoGreen: { passed: hasLogoGreen, value: zoneAnalysis.header.green, required: '>1.2%' },
-      hasAppGreen: { passed: hasAppGreen, value: zoneAnalysis.appSection.green, required: '>3.5%' },
-      hasBillingGreen: { passed: hasBillingGreen, value: zoneAnalysis.billingTable.green, required: '>1.8%' },
-      hasWhiteBackground: { passed: hasWhiteBackground, value: whiteRatio, required: '>30%' },
-      hasTextContent: { passed: hasTextContent, value: blackRatio, required: '>3%' },
-      goodLighting: { passed: goodLighting, value: avgBrightness, required: '0.3-0.85' },
-      greenRange: { passed: greenRatio > 2.5 && greenRatio < 20, value: greenRatio, required: '2.5-20%' }
+      hasPersonalInfoTable: { passed: hasPersonalInfoTable, value: zoneAnalysis.personalInfoTable.tableStructure, required: '>2%' },
+      personalTableHasContent: { passed: personalTableHasContent, value: zoneAnalysis.personalInfoTable.black, required: '>5%' },
+      personalTableWellFramed: { passed: personalTableWellFramed, value: zoneAnalysis.personalInfoTable.white, required: '>25%' },
+      hasLogoGreen: { passed: hasLogoGreen, value: zoneAnalysis.header.green, required: '>0.8%' },
+      hasAppGreen: { passed: hasAppGreen, value: zoneAnalysis.appSection.green, required: '>2%' },
+      hasBillingGreen: { passed: hasBillingGreen, value: zoneAnalysis.billingTable.green, required: '>1.5%' },
+      hasWhiteBackground: { passed: hasWhiteBackground, value: whiteRatio, required: '>25%' },
+      hasTextContent: { passed: hasTextContent, value: blackRatio, required: '>2.5%' },
+      goodLighting: { passed: goodLighting, value: avgBrightness, required: '0.25-0.9' },
+      greenRange: { passed: greenRatio > 1.8 && greenRatio < 18, value: greenRatio, required: '1.8-18%' }
     };
 
     const isFrontalValid =
-      hasLogoGreen &&
-      hasAppGreen &&
-      hasBillingGreen &&
-      hasWhiteBackground &&
-      hasTextContent &&
-      goodLighting &&
-      greenRatio > 2.5 && greenRatio < 20;
+      hasPersonalInfoTable &&     // Tabla de información personal detectada
+      personalTableHasContent &&  // Tabla tiene contenido
+      personalTableWellFramed &&  // Tabla bien enmarcada
+      hasLogoGreen &&             // Logo CFE presente
+      hasAppGreen &&              // Sección app visible
+      hasBillingGreen &&          // Tabla facturación visible
+      hasWhiteBackground &&       // Fondo blanco
+      hasTextContent &&           // Texto visible
+      goodLighting &&             // Buena iluminación
+      greenRatio > 1.8 && greenRatio < 18;
 
-    // Calcular confianza de detección
+    // Calcular confianza de detección con énfasis en tabla personal
     const frontalConfidence = [
-      hasLogoGreen ? 15 : 0,
-      hasAppGreen ? 25 : 0,      // Mayor peso para app section
-      hasBillingGreen ? 15 : 0,
-      hasWhiteBackground ? 20 : 0,
-      hasTextContent ? 10 : 0,
-      goodLighting ? 15 : 0
+      hasPersonalInfoTable ? 30 : 0,     // Mayor peso para tabla personal
+      personalTableHasContent ? 25 : 0,  // Contenido de tabla personal
+      personalTableWellFramed ? 20 : 0,  // Tabla bien enmarcada
+      hasLogoGreen ? 15 : 0,             // Logo CFE
+      hasAppGreen ? 15 : 0,              // Sección app
+      hasBillingGreen ? 10 : 0,          // Tabla facturación
+      hasWhiteBackground ? 10 : 0,       // Fondo blanco
+      hasTextContent ? 5 : 0,            // Texto
+      goodLighting ? 10 : 0              // Iluminación
     ].reduce((a, b) => a + b, 0);
 
     return {

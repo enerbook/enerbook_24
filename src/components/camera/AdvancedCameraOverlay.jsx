@@ -252,7 +252,10 @@ function getConditionDisplayName(conditionName) {
     isNotFrontalPattern: 'No es frontal',
     hasConsumptionTable: 'Tabla consumo',
     tableHasContent: 'Contenido tabla',
-    tableWellPositioned: 'Tabla centrada'
+    tableWellPositioned: 'Tabla centrada',
+    hasPersonalInfoTable: 'Tabla personal',
+    personalTableHasContent: 'Contenido personal',
+    personalTableWellFramed: 'Tabla personal centrada'
   };
   return displayNames[conditionName] || conditionName;
 }

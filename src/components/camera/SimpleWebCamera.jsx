@@ -88,10 +88,17 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
   // --- PROCESAMIENTO DE VIDEO ---
   useEffect(() => {
     const processVideo = () => {
-      if (videoRef.current && !isProcessing) {
-        processFrame(videoRef.current);
+      if (videoRef.current && !isProcessing && isOpen && isReady) {
+        try {
+          processFrame(videoRef.current);
+        } catch (error) {
+          console.error('Error in processFrame:', error);
+        }
       }
-      animationFrameId.current = requestAnimationFrame(processVideo);
+
+      if (!isProcessing && isOpen && isReady) {
+        animationFrameId.current = requestAnimationFrame(processVideo);
+      }
     };
 
     if (isOpen && isReady && !isProcessing) {
@@ -101,9 +108,10 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
     return () => {
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
+        animationFrameId.current = null;
       }
     };
-  }, [isOpen, isReady, processFrame, isProcessing]);
+  }, [isOpen, isReady, processFrame, isProcessing, currentStep]);
 
   // --- AUTO-CAPTURA ---
   useEffect(() => {
