@@ -11,6 +11,7 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
   const [capturedPhotos, setCapturedPhotos] = useState([]);
   const [currentStep, setCurrentStep] = useState('frontal');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const videoRef = useRef(null);
 
@@ -86,16 +87,15 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
       if (currentStep === 'frontal') {
         setCurrentStep('posterior');
         setIsProcessing(false);
-        setTimeout(() => {
-          alert('¡Excelente! Parte frontal capturada. Ahora muestra la parte posterior del recibo.');
-        }, 300);
+        // Mostrar mensaje de éxito brevemente
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 2000);
       } else {
         onCapture(newPhotos);
         handleClose();
       }
     } catch (error) {
       console.error('Error al capturar:', error);
-      alert('Error al capturar. Intenta de nuevo.');
       setIsProcessing(false);
     }
   }, [videoRef, currentStep, capturedPhotos, onCapture, capturePhoto, isProcessing]);
@@ -110,6 +110,7 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
     if (!isOpen) {
       setCapturedPhotos([]);
       setCurrentStep('frontal');
+      setShowSuccessMessage(false);
     }
   }, [isOpen]);
 
@@ -176,9 +177,15 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
               )}
             </button>
 
-            {!isProcessing && (
+            {!isProcessing && !showSuccessMessage && (
               <p style={styles.manualCaptureHint}>
                 Toca para capturar foto
+              </p>
+            )}
+
+            {showSuccessMessage && (
+              <p style={styles.successMessage}>
+                ✅ ¡Frontal capturada! Ahora muestra la parte posterior
               </p>
             )}
           </div>
@@ -340,5 +347,13 @@ const styles = {
     fontWeight: '500',
     textShadow: '0 1px 3px rgba(0,0,0,0.5)',
     margin: 0,
+  },
+  successMessage: {
+    color: '#10B981',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+    margin: 0,
+    textAlign: 'center',
   },
 };

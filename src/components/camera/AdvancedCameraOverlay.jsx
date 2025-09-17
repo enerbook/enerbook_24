@@ -167,7 +167,7 @@ const styles = {
   // Cuadro específico para logo CFE (frontal)
   logoGuide: {
     position: 'absolute',
-    top: '25%',
+    top: '35%',
     left: '15%',
     width: '35%',
     height: '18%',
@@ -203,7 +203,7 @@ const styles = {
   // Cuadro específico para tabla de consumo (posterior)
   tableGuide: {
     position: 'absolute',
-    top: '30%',
+    top: '40%',
     left: '15%',
     width: '70%',
     height: '25%',
