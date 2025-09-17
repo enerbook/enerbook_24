@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { Platform } from 'react-native';
 
 // Importación condicional según la plataforma
-const CameraComponent = Platform.OS === 'web' 
-  ? lazy(() => import('../camera/WebCamera'))
+const CameraComponent = Platform.OS === 'web'
+  ? lazy(() => import('../camera/SimpleWebCamera'))
   : lazy(() => import('../camera/CameraCapture'));
 
 const Spinner = () => (

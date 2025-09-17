@@ -1,4 +1,5 @@
 import "../src/styles/global.css";
+import "../src/styles/camera-animations.css";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
@@ -50,6 +51,26 @@ const RootLayoutNav = () => {
 };
 
 export default function RootLayout() {
+  useEffect(() => {
+    const scriptId = 'opencv-script';
+    let script = document.getElementById(scriptId);
+
+    // Cargar el script solo si no ha sido cargado antes para evitar duplicados
+    if (!script) {
+      script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://docs.opencv.org/4.9.0/opencv.js';
+      script.async = true;
+      script.onload = () => {
+        console.log('OpenCV.js script loaded successfully.');
+      };
+      script.onerror = () => {
+        console.error('Error: Failed to load OpenCV.js script.');
+      };
+      document.body.appendChild(script);
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <SafeAreaProvider>
