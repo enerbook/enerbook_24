@@ -80,18 +80,20 @@ export const AuthProvider = ({ children }) => {
             total_pagar_mxn: "1245.80"
           },
           consumo_kwh_historico: [
-            { periodo: "ENE25", kwh: 385 },
-            { periodo: "DIC24", kwh: 420 },
-            { periodo: "NOV24", kwh: 358 },
-            { periodo: "OCT24", kwh: 394 },
-            { periodo: "SEP24", kwh: 405 }
+            { periodo: "Ene25", kwh: 385 },
+            { periodo: "Dic24", kwh: 420 },
+            { periodo: "Nov24", kwh: 358 },
+            { periodo: "Oct24", kwh: 394 },
+            { periodo: "Sep24", kwh: 405 }
           ],
           resumen_energetico: {
             consumo_max: 420
           },
           sizing_results: {
             inputs: {
-              irr_avg_day: 5.89
+              irr_avg_day: 5.89,
+              irr_min: 4.2,
+              irr_max: 7.1
             },
             results: {
               kWp_needed: 3.49,

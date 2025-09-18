@@ -1,5 +1,5 @@
 {
-  "name": "ENERBOOK OCR  LEADS V1.0",
+  "name": "ENERBOOK OCR 24",
   "nodes": [
     {
       "parameters": {
@@ -20,10 +20,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3140,
-        180
+        -1580,
+        80
       ],
-      "id": "62d7f4e8-edd1-4d5a-83ca-5bbe18941c69",
+      "id": "fddd4b10-0b42-4d53-9c4a-c46009f919c1",
       "name": "HTTP Request1",
       "credentials": {
         "httpHeaderAuth": {
@@ -50,10 +50,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3360,
-        180
+        -1360,
+        80
       ],
-      "id": "ac1eeb4c-c265-4e72-953e-44a46b7f1c21",
+      "id": "bd7fd4e6-2c18-487e-98e8-5a55a3a323fd",
       "name": "HTTP Request2",
       "credentials": {
         "httpHeaderAuth": {
@@ -92,10 +92,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2920,
-        180
+        -1800,
+        80
       ],
-      "id": "e704b4d3-af9e-437b-9e1e-4e5d9ed7fe40",
+      "id": "da262194-8f92-4fd2-a040-803405b68baf",
       "name": "Posterior",
       "credentials": {
         "httpHeaderAuth": {
@@ -110,7 +110,7 @@
     },
     {
       "parameters": {
-        "text": "={\n  \"prompt\": {\n    \"role\": \"Extractor de Datos\",\n    \"description\": \"Extrae los datos de consumo mensual en kWh desde una tabla de texto plano como la que aparece en una factura CFE. Busca tablas con columnas de período, demanda kW, consumo kWh, factor potencia, etc.\",\n    \"input_data\": \"{{ $json.pages[0].markdown }}\",\n    \"rules\": [\n      {\n        \"rule\": \"Busca tablas que contengan columnas como 'Periodo', 'Consumo total kWh', 'Demanda kW', etc.\"\n      },\n      {\n        \"rule\": \"Extrae SOLO el período (mes y año) y el consumo en kWh de cada fila.\"\n      },\n      {\n        \"rule\": \"El período debe estar en formato MES + año de 2 dígitos (ej: JUN24, FEB25, DIC24).\"\n      },\n      {\n        \"rule\": \"Si el mes aparece como 3 letras (JUN, FEB, DIC), manténlo así. Si aparece completo, abrevia a 3 letras en español.\"\n      },\n      {\n        \"rule\": \"El consumo debe ser solo el número entero de kWh, sin comas ni símbolos.\"\n      },\n      {\n        \"rule\": \"Si hay filas duplicadas del mismo mes con diferentes consumos, mantén ambas por separado.\"\n      },\n      {\n        \"rule\": \"Ignora encabezados, totales, promedios y cualquier dato que no sea un período específico.\"\n      },\n      {\n        \"rule\": \"Si el consumo contiene comas (ej: 42,842), elimina las comas (42842).\"\n      },\n      {\n        \"rule\": \"Ordena los datos cronológicamente del más antiguo al más reciente.\"\n      },\n      {\n        \"rule\": \"NO inventes valores. Usa SOLO los que están claramente indicados en la tabla.\"\n      },\n      {\n        \"rule\": \"El resultado debe ser ÚNICAMENTE JSON válido, sin texto adicional, explicaciones ni comentarios.\"\n      }\n    ],\n    \"output_example\": {\n      \"consumo_historico\": [\n        {\"periodo\": \"JUN24\", \"kwh\": 42842},\n        {\"periodo\": \"JUL24\", \"kwh\": 56355},\n        {\"periodo\": \"AGO24\", \"kwh\": 60341}\n      ],\n      \"consumo_max\": 62988\n    },\n    \"response_format\": \"JSON\"\n  }\n}",
+        "text": "={\n  \"prompt\": {\n    \"role\": \"Extractor de Datos\",\n    \"description\": \"Extrae los datos de consumo mensual en kWh desde una tabla de texto plano como la que aparece en una factura CFE. Busca tablas con columnas de período, demanda kW, consumo kWh, factor potencia, etc.\",\n    \"input_data\": \"{{ $json.pages[0].markdown }}\",\n    \"rules\": [\n      {\n        \"rule\": \"Busca tablas que contengan columnas como 'Periodo', 'Consumo total kWh', 'Demanda kW', etc.\"\n      },\n      {\n        \"rule\": \"Extrae SOLO el período (mes y año) y el consumo en kWh de cada fila.\"\n      },\n      {\n        \"rule\": \"El período debe estar en formato MES + año de 2 dígitos (ej: JUN24, FEB25, DIC24).\"\n      },\n      {\n        \"rule\": \"Si el mes aparece como 3 letras (JUN, FEB, DIC), manténlo así. Si aparece completo, abrevia a 3 letras en español.\"\n      },\n      {\n        \"rule\": \"El consumo debe ser solo el número entero de kWh, sin comas ni símbolos.\"\n      },\n      {\n        \"rule\": \"Si hay filas duplicadas del mismo mes con diferentes consumos, mantén ambas por separado.\"\n      },\n      {\n        \"rule\": \"Ignora encabezados, totales, promedios y cualquier dato que no sea un período específico.\"\n      },\n      {\n        \"rule\": \"Si el consumo contiene comas (ej: 42,842), elimina las comas (42842).\"\n      },\n      {\n        \"rule\": \"Ordena los datos cronológicamente del más antiguo al más reciente.\"\n      },\n      {\n        \"rule\": \"NO inventes valores. Usa SOLO los que están claramente indicados en la tabla.\"\n      },\n      {\n        \"rule\": \"El resultado debe ser ÚNICAMENTE JSON válido, sin texto adicional, explicaciones ni comentarios.\"\n      },\n\n    ],\n    \"output_example\": {\n      \"consumo_historico\": [\n        {\"periodo\": \"JUN24\", \"kwh\": 42842},\n        {\"periodo\": \"JUL24\", \"kwh\": 56355},\n        {\"periodo\": \"AGO24\", \"kwh\": 60341}\n      ],\n      \"consumo_max\": 62988\n    },\n    \"response_format\": \"JSON\"\n  }\n}",
         "schemaType": "fromJson",
         "jsonSchemaExample": "{\n  \"consumo_historico\": [{\n    \"periodo\": \"\",\n    \"kwh\": 0\n  }],\n  \"consumo_max\": 0\n}",
         "options": {}
@@ -118,10 +118,10 @@
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
       "position": [
-        3580,
-        180
+        -1140,
+        80
       ],
-      "id": "a6f26a3a-3218-4cb5-bbc7-8b6784e11669",
+      "id": "f89881b7-4261-4324-8509-d9afe513091a",
       "name": "datos_recibo_posterior_cfe"
     },
     {
@@ -132,10 +132,10 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        2260,
-        -140
+        -2460,
+        -240
       ],
-      "id": "57d25410-3de6-43f4-a255-3626c9bc1052"
+      "id": "7b818d38-b5ca-493f-ab99-ab00f015edd4"
     },
     {
       "parameters": {
@@ -146,17 +146,17 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        2480,
-        -140
+        -2240,
+        -240
       ],
-      "id": "2eeb9fd8-bf09-4888-9071-43020aacdba5",
+      "id": "9ac3595f-ac18-4c23-84a1-bd10a128817d",
       "name": "Query Cache",
       "alwaysOutputData": true,
       "executeOnce": false,
       "credentials": {
         "postgres": {
-          "id": "gDkuViTqq5Eo3arL",
-          "name": "Enerbook test"
+          "id": "LEVyYTq0EFqHRjVL",
+          "name": "enerbook_24"
         }
       },
       "notes": "0"
@@ -189,10 +189,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        2700,
-        -140
+        -2020,
+        -240
       ],
-      "id": "3870b9a3-1d21-4d4b-9d95-c9232e425566",
+      "id": "8df69487-8466-4082-bbe4-e25a07f32a07",
       "name": "Cache Exists?"
     },
     {
@@ -204,30 +204,30 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        3360,
-        -20
+        -1360,
+        -120
       ],
-      "id": "1db8f7c2-1f2c-4c93-953d-bf9c8bece569",
+      "id": "36834c2d-3599-4db3-ba8c-d626ee65c634",
       "name": "Save to Cache",
       "credentials": {
         "postgres": {
-          "id": "gDkuViTqq5Eo3arL",
-          "name": "Enerbook test"
+          "id": "LEVyYTq0EFqHRjVL",
+          "name": "enerbook_24"
         }
       }
     },
     {
       "parameters": {
-        "functionCode": "// Fusionar los datos de irradiación con la información de caché guardado\nconst irradiacionData = $node[\"Calculate Annual Irradiation1\"].json;\nconst cacheInfo = $json[0] || {};\n\n// Obtener temp_lead_id desde el nodo datos_recibo_posterior_cfe\nconst tempLeadId = $node[\"datos_recibo_posterior_cfe\"].json?.temp_lead_id || \n                  $node[\"datos_recibo_frontal_cfe1\"].json?.temp_lead_id || \n                  'unknown';\n\nreturn [{\n  json: {\n    ...irradiacionData,\n    cache_saved: true,\n    cache_id: cacheInfo.id,\n    hash_ubicacion: cacheInfo.hash_ubicacion,\n    temp_lead_id: tempLeadId\n  }\n}];"
+        "functionCode": "// Fusionar los datos de irradiación con la información de caché guardado\nconst irradiacionData = $node[\"Calculate Annual Irradiation1\"].json;\nconst cacheInfo = $json[0] || {};\n\n// Obtener temp_lead_id desde el nodo Code1 donde se genera originalmente\nlet tempLeadId = 'unknown';\n\ntry {\n  // Acceder directamente al nodo Code1 que genera el temp_lead_id\n  const code1Items = $node[\"Code1\"].json;\n  if (Array.isArray(code1Items)) {\n    tempLeadId = code1Items[0]?.temp_lead_id || 'unknown';\n  } else if (code1Items?.temp_lead_id) {\n    tempLeadId = code1Items.temp_lead_id;\n  }\n} catch (error) {\n  console.error('Error getting temp_lead_id:', error);\n  tempLeadId = 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);\n}\n\nreturn [{\n  json: {\n    ...irradiacionData,\n    cache_saved: true,\n    cache_id: cacheInfo.id,\n    hash_ubicacion: cacheInfo.hash_ubicacion,\n    temp_lead_id: tempLeadId\n  }\n}];"
       },
       "name": "Merge Cache Info",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        3660,
-        -20
+        -1060,
+        -120
       ],
-      "id": "5a4a858b-1a00-4352-8423-ea72088fb6d4"
+      "id": "33b3a76b-e23d-42b0-ad5f-c98b3361f6c2"
     },
     {
       "parameters": {
@@ -242,10 +242,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        2280,
-        680
+        -2440,
+        580
       ],
-      "id": "f6f2e3c4-32bf-43f3-81e1-61d97ef7943b",
+      "id": "fe8c64ac-7066-4a66-93f9-61b3116c204f",
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
@@ -273,10 +273,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1000,
-        -140
+        -3720,
+        -240
       ],
-      "id": "7b2b1ccb-09b8-4de0-abab-ed7716449fec",
+      "id": "87ff0ee8-7b6e-4980-80ba-9da8741053f2",
       "name": "HTTP Request",
       "credentials": {
         "httpHeaderAuth": {
@@ -303,10 +303,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1220,
-        -140
+        -3500,
+        -240
       ],
-      "id": "324656b0-8524-44a5-a508-8f6cdd915298",
+      "id": "651fadcc-55ea-4075-b5db-d911fe17feba",
       "name": "HTTP Request6",
       "credentials": {
         "httpHeaderAuth": {
@@ -346,10 +346,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
       "position": [
-        2040,
-        -140
+        -2680,
+        -240
       ],
-      "id": "4b008a27-0c97-4000-8666-ef2ddbf6d017"
+      "id": "59397d58-22db-4ba4-9178-d71a692a7861"
     },
     {
       "parameters": {
@@ -363,14 +363,16 @@
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
       "position": [
-        1440,
-        -140
+        -3280,
+        -240
       ],
-      "id": "b6eec943-529d-4fb7-a6fd-9cc2d9a24695",
+      "id": "6a65dd25-392e-4c19-b529-bcda4b898ddb",
       "name": "datos_recibo_frontal_cfe1"
     },
     {
       "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ \n  {\n    \"success\": true,\n    \"temp_lead_id\": $node[\"Save Temp Quote\"].json.temp_lead_id || \"unknown\",\n    \"message\": \"Análisis energético completado\",\n    \"redirect_url\": \"/dashboard?temp_lead_id=\" + ($node[\"Save Temp Quote\"].json.temp_lead_id || \"unknown\"),\n    \"data\": {\n      \"consumo_max\": $json.output?.consumo_max || null,\n      \"sistema_requerido\": $json.sizing?.results?.kWp_needed || null,\n      \"paneles\": $json.sizing?.results?.n_panels || null,\n      \"produccion_anual\": $json.sizing?.results?.yearly_prod || null\n    }\n  }\n}}",
         "options": {
           "responseCode": 200
         }
@@ -378,10 +380,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        4600,
-        -140
+        -120,
+        -240
       ],
-      "id": "38f9593b-d3dd-402e-b201-aaa5363658ff",
+      "id": "9fff31bc-8784-4b08-9181-f7236caa8213",
       "name": "Irradiación1"
     },
     {
@@ -405,10 +407,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
       "position": [
-        1820,
-        -140
+        -2900,
+        -240
       ],
-      "id": "f22f8cec-5bb7-4431-aa12-c8fd93f43f0e"
+      "id": "ad56dab7-a074-48aa-b94e-7d5abb8d4b88"
     },
     {
       "parameters": {
@@ -418,10 +420,10 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        3140,
-        -20
+        -1580,
+        -120
       ],
-      "id": "9f089f85-0cae-4ec3-985e-a86fc0173ea2"
+      "id": "2eabe043-b4c7-45a6-8242-f7b90ee3dc24"
     },
     {
       "parameters": {
@@ -449,10 +451,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        780,
-        -140
+        -3940,
+        -240
       ],
-      "id": "4e10f38c-224e-4d62-995c-f671f27fb4e8",
+      "id": "342ff155-7b93-4abc-b57a-b31b2e495e85",
       "name": "Frontal",
       "credentials": {
         "httpHeaderAuth": {
@@ -467,35 +469,35 @@
     },
     {
       "parameters": {
-        "jsCode": "/*****************************************************\n * PV Sizing (mínimo-insumos, días/mes fijo = 30.4)\n * Usa SOLO:\n *   • output.consumo_max ............ kWh/mes (pico consumo histórico CFE)\n *   • irradiacion_promedio_anual ..... kWh/m²/día (NASA promedio)\n *****************************************************/\n\n//–––– Parámetros ajustables ––––\nconst PR            = 0.80;\nconst oversizeFact  = 1.05;\nconst panelWp_def   = 550;\nconst DAYS_PER_MONTH = 30.4;\n\n//–––– Entrada ––––\nconst j = items[0].json || {};\n\n// $input.first().json.output.consumo_max\nconst kWhPeak = +j.output?.consumo_max || 0;\nif (!(kWhPeak > 0)) {\n  throw new Error('Falta output.consumo_max (>0).');\n}\nconst kWhYear = kWhPeak * 12;\n\n// $input.first().json.irradiacion_promedio_anual (CORREGIDO)\nconst irrDayAvg = +j.irradiacion_promedio_anual || NaN;\nif (!(irrDayAvg > 0)) {\n  throw new Error('Falta irradiacion_promedio_anual (>0).');\n}\n\n//–––– Rendimientos ––––\nconst specDayAvg = irrDayAvg * PR;\nconst specYieldMonth = specDayAvg * DAYS_PER_MONTH;\nconst specYieldAnnual = specDayAvg * 365;\n\n//–––– Potencia requerida ––––\nconst kWpByYear = kWhYear / specYieldAnnual;\nconst kWpByPeak = kWhPeak / specYieldMonth;\nconst kWpNeededRaw = Math.max(kWpByYear, kWpByPeak);\nconst kWpNeeded = +(kWpNeededRaw * oversizeFact).toFixed(2);\n\n//–––– Módulos ––––\nconst panelWp = +j.panel_wp > 0 ? +j.panel_wp : panelWp_def;\nconst nPanels = Math.ceil((kWpNeeded * 1000) / panelWp);\n\n//–––– Producción ––––\nconst yearlyProd = +(specYieldAnnual * kWpNeeded).toFixed(0);\n\n//–––– Salida ––––\nitems[0].json = {\n  ...j,\n  sizing: {\n    inputs: {\n      kWh_peak_month: kWhPeak,\n      kWh_year_assumed: kWhYear,\n      irr_avg_day: irrDayAvg,\n      days_per_month: DAYS_PER_MONTH,\n      PR,\n      oversize_fact: oversizeFact,\n      // Datos NASA disponibles\n      irr_min: +j.irradiacion_promedio_min || null,\n      irr_max: +j.irradiacion_promedio_max || null,\n      nasa_cache_id: j.id || null,\n      hash_ubicacion: j.hash_ubicacion || null\n    },\n    derived: {\n      spec_yield_avg_day: +specDayAvg.toFixed(2),\n      spec_yield_avg_month: +specYieldMonth.toFixed(2),\n      spec_yield_annual: +specYieldAnnual.toFixed(2),\n    },\n    results: {\n      kWp_needed: kWpNeeded,\n      panel_wp: panelWp,\n      n_panels: nPanels,\n      yearly_prod: yearlyProd,\n    },\n    method_notes:\n      \"Sizing basado en output.consumo_max (pico mensual) y irradiacion_promedio_anual (kWh/m²/día) de NASA; conversión con 30.4 d/mes fijo; anual = 365×promedio.\"\n  }\n};\n\nreturn items;"
+        "jsCode": "/*****************************************************\n * PV Sizing (mínimo-insumos, días/mes fijo = 30.4)\n * Usa SOLO:\n *   • output.consumo_max ............ kWh/mes (pico consumo histórico CFE)\n *   • irradiacion_promedio_anual ..... kWh/m²/día (NASA promedio)\n *****************************************************/\n\n//–––– Parámetros ajustables ––––\nconst PR            = 0.80;\nconst oversizeFact  = 1.05;\nconst panelWp_def   = 550;\nconst DAYS_PER_MONTH = 30.4;\n\n//–––– Entrada ––––\nconst j = items[0].json || {};\n\n// Preservar temp_lead_id\nconst tempLeadId = j.temp_lead_id || 'unknown';\n\n// $input.first().json.output.consumo_max\nconst kWhPeak = +j.output?.consumo_max || 0;\nif (!(kWhPeak > 0)) {\n  throw new Error('Falta output.consumo_max (>0).');\n}\nconst kWhYear = kWhPeak * 12;\n\n// $input.first().json.irradiacion_promedio_anual (CORREGIDO)\nconst irrDayAvg = +j.irradiacion_promedio_anual || NaN;\nif (!(irrDayAvg > 0)) {\n  throw new Error('Falta irradiacion_promedio_anual (>0).');\n}\n\n//–––– Rendimientos ––––\nconst specDayAvg = irrDayAvg * PR;\nconst specYieldMonth = specDayAvg * DAYS_PER_MONTH;\nconst specYieldAnnual = specDayAvg * 365;\n\n//–––– Potencia requerida ––––\nconst kWpByYear = kWhYear / specYieldAnnual;\nconst kWpByPeak = kWhPeak / specYieldMonth;\nconst kWpNeededRaw = Math.max(kWpByYear, kWpByPeak);\nconst kWpNeeded = +(kWpNeededRaw * oversizeFact).toFixed(2);\n\n//–––– Módulos ––––\nconst panelWp = +j.panel_wp > 0 ? +j.panel_wp : panelWp_def;\nconst nPanels = Math.ceil((kWpNeeded * 1000) / panelWp);\n\n//–––– Producción ––––\nconst yearlyProd = +(specYieldAnnual * kWpNeeded).toFixed(0);\n\n//–––– Salida ––––\nitems[0].json = {\n  ...j,\n  temp_lead_id: tempLeadId, // Asegurar que temp_lead_id se pasa\n  sizing: {\n    inputs: {\n      kWh_peak_month: kWhPeak,\n      kWh_year_assumed: kWhYear,\n      irr_avg_day: irrDayAvg,\n      days_per_month: DAYS_PER_MONTH,\n      PR,\n      oversize_fact: oversizeFact,\n      // Datos NASA disponibles\n      irr_min: +j.irradiacion_promedio_min || null,\n      irr_max: +j.irradiacion_promedio_max || null,\n      nasa_cache_id: j.id || null,\n      hash_ubicacion: j.hash_ubicacion || null\n    },\n    derived: {\n      spec_yield_avg_day: +specDayAvg.toFixed(2),\n      spec_yield_avg_month: +specYieldMonth.toFixed(2),\n      spec_yield_annual: +specYieldAnnual.toFixed(2),\n    },\n    results: {\n      kWp_needed: kWpNeeded,\n      panel_wp: panelWp,\n      n_panels: nPanels,\n      yearly_prod: yearlyProd,\n    },\n    method_notes:\n      \"Sizing basado en output.consumo_max (pico mensual) y irradiacion_promedio_anual (kWh/m²/día) de NASA; conversión con 30.4 d/mes fijo; anual = 365×promedio.\"\n  }\n};\n\nreturn items;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4160,
-        -140
+        -560,
+        -240
       ],
-      "id": "9ca97225-7171-467a-904d-602bff3ead9c",
+      "id": "c10ad589-fe97-4e5c-9163-e5b676a3a258",
       "name": "Code"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO cotizaciones_leads_temp (\n  temp_lead_id,\n  recibo_cfe,\n  consumo_kwh_historico,\n  resumen_energetico,\n  sizing_results,\n  irradiacion_cache_id\n) VALUES (\n  '{{ $json.temp_lead_id || \"unknown\" }}',\n  '{{ JSON.stringify($json.output || {}) }}'::jsonb,\n  '{{ JSON.stringify($json.output?.consumo_historico || []) }}'::jsonb,\n  '{{ JSON.stringify($json.output || {}) }}'::jsonb,\n  '{{ JSON.stringify($json.sizing || {}) }}'::jsonb,\n  {{ $json.id ? \"'\" + $json.id + \"'\" : 'NULL' }}\n) RETURNING id, temp_lead_id",
+        "query": "INSERT INTO cotizaciones_leads_temp (\n  temp_lead_id,\n  recibo_cfe,\n  consumo_kwh_historico,\n  resumen_energetico,\n  sizing_results,\n  irradiacion_cache_id\n) VALUES (\n  '{{ $json.temp_lead_id || \"unknown\" }}',\n  '{{ JSON.stringify($node[\"datos_recibo_frontal_cfe1\"].json.output || {}) }}'::jsonb,\n  '{{ JSON.stringify($node[\"datos_recibo_posterior_cfe\"].json.output?.consumo_historico || []) }}'::jsonb,\n  '{{ JSON.stringify({\n    consumo_max: $node[\"datos_recibo_posterior_cfe\"].json.output?.consumo_max || null,\n    consumo_promedio: Math.round(($node[\"datos_recibo_posterior_cfe\"].json.output?.consumo_historico || []).reduce((sum, item) => sum + item.kwh, 0) / ($node[\"datos_recibo_posterior_cfe\"].json.output?.consumo_historico?.length || 1)),\n    periodos_analizados: $node[\"datos_recibo_posterior_cfe\"].json.output?.consumo_historico?.length || 0\n  }) }}'::jsonb,\n  '{{ JSON.stringify($json.sizing || {}) }}'::jsonb,\n  {{ $json.cache_id ? \"'\" + $json.cache_id + \"'\" : 'NULL' }}\n) RETURNING id, temp_lead_id",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        4380,
-        -140
+        -340,
+        -240
       ],
-      "id": "fff70345-99f4-4cbf-beb3-f4798107e0cf",
+      "id": "d570c565-5bb7-468e-93e8-14aa5d6350e3",
       "name": "Save Temp Quote",
       "credentials": {
         "postgres": {
-          "id": "gDkuViTqq5Eo3arL",
-          "name": "Enerbook test"
+          "id": "LEVyYTq0EFqHRjVL",
+          "name": "enerbook_24"
         }
       }
     },
@@ -508,11 +510,24 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        3940,
-        -140
+        -780,
+        -240
       ],
-      "id": "76e697bd-3322-48bc-94b9-a020d27ad25e",
+      "id": "fa3e968d-00f3-41cb-b86f-978b6aeb834e",
       "name": "Merge"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Asegurar que temp_lead_id se propague\nconst item = items[0];\n\n// Buscar temp_lead_id en varios lugares posibles\nlet tempLeadId = null;\n\n// Primero intentar desde el item actual\nif (item.json.temp_lead_id) {\n  tempLeadId = item.json.temp_lead_id;\n}\n\n// Si no está, generar uno nuevo\nif (!tempLeadId || tempLeadId === 'unknown') {\n  tempLeadId = 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);\n}\n\n// Asegurar que todos los datos se pasen con el temp_lead_id\nreturn [{\n  json: {\n    ...item.json,\n    temp_lead_id: tempLeadId\n  },\n  binary: item.binary\n}];"
+      },
+      "name": "Ensure TempLeadId",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        -240
+      ],
+      "id": "ensure-temp-lead-id"
     },
     {
       "parameters": {
@@ -524,10 +539,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -100,
-        160
+        -4820,
+        60
       ],
-      "id": "59521adc-72e9-41f5-8531-decceee5a193",
+      "id": "48b5ba1a-0c73-4cb1-b1c5-74a65a61dc22",
       "name": "Input",
       "webhookId": "ac352058-a428-4e50-b361-d7d62480c7e7"
     },
@@ -538,10 +553,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        120,
-        160
+        -4600,
+        60
       ],
-      "id": "3e604e9a-7806-4075-ad16-cbf0967afee1",
+      "id": "10572ccf-0f0b-4f5d-8c00-623c8722877c",
       "name": "Code1"
     },
     {
@@ -554,10 +569,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        340,
-        160
+        -4380,
+        60
       ],
-      "id": "6122b409-8ab6-43c7-aace-e867904ac6a7",
+      "id": "7ede0ba2-2ea4-402e-a7d1-25c332a5a7d8",
       "name": "Switch"
     },
     {
@@ -601,10 +616,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
       "position": [
-        2920,
-        -20
+        -1800,
+        -120
       ],
-      "id": "20a0e604-b2cc-4478-b2a2-589e18018c4a"
+      "id": "28297762-ccf1-4b52-8481-674e2401f186"
     }
   ],
   "pinData": {},
@@ -839,6 +854,17 @@
       "main": [
         [
           {
+            "node": "Ensure TempLeadId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure TempLeadId": {
+      "main": [
+        [
+          {
             "node": "Code",
             "type": "main",
             "index": 0
@@ -902,7 +928,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "dc6433f2-20d0-446f-b80d-79f7b71dca1e",
+  "versionId": "360ec86e-4642-433b-a6e1-f9d6adb1a014",
   "meta": {
     "instanceId": "ace24c3e3f8856d5fe321c9263afe3e32177483bb07d87eae3c4dc2e0d2f2255"
   },

@@ -29,11 +29,11 @@ const UserInfoBar = () => {
           style={{ backgroundColor: "#fcfcfc" }}
         >
           <div>
-            <p className="font-bold text-gray-900 text-[13px] leading-tight">
+            <p className="font-bold text-gray-900 text-sm leading-tight">
               {userName}
             </p>
-            <p className="text-[11px] text-orange-500 font-semibold mt-1">No. Servicio</p>
-            <p className="text-[11px] text-gray-500">{serviceNumber}</p>
+            <p className="text-sm text-orange-500 font-semibold mt-1">No. Servicio</p>
+            <p className="text-sm text-gray-500">{serviceNumber}</p>
           </div>
           <div
             className="w-9 h-9 rounded-full grid place-items-center"
@@ -51,8 +51,8 @@ const UserInfoBar = () => {
           style={{ backgroundColor: "#fcfcfc" }}
         >
           <div>
-            <p className="font-bold text-gray-900 text-[13px] leading-tight">Dirección</p>
-            <p className="text-[11px] text-gray-500 mt-1">
+            <p className="font-bold text-gray-900 text-sm leading-tight">Dirección</p>
+            <p className="text-sm text-gray-500 mt-1">
               {address}
             </p>
           </div>

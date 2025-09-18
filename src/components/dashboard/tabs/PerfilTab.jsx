@@ -9,7 +9,7 @@ const PerfilTab = () => {
         <div className="p-8 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+              <h2 className="text-sm font-bold text-gray-900 mb-4">
                 Cotiza energía solar de forma segura
               </h2>
               <p className="text-gray-400 text-sm leading-relaxed">
@@ -19,8 +19,8 @@ const PerfilTab = () => {
             <div className="ml-12">
               <button className="bg-gray-900 hover:bg-black text-white rounded-2xl px-8 py-6 transition-all group">
                 <div className="text-center">
-                  <h3 className="text-lg font-bold mb-1">SOLICITAR</h3>
-                  <h3 className="text-lg font-bold mb-3">COTIZACIONES</h3>
+                  <h3 className="text-sm font-bold mb-1">Solicitar</h3>
+                  <h3 className="text-sm font-bold mb-3">Cotizaciones</h3>
                   <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                     <FiChevronRight className="w-4 h-4 text-gray-900" />
                   </div>
@@ -34,7 +34,7 @@ const PerfilTab = () => {
 
         {/* Welcome Message */}
         <div className="ml-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Bienvenido, Diego Herold Carranza Juárez</h2>
+          <h2 className="text-sm font-bold text-gray-900 mb-2">Bienvenido, Diego Herold Carranza Juárez</h2>
           <p className="text-gray-400 text-sm">Miércoles Agosto 6 del 2025</p>
         </div>
 
@@ -48,7 +48,7 @@ const PerfilTab = () => {
                 <FiUser className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Diego Herold Carranza Juárez</h3>
+                <h3 className="text-sm font-bold text-gray-900">Diego Herold Carranza Juárez</h3>
                 <p className="text-sm text-gray-600">diegocarranzajuarez@enerbook.mx</p>
               </div>
             </div>

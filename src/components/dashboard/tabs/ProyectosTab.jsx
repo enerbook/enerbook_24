@@ -7,7 +7,7 @@ const ProyectosTab = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Mis Cotizaciones */}
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Mis Cotizaciones</h2>
+            <h2 className="text-sm font-bold text-gray-900 mb-6">Mis Cotizaciones</h2>
             {/* Proyecto 1 */}
             <div className="border border-gray-200 rounded-lg p-4 mb-4">
               <h3 className="font-bold text-gray-900 mb-2">Proyecto 1</h3>
@@ -34,7 +34,7 @@ const ProyectosTab = () => {
 
           {/* Mis Contratos */}
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Mis Contratos</h2>
+            <h2 className="text-sm font-bold text-gray-900 mb-6">Mis Contratos</h2>
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-bold text-gray-900 mb-2">Proyecto 1</h3>
               <div className="space-y-2 text-sm">

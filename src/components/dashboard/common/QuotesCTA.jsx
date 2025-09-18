@@ -8,10 +8,10 @@ const QuotesCTA = () => {
         style={{ backgroundColor: "#fcfcfc" }}
       >
         <div className="flex-1 pr-3">
-          <h2 className="text-[15px] font-extrabold text-gray-900 mb-1">
+          <h2 className="text-sm font-extrabold text-gray-900 mb-1">
             Cotiza energía solar de forma segura
           </h2>
-          <p className="text-[12px] text-gray-500 leading-relaxed">
+          <p className="text-sm text-gray-500 leading-relaxed">
             Recibe propuestas de instaladores verificados y selecciona la mejor opción para tu proyecto.
           </p>
         </div>
@@ -22,8 +22,8 @@ const QuotesCTA = () => {
             style={{ backgroundColor: "#0b0f17" }}
           >
             <div className="text-center leading-[1.05]">
-              <span className="block text-white font-extrabold tracking-wide text-[18px]">SOLICITAR</span>
-              <span className="block text-white font-extrabold tracking-wide text-[18px]">COTIZACIONES</span>
+              <span className="block text-white font-extrabold tracking-wide text-sm">Solicitar</span>
+              <span className="block text-white font-extrabold tracking-wide text-sm">Cotizaciones</span>
               <div className="mt-3 w-10 h-10 bg-white rounded-full grid place-items-center mx-auto">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path d="M10 6l6 6-6 6" stroke="#0b0f17" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

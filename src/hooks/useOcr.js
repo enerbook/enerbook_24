@@ -7,7 +7,12 @@ export function useOcr() {
 
   const handleReceiptUpload = async (files) => {
     if (ocrData) {
-      router.push('/dashboard');
+      // Si ya tenemos datos OCR y temp_lead_id, redirigir con el ID
+      if (ocrData.temp_lead_id) {
+        router.push(`/dashboard?temp_lead_id=${ocrData.temp_lead_id}`);
+      } else {
+        router.push('/dashboard');
+      }
       return;
     }
 
@@ -38,6 +43,12 @@ export function useOcr() {
         const result = await response.json();
         setOcrData(result);
         console.log('OCR data received:', result);
+
+        // Si el OCR devuelve temp_lead_id, redirigir inmediatamente al dashboard de lead
+        if (result.temp_lead_id) {
+          console.log('Redirecting to lead dashboard with ID:', result.temp_lead_id);
+          router.push(`/dashboard?temp_lead_id=${result.temp_lead_id}`);
+        }
       } else {
         console.error('Failed to process files:', await response.text());
         alert('Error al procesar el recibo. Por favor, inténtalo de nuevo.');

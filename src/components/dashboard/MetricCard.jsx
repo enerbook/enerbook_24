@@ -79,10 +79,10 @@ const MetricCard = ({ title, value, subtitle, icon: IconComponent, className = "
     <div className={`p-4 rounded-lg border border-gray-100 relative ${className}`} style={{backgroundColor: '#fcfcfc'}}>
       <div className="flex items-start justify-between h-full">
         <div className="flex-1 flex flex-col justify-center">
-          <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">{title}</h4>
-          <p className="text-xl font-bold text-gray-900 mb-1">{value}</p>
+          <h4 className="text-sm font-medium text-gray-500 tracking-wide mb-2">{title}</h4>
+          <p className="text-sm font-bold text-gray-900 mb-1">{value}</p>
           {subtitle && (
-            <p className="text-xs text-gray-400">{subtitle}</p>
+            <p className="text-sm text-gray-400">{subtitle}</p>
           )}
         </div>
         <div 

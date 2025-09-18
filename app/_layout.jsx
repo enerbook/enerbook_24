@@ -16,17 +16,24 @@ const RootLayoutNav = () => {
     const inProtectedRoute = segments[0] === 'installer' || segments[0] === 'dashboard';
     const inAuthRoute = segments[0] === 'installer-login' || segments[0] === 'login' || segments[0] === 'installer-signup';
 
-    console.log('_layout - user:', user?.email, 'userType:', userType, 'segments:', segments);
+    // Obtener la URL completa actual
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const hasLeadIdInUrl = currentUrl.includes('temp_lead_id=');
+
+    console.log('_layout - user:', user?.email, 'userType:', userType, 'segments:', segments, 'URL has lead ID:', hasLeadIdInUrl);
+
+    // Si el userType es 'lead' o hay temp_lead_id en la URL, permitir acceso al dashboard
+    if ((userType === 'lead' || hasLeadIdInUrl) && segments[0] === 'dashboard') {
+      console.log('Lead mode detected or temp_lead_id in URL, allowing dashboard access');
+      return;
+    }
 
     // Si no hay usuario y está en ruta protegida, verificar si es modo lead
     if (!user && inProtectedRoute) {
       // Para dashboard, verificar si hay temp_lead_id en la URL
       if (segments[0] === 'dashboard') {
-        const currentUrl = typeof window !== 'undefined' ? window.location.search : '';
-        const hasLeadId = currentUrl.includes('temp_lead_id=');
-
-        if (hasLeadId) {
-          console.log('Dashboard access with temp_lead_id - allowing lead mode');
+        if (hasLeadIdInUrl) {
+          console.log('Dashboard access with temp_lead_id in URL - allowing lead mode');
           return; // Permitir acceso sin redireccionar
         } else {
           console.log('Dashboard access without temp_lead_id - redirecting to login');

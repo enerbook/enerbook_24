@@ -34,7 +34,7 @@ const NavButton = ({ item, activeTab, setActiveTab }) => {
           style={isActive ? {} : { color: '#F59E0B' }}
         />
       </div>
-      <span className="text-xs font-medium">{item.label}</span>
+      <span className="text-sm font-medium">{item.label}</span>
     </button>
   );
 };
@@ -125,7 +125,7 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
         {/* Account Navigation - Solo para usuarios autenticados */}
         {userType && userType !== 'lead' && (
           <div className="mt-8">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 px-2">
+            <h3 className="text-sm font-semibold text-gray-400 mb-1 px-2">
               Cuenta
             </h3>
             <div className="space-y-1">
@@ -140,11 +140,11 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
         {userType === 'lead' && (
           <div className="mt-6 px-2">
             <div className="bg-gradient-to-r from-orange-400 to-yellow-400 rounded-lg p-3 text-center">
-              <h3 className="text-xs font-bold text-white mb-1">¡Regístrate!</h3>
-              <p className="text-[10px] text-white mb-2 leading-tight">Guarda tu análisis y recibe cotizaciones</p>
+              <h3 className="text-sm font-bold text-white mb-1">¡Regístrate!</h3>
+              <p className="text-sm text-white mb-2 leading-tight">Guarda tu análisis y recibe cotizaciones</p>
               <button
                 onClick={() => router.push('/signup')}
-                className="w-full bg-white font-semibold py-1.5 px-2 rounded text-[10px] hover:bg-gray-100 transition-colors"
+                className="w-full bg-white font-semibold py-1.5 px-2 rounded text-sm hover:bg-gray-100 transition-colors"
                 style={{ color: '#090e1a' }}
               >
                 Crear Cuenta
@@ -156,7 +156,7 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
         {/* Loading state */}
         {!userType && user && (
           <div className="space-y-1">
-            <div className="px-2 py-1.5 text-gray-400 text-xs">Cargando...</div>
+            <div className="px-2 py-1.5 text-gray-400 text-sm">Cargando...</div>
           </div>
         )}
 
