@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View } from "react-native";
 import AppLayout from '../src/components/common/AppLayout';
 import { useAuth } from '../src/context/AuthContext';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 // Import tab components
 import DashboardTab from '../src/components/dashboard/tabs/DashboardTab';
@@ -14,10 +14,29 @@ import PerfilTab from '../src/components/dashboard/tabs/PerfilTab';
 
 export default function DashboardScreen() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const { user } = useAuth();
+  const { user, userType, loading, setLeadMode } = useAuth();
+  const router = useRouter();
+  const { temp_lead_id } = useLocalSearchParams();
 
-  // Render loading or a placeholder if user is not yet available
-  if (!user) {
+  // Detectar temp_lead_id en la URL
+  useEffect(() => {
+    if (temp_lead_id && !user) {
+      console.log('Dashboard: temp_lead_id detected, setting lead mode:', temp_lead_id);
+      setLeadMode(temp_lead_id);
+    }
+  }, [temp_lead_id, user, setLeadMode]);
+
+  // Mostrar loading mientras se resuelve el estado
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <div className="text-gray-600">Cargando...</div>
+      </View>
+    );
+  }
+
+  // Si no hay usuario ni es modo lead, redirect
+  if (!user && userType !== 'lead') {
     return <View />;
   }
 
@@ -30,11 +49,13 @@ export default function DashboardScreen() {
       case 'irradiacion':
         return <IrradiacionTab />;
       case 'proyectos':
-        return <ProyectosTab />;
+        // Solo mostrar proyectos si es usuario autenticado, no para leads
+        return userType === 'lead' ? <DashboardTab /> : <ProyectosTab />;
       case 'detalles':
         return <DetallesTab />;
       case 'perfil':
-        return <PerfilTab />;
+        // Solo mostrar perfil si es usuario autenticado, no para leads
+        return userType === 'lead' ? <DashboardTab /> : <PerfilTab />;
       default:
         return <DashboardTab />;
     }

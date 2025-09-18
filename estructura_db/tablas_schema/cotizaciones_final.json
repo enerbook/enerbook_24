@@ -1,0 +1,246 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440601",
+    "created_at": "2025-01-15T14:30:00Z",
+    "updated_at": "2025-01-15T14:30:00Z",
+    "proyectos_id": "550e8400-e29b-41d4-a716-446655440501",
+    "proveedores_id": "550e8400-e29b-41d4-a716-446655440301",
+    "paneles": {
+      "marca": "Canadian Solar",
+      "modelo": "CS7N-550MS",
+      "potencia_wp": 550,
+      "cantidad": 8,
+      "kwp_total": 4.4,
+      "tipo_celda": "Monocristalino PERC",
+      "eficiencia": 21.4,
+      "garantia_producto": "12 años",
+      "garantia_rendimiento": "25 años (80%)",
+      "dimensiones": "2279 x 1134 x 35 mm",
+      "peso_kg": 27.5,
+      "certificaciones": ["IEC 61215", "IEC 61730", "UL 1703"]
+    },
+    "inversores": [
+      {
+        "marca": "Growatt",
+        "modelo": "MIN 4200TL-XE",
+        "tipo": "String inverter",
+        "potencia_kW": 4.2,
+        "cantidad": 1,
+        "eficiencia": 98.4,
+        "mppt_trackers": 2,
+        "voltaje_entrada_max": 1000,
+        "corriente_entrada_max": 12.5,
+        "garantia": "10 años",
+        "monitoreo": "WiFi integrado",
+        "certificaciones": ["IEC 62109", "UL 1741"]
+      }
+    ],
+    "estructura": {
+      "tipo_montaje": "Techo inclinado con rieles",
+      "material": "Aluminio anodizado",
+      "inclinacion_grados": 18,
+      "orientacion_azimut": 180,
+      "altura_montaje_mm": 150,
+      "resistencia_viento": "200 km/h",
+      "garantia": "15 años",
+      "area_techo_utilizada_m2": 41.2,
+      "penetraciones_techo": 16,
+      "sistema_impermeabilizacion": "Sellador elastomérico"
+    },
+    "sistema_electrico": {
+      "voltaje_sistema_dc": 440,
+      "cable_dc_tipo": "MC4 12 AWG",
+      "cable_dc_metros": 45,
+      "cable_ac_tipo": "THWN 12 AWG",
+      "cable_ac_metros": 25,
+      "protecciones": {
+        "fusibles_dc": "15A",
+        "interruptor_dc": "25A",
+        "interruptor_ac": "30A",
+        "supresor_sobretension": true,
+        "puesta_tierra": "Varilla cobre 2.4m"
+      },
+      "medidor_bidireccional": "CFE compatible",
+      "tablero_acometida": "Interruptor 2P 40A"
+    },
+    "precio_final": {
+      "subtotal": 88000.00,
+      "iva": 14080.00,
+      "precio_total": 102080.00,
+      "moneda": "MXN",
+      "precio_por_wp": 23.20,
+      "descuentos_aplicados": [],
+      "incluye": [
+        "Equipos y materiales",
+        "Instalación completa",
+        "Tramites CFE",
+        "Garantías",
+        "Monitoreo primer año"
+      ]
+    },
+    "estado": "pendiente",
+    "notas_proveedor": "Cotización válida por 30 días. Instalación programada 2 semanas después de firma. Incluye monitoreo remoto gratuito el primer año.",
+    "opciones_pago": [
+      {
+        "tipo": "upfront",
+        "precio": 102080.00,
+        "descuento_pct": 3.0,
+        "precio_con_descuento": 99017.60,
+        "descripcion": "Pago único con 3% descuento"
+      },
+      {
+        "tipo": "milestones",
+        "configuracion": [
+          {
+            "milestone": 1,
+            "nombre": "Anticipo",
+            "porcentaje": 40,
+            "monto": 40832.00,
+            "condicion": "Al firmar contrato"
+          },
+          {
+            "milestone": 2,
+            "nombre": "Instalación",
+            "porcentaje": 35,
+            "monto": 35728.00,
+            "condicion": "Al iniciar instalación"
+          },
+          {
+            "milestone": 3,
+            "nombre": "Finalización",
+            "porcentaje": 25,
+            "monto": 25520.00,
+            "condicion": "Sistema funcionando"
+          }
+        ]
+      },
+      {
+        "tipo": "financing",
+        "disponible": true,
+        "socios_financieros": ["Banco Solar MX", "Green Finance"],
+        "enganche_minimo_pct": 10,
+        "plazo_max_meses": 60,
+        "tasa_desde": 12.5
+      }
+    ]
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440602",
+    "created_at": "2025-01-15T16:45:00Z",
+    "updated_at": "2025-01-15T16:45:00Z",
+    "proyectos_id": "550e8400-e29b-41d4-a716-446655440501",
+    "proveedores_id": "550e8400-e29b-41d4-a716-446655440302",
+    "paneles": {
+      "marca": "Jinko Solar",
+      "modelo": "Tiger Neo N-type 78HL4-BDV",
+      "potencia_wp": 580,
+      "cantidad": 7,
+      "kwp_total": 4.06,
+      "tipo_celda": "N-type TOPCon",
+      "eficiencia": 22.3,
+      "garantia_producto": "15 años",
+      "garantia_rendimiento": "30 años (87.4%)",
+      "dimensiones": "2278 x 1134 x 30 mm",
+      "peso_kg": 24.5,
+      "certificaciones": ["IEC 61215", "IEC 61730", "UL 1703", "CEC"]
+    },
+    "inversores": [
+      {
+        "marca": "SolarEdge",
+        "modelo": "SE4000H-MX",
+        "tipo": "Power optimizer system",
+        "potencia_kW": 4.0,
+        "cantidad": 1,
+        "eficiencia": 99.2,
+        "mppt_trackers": 1,
+        "optimizadores": {
+          "modelo": "P850",
+          "cantidad": 7,
+          "potencia_max": 850
+        },
+        "garantia": "12 años",
+        "monitoreo": "Aplicación SolarEdge",
+        "certificaciones": ["IEC 62109", "UL 1741", "CEC"]
+      }
+    ],
+    "estructura": {
+      "tipo_montaje": "Sistema de rieles con microinversores",
+      "material": "Aluminio 6005-T5",
+      "inclinacion_grados": 15,
+      "orientacion_azimut": 185,
+      "altura_montaje_mm": 120,
+      "resistencia_viento": "250 km/h",
+      "garantia": "20 años",
+      "area_techo_utilizada_m2": 36.8,
+      "penetraciones_techo": 14,
+      "sistema_impermeabilizacion": "FlashSeal Pro"
+    },
+    "sistema_electrico": {
+      "voltaje_sistema_dc": 400,
+      "cable_dc_tipo": "MC4 10 AWG optimized",
+      "cable_dc_metros": 38,
+      "cable_ac_tipo": "THWN 10 AWG",
+      "cable_ac_metros": 22,
+      "protecciones": {
+        "fusibles_dc": "Integrados en optimizadores",
+        "interruptor_dc": "20A",
+        "interruptor_ac": "25A",
+        "supresor_sobretension": true,
+        "puesta_tierra": "Sistema integrado"
+      },
+      "medidor_bidireccional": "CFE clase 200",
+      "tablero_acometida": "Interruptor 2P 30A"
+    },
+    "precio_final": {
+      "subtotal": 94500.00,
+      "iva": 15120.00,
+      "precio_total": 109620.00,
+      "moneda": "MXN",
+      "precio_por_wp": 27.00,
+      "descuentos_aplicados": [],
+      "incluye": [
+        "Equipos premium",
+        "Instalación especializada",
+        "Tramites CFE express",
+        "Garantías extendidas",
+        "Monitoreo 5 años",
+        "Mantenimiento 2 años"
+      ]
+    },
+    "estado": "pendiente",
+    "notas_proveedor": "Sistema premium con optimizadores por panel. Máximo rendimiento y monitoreo individual. Garantía extendida incluida.",
+    "opciones_pago": [
+      {
+        "tipo": "upfront",
+        "precio": 109620.00,
+        "descuento_pct": 5.0,
+        "precio_con_descuento": 104139.00,
+        "descripcion": "Pago único con 5% descuento por sistema premium"
+      },
+      {
+        "tipo": "milestones",
+        "configuracion": [
+          {
+            "milestone": 1,
+            "nombre": "Anticipo materiales",
+            "porcentaje": 50,
+            "monto": 54810.00,
+            "condicion": "Al ordenar equipos"
+          },
+          {
+            "milestone": 2,
+            "nombre": "Finalización",
+            "porcentaje": 50,
+            "monto": 54810.00,
+            "condicion": "Sistema completo y funcionando"
+          }
+        ]
+      },
+      {
+        "tipo": "financing",
+        "disponible": false,
+        "razon": "No ofrecemos financiamiento para sistemas premium"
+      }
+    ]
+  }
+]

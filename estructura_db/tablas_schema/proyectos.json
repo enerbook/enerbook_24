@@ -1,0 +1,46 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440501",
+    "created_at": "2025-01-15T12:00:00Z",
+    "updated_at": "2025-01-15T12:00:00Z",
+    "cotizaciones_inicial_id": "550e8400-e29b-41d4-a716-446655440201",
+    "estado": "abierto",
+    "descripcion": "Instalación de sistema solar fotovoltaico residencial de 4.12 kWp en vivienda unifamiliar. Se busca proveedor con experiencia en instalaciones residenciales y certificaciones vigentes. Proyecto ubicado en CDMX zona Roma Norte.",
+    "fecha_limite": "2025-01-25T23:59:59Z",
+    "titulo": "Sistema Solar 4.12 kWp - Residencial CDMX",
+    "usuarios_id": "550e8400-e29b-41d4-a716-446655440001"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440502",
+    "created_at": "2025-01-16T15:00:00Z",
+    "updated_at": "2025-01-17T10:30:00Z",
+    "cotizaciones_inicial_id": "550e8400-e29b-41d4-a716-446655440202",
+    "estado": "adjudicado",
+    "descripcion": "Sistema solar fotovoltaico residencial de 3.12 kWp para casa en San Ángel. Techo de concreto con orientación sur, excelente exposición solar. Se requiere instalación completa incluyendo trámites CFE.",
+    "fecha_limite": "2025-01-22T23:59:59Z",
+    "titulo": "Sistema Solar 3.12 kWp - San Ángel CDMX",
+    "usuarios_id": "550e8400-e29b-41d4-a716-446655440002"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440503",
+    "created_at": "2025-01-17T09:30:00Z",
+    "updated_at": "2025-01-17T09:30:00Z",
+    "cotizaciones_inicial_id": null,
+    "estado": "abierto",
+    "descripcion": "Proyecto comercial para instalación de sistema solar de 50 kWp en nave industrial. Se requiere proveedor con experiencia en proyectos comerciales grandes y certificaciones industriales. Ubicación: Zona Industrial Guadalajara.",
+    "fecha_limite": "2025-02-01T23:59:59Z",
+    "titulo": "Sistema Solar Comercial 50 kWp - Guadalajara",
+    "usuarios_id": "550e8400-e29b-41d4-a716-446655440003"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440504",
+    "created_at": "2025-01-17T14:15:00Z",
+    "updated_at": "2025-01-17T14:15:00Z",
+    "cotizaciones_inicial_id": null,
+    "estado": "cerrado",
+    "descripcion": "Sistema solar residencial pequeño de 2.5 kWp. Proyecto cerrado por decisión del cliente de posponer la instalación hasta el próximo año fiscal.",
+    "fecha_limite": "2025-01-20T23:59:59Z",
+    "titulo": "Sistema Solar 2.5 kWp - Monterrey (CERRADO)",
+    "usuarios_id": "550e8400-e29b-41d4-a716-446655440003"
+  }
+]

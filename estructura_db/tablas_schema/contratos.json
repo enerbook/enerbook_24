@@ -1,0 +1,164 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440701",
+    "created_at": "2025-01-16T10:00:00Z",
+    "updated_at": "2025-01-18T14:30:00Z",
+    "cotizaciones_final_id": "550e8400-e29b-41d4-a716-446655440602",
+    "usuarios_id": "550e8400-e29b-41d4-a716-446655440001",
+    "proveedores_id": "550e8400-e29b-41d4-a716-446655440302",
+    "numero_contrato": "CTR-2025-0001",
+    "precio_total_sistema": 104139.00,
+    "tipo_pago_seleccionado": "upfront",
+    "configuracion_pago": {
+      "tipo": "upfront",
+      "monto_total": 104139.00,
+      "descuento_aplicado": 5473.00,
+      "precio_original": 109620.00,
+      "fecha_pago_programado": "2025-01-20T10:00:00Z",
+      "metodo_pago": "transferencia_bancaria",
+      "datos_bancarios": {
+        "banco": "Banco Azteca",
+        "cuenta": "4152313890123456",
+        "clabe": "127180001234567890",
+        "beneficiario": "Solar Tech Solutions SC"
+      },
+      "comision_enerbook": {
+        "porcentaje": 8.0,
+        "monto": 8331.12,
+        "metodo_cobro": "retencion_proveedor"
+      }
+    },
+    "estado": "activo",
+    "fecha_firma": "2025-01-16T10:00:00Z",
+    "fecha_inicio_instalacion": "2025-01-22T08:00:00Z",
+    "fecha_completado": null,
+    "archivo_contrato_url": "https://storage.enerbook.mx/contratos/CTR-2025-0001/contrato_firmado.pdf",
+    "documentos_adicionales": {
+      "layout_instalacion": "https://storage.enerbook.mx/contratos/CTR-2025-0001/layout.pdf",
+      "diagrama_unifilar": "https://storage.enerbook.mx/contratos/CTR-2025-0001/diagrama.pdf",
+      "fichas_tecnicas": "https://storage.enerbook.mx/contratos/CTR-2025-0001/fichas_tecnicas.pdf",
+      "permisos_cfe": "https://storage.enerbook.mx/contratos/CTR-2025-0001/solicitud_cfe.pdf"
+    },
+    "stripe_payment_intent_id": "pi_3QSrUuJZ0y1aV4cdMnOpQrSt",
+    "stripe_client_secret": "pi_3QSrUuJZ0y1aV4cdMnOpQrSt_secret_xyz123",
+    "estado_pago": "succeeded",
+    "stripe_application_fee_amount": 8331.12,
+    "stripe_transfer_id": "tr_1RTsVvKA1z2bW5deNoOpQrSt"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440702",
+    "created_at": "2025-01-17T11:30:00Z",
+    "updated_at": "2025-01-17T11:30:00Z",
+    "cotizaciones_final_id": "550e8400-e29b-41d4-a716-446655440601",
+    "usuarios_id": "550e8400-e29b-41d4-a716-446655440002",
+    "proveedores_id": "550e8400-e29b-41d4-a716-446655440301",
+    "numero_contrato": "CTR-2025-0002",
+    "precio_total_sistema": 102080.00,
+    "tipo_pago_seleccionado": "milestones",
+    "configuracion_pago": {
+      "tipo": "milestones",
+      "monto_total": 102080.00,
+      "numero_milestones": 3,
+      "milestones": [
+        {
+          "numero": 1,
+          "nombre": "Anticipo",
+          "porcentaje": 40,
+          "monto": 40832.00,
+          "fecha_objetivo": "2025-01-20T12:00:00Z",
+          "condicion": "Al firmar contrato",
+          "estado": "pendiente"
+        },
+        {
+          "numero": 2,
+          "nombre": "Instalación",
+          "porcentaje": 35,
+          "monto": 35728.00,
+          "fecha_objetivo": "2025-01-25T12:00:00Z",
+          "condicion": "Al iniciar instalación",
+          "estado": "pendiente"
+        },
+        {
+          "numero": 3,
+          "nombre": "Finalización",
+          "porcentaje": 25,
+          "monto": 25520.00,
+          "fecha_objetivo": "2025-01-30T12:00:00Z",
+          "condicion": "Sistema funcionando",
+          "estado": "pendiente"
+        }
+      ],
+      "comision_enerbook": {
+        "porcentaje": 8.0,
+        "monto_total": 8166.40,
+        "metodo_cobro": "prorrateado_por_milestone",
+        "distribucion": [
+          {"milestone": 1, "monto": 3266.56},
+          {"milestone": 2, "monto": 2858.24},
+          {"milestone": 3, "monto": 2041.60}
+        ]
+      }
+    },
+    "estado": "activo",
+    "fecha_firma": "2025-01-17T11:30:00Z",
+    "fecha_inicio_instalacion": null,
+    "fecha_completado": null,
+    "archivo_contrato_url": "https://storage.enerbook.mx/contratos/CTR-2025-0002/contrato_firmado.pdf",
+    "documentos_adicionales": {
+      "layout_instalacion": "https://storage.enerbook.mx/contratos/CTR-2025-0002/layout.pdf",
+      "cronograma": "https://storage.enerbook.mx/contratos/CTR-2025-0002/cronograma.xlsx",
+      "especificaciones": "https://storage.enerbook.mx/contratos/CTR-2025-0002/especificaciones.pdf"
+    },
+    "stripe_payment_intent_id": null,
+    "stripe_client_secret": null,
+    "estado_pago": "pendiente",
+    "stripe_application_fee_amount": null,
+    "stripe_transfer_id": null
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440703",
+    "created_at": "2025-01-18T09:15:00Z",
+    "updated_at": "2025-01-18T09:15:00Z",
+    "cotizaciones_final_id": null,
+    "usuarios_id": "550e8400-e29b-41d4-a716-446655440003",
+    "proveedores_id": "550e8400-e29b-41d4-a716-446655440301",
+    "numero_contrato": "CTR-2025-0003",
+    "precio_total_sistema": 750000.00,
+    "tipo_pago_seleccionado": "financing",
+    "configuracion_pago": {
+      "tipo": "financing",
+      "precio_sistema": 750000.00,
+      "proveedor_financiero": "Banco Solar MX",
+      "monto_financiado": 675000.00,
+      "enganche": 75000.00,
+      "enganche_porcentaje": 10.0,
+      "tasa_interes_anual": 13.5,
+      "plazo_meses": 60,
+      "pago_mensual": 15234.75,
+      "costo_total_credito": 914085.00,
+      "fecha_primer_pago": "2025-02-18",
+      "service_fee_enerbook": {
+        "porcentaje": 6.0,
+        "monto_base": 750000.00,
+        "monto_fee": 45000.00,
+        "pagador": "cliente",
+        "fecha_cobro": "2025-01-20T10:00:00Z"
+      }
+    },
+    "estado": "activo",
+    "fecha_firma": "2025-01-18T09:15:00Z",
+    "fecha_inicio_instalacion": "2025-01-25T07:00:00Z",
+    "fecha_completado": null,
+    "archivo_contrato_url": "https://storage.enerbook.mx/contratos/CTR-2025-0003/contrato_firmado.pdf",
+    "documentos_adicionales": {
+      "contrato_financiamiento": "https://storage.enerbook.mx/contratos/CTR-2025-0003/credito_solar.pdf",
+      "tabla_amortizacion": "https://storage.enerbook.mx/contratos/CTR-2025-0003/tabla_pagos.xlsx",
+      "seguro_vida": "https://storage.enerbook.mx/contratos/CTR-2025-0003/poliza_seguro.pdf"
+    },
+    "stripe_payment_intent_id": "pi_4TUvWxKB2a3cX6efGhIjKlMn",
+    "stripe_client_secret": "pi_4TUvWxKB2a3cX6ef_secret_service_fee",
+    "estado_pago": "succeeded",
+    "stripe_application_fee_amount": null,
+    "stripe_transfer_id": null
+  }
+]

@@ -15,25 +15,33 @@ const RootLayoutNav = () => {
 
     const inProtectedRoute = segments[0] === 'installer' || segments[0] === 'dashboard';
     const inAuthRoute = segments[0] === 'installer-login' || segments[0] === 'login' || segments[0] === 'installer-signup';
-    
+
     console.log('_layout - user:', user?.email, 'userType:', userType, 'segments:', segments);
 
-    // Si no hay usuario y está en ruta protegida, redirigir al login
+    // Si no hay usuario y está en ruta protegida, verificar si es modo lead
     if (!user && inProtectedRoute) {
-      console.log('Redirecting to login - no user in protected route, segment:', segments[0]);
-      if (segments[0] === 'installer') {
+      // Para dashboard, verificar si hay temp_lead_id en la URL
+      if (segments[0] === 'dashboard') {
+        const currentUrl = typeof window !== 'undefined' ? window.location.search : '';
+        const hasLeadId = currentUrl.includes('temp_lead_id=');
+
+        if (hasLeadId) {
+          console.log('Dashboard access with temp_lead_id - allowing lead mode');
+          return; // Permitir acceso sin redireccionar
+        } else {
+          console.log('Dashboard access without temp_lead_id - redirecting to login');
+          router.replace('/login');
+        }
+      } else if (segments[0] === 'installer') {
         console.log('Redirecting to installer-login');
         router.replace('/installer-login');
-      } else if (segments[0] === 'dashboard') {
-        console.log('Redirecting to client login');
-        router.replace('/login');
       } else {
         console.log('Redirecting to default login');
         router.replace('/login');
       }
     } 
     // Si hay usuario y userType y está en página de login, redirigir al dashboard
-    else if (user && userType && inAuthRoute) {
+    else if (user && userType && userType !== 'lead' && inAuthRoute) {
       console.log('Redirecting to dashboard - user logged in on auth route');
       if (userType === 'instalador') {
         router.replace('/installer');

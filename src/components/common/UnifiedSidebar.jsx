@@ -57,6 +57,13 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
   };
 
   // Define navigation items for each role
+  const leadSidebarItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: FiGrid },
+    { id: 'consumo', label: 'Consumo', icon: FiPieChart },
+    { id: 'irradiacion', label: 'Irradiación', icon: FiSun },
+    { id: 'detalles', label: 'Detalles', icon: FiFileText },
+  ];
+
   const baseClientSidebarItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FiGrid },
     { id: 'consumo', label: 'Consumo', icon: FiPieChart },
@@ -88,6 +95,8 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
     sidebarItems = installerSidebarItems;
   } else if (userType === 'cliente') {
     sidebarItems = clientSidebarItems;
+  } else if (userType === 'lead') {
+    sidebarItems = leadSidebarItems;
   } else {
     // Si no hay userType definido, mostrar items básicos
     sidebarItems = [];
@@ -96,7 +105,7 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
   console.log('Sidebar items to show:', sidebarItems.map(item => item.label));
 
   return (
-    <div className="hidden lg:flex lg:w-54 bg-gray-50 flex-col max-h-screen">
+    <div className="hidden lg:flex lg:w-48 bg-gray-50 flex-col max-h-screen">
       <div className="p-2 -mt-6 flex-shrink-0">
         <div className="flex items-center justify-center">
           <img src="/img/FulllogoColor.svg" alt="Enerbook" className="h-32 w-auto" />
@@ -113,8 +122,8 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
           </div>
         )}
 
-        {/* Account Navigation */}
-        {userType && (
+        {/* Account Navigation - Solo para usuarios autenticados */}
+        {userType && userType !== 'lead' && (
           <div className="mt-8">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 px-2">
               Cuenta
@@ -123,6 +132,23 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
               {commonAccountItems.map((item) => (
                  <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} />
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Lead CTA - Solo para leads */}
+        {userType === 'lead' && (
+          <div className="mt-6 px-2">
+            <div className="bg-gradient-to-r from-orange-400 to-yellow-400 rounded-lg p-3 text-center">
+              <h3 className="text-xs font-bold text-white mb-1">¡Regístrate!</h3>
+              <p className="text-[10px] text-white mb-2 leading-tight">Guarda tu análisis y recibe cotizaciones</p>
+              <button
+                onClick={() => router.push('/signup')}
+                className="w-full bg-white font-semibold py-1.5 px-2 rounded text-[10px] hover:bg-gray-100 transition-colors"
+                style={{ color: '#090e1a' }}
+              >
+                Crear Cuenta
+              </button>
             </div>
           </div>
         )}

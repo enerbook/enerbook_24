@@ -1,6 +1,25 @@
 import React from 'react';
+import { useAuth } from '../../../context/AuthContext';
 
 const UserInfoBar = () => {
+  const { userType, leadData } = useAuth();
+
+  // Para leads, usar datos del leadData
+  let userName = 'Usuario';
+  let serviceNumber = 'N/A';
+  let address = 'Dirección no disponible';
+
+  if (userType === 'lead' && leadData?.recibo_cfe) {
+    userName = leadData.recibo_cfe.nombre || 'Usuario';
+    serviceNumber = leadData.recibo_cfe.no_servicio || 'N/A';
+    address = leadData.recibo_cfe.direccion_formatted || leadData.recibo_cfe.direccion || 'Dirección no disponible';
+  } else if (userType === 'cliente') {
+    // TODO: Cargar datos del usuario autenticado desde Supabase
+    userName = 'Diego Herold Carranza Juárez'; // placeholder
+    serviceNumber = '1234567890'; // placeholder
+    address = 'Calle Principal #123, Colonia Centro, Ciudad, Estado, C.P. 12345'; // placeholder
+  }
+
   return (
     <div className="bg-gray-50 px-4 py-2">
       <div className="grid grid-cols-2 gap-4 max-w-full mx-auto">
@@ -11,10 +30,10 @@ const UserInfoBar = () => {
         >
           <div>
             <p className="font-bold text-gray-900 text-[13px] leading-tight">
-              Diego Herold Carranza Juárez
+              {userName}
             </p>
             <p className="text-[11px] text-orange-500 font-semibold mt-1">No. Servicio</p>
-            <p className="text-[11px] text-gray-500">1234567890</p>
+            <p className="text-[11px] text-gray-500">{serviceNumber}</p>
           </div>
           <div
             className="w-9 h-9 rounded-full grid place-items-center"
@@ -34,7 +53,7 @@ const UserInfoBar = () => {
           <div>
             <p className="font-bold text-gray-900 text-[13px] leading-tight">Dirección</p>
             <p className="text-[11px] text-gray-500 mt-1">
-              Calle Principal #123, Colonia Centro, Ciudad, Estado, C.P. 12345
+              {address}
             </p>
           </div>
           <div

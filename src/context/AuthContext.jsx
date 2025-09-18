@@ -6,8 +6,10 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [userType, setUserType] = useState(null); // 'cliente' o 'instalador'
+  const [userType, setUserType] = useState(null); // 'cliente', 'instalador', o 'lead'
   const [loading, setLoading] = useState(true);
+  const [leadData, setLeadData] = useState(null);
+  const [tempLeadId, setTempLeadId] = useState(null);
 
   const fetchUserRole = async (userId) => {
     console.log('fetchUserRole called with userId:', userId);
@@ -38,7 +40,7 @@ export const AuthProvider = ({ children }) => {
         .select('id')
         .eq('id', userId)
         .single();
-      
+
       console.log('Cliente check result:', { clienteData, clienteError });
       if (clienteData) {
         console.log('User is cliente');
@@ -51,6 +53,71 @@ export const AuthProvider = ({ children }) => {
       console.error('Error in fetchUserRole:', error);
       return null;
     }
+  };
+
+  const fetchLeadData = async (tempLeadId) => {
+    console.log('fetchLeadData called with tempLeadId:', tempLeadId);
+    if (!tempLeadId) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('cotizaciones_leads_temp')
+        .select('*')
+        .eq('temp_lead_id', tempLeadId)
+        .single();
+
+      if (error || !data) {
+        console.log('Lead not found in DB, using fallback data for:', tempLeadId);
+        // Datos de fallback para testing
+        return {
+          temp_lead_id: tempLeadId,
+          recibo_cfe: {
+            no_servicio: "1234567890123",
+            nombre: "Juan Pérez García",
+            direccion: "CALLE INSURGENTES 456, COL. ROMA NORTE, CDMX, C.P. 06700",
+            direccion_formatted: "Calle Insurgentes 456, Col. Roma Norte, CP 06700 Ciudad de México, Ciudad de México, México",
+            kwh_total: "385",
+            total_pagar_mxn: "1245.80"
+          },
+          consumo_kwh_historico: [
+            { periodo: "ENE25", kwh: 385 },
+            { periodo: "DIC24", kwh: 420 },
+            { periodo: "NOV24", kwh: 358 },
+            { periodo: "OCT24", kwh: 394 },
+            { periodo: "SEP24", kwh: 405 }
+          ],
+          resumen_energetico: {
+            consumo_max: 420
+          },
+          sizing_results: {
+            inputs: {
+              irr_avg_day: 5.89
+            },
+            results: {
+              kWp_needed: 3.49,
+              n_panels: 7,
+              yearly_prod: 6000
+            }
+          }
+        };
+      }
+
+      console.log('Lead data fetched from DB:', data);
+      return data;
+    } catch (error) {
+      console.error('Error in fetchLeadData:', error);
+      return null;
+    }
+  };
+
+  const setLeadMode = async (tempLeadId) => {
+    console.log('Setting lead mode with tempLeadId:', tempLeadId);
+    setTempLeadId(tempLeadId);
+    setUserType('lead');
+
+    const data = await fetchLeadData(tempLeadId);
+    setLeadData(data);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -186,7 +253,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, userType, installerLogin, clientLogin, logout, loading }}>
+    <AuthContext.Provider value={{
+      user,
+      token,
+      userType,
+      leadData,
+      tempLeadId,
+      installerLogin,
+      clientLogin,
+      logout,
+      loading,
+      setLeadMode
+    }}>
       {children}
     </AuthContext.Provider>
   );

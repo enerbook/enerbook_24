@@ -1,0 +1,911 @@
+{
+  "name": "ENERBOOK OCR  LEADS V1.0",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "=https://api.mistral.ai/v1/files/{{ $json.id }}/url",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "expiry",
+              "value": "24"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3140,
+        180
+      ],
+      "id": "62d7f4e8-edd1-4d5a-83ca-5bbe18941c69",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KLy0d5eWgJRSy4Rs",
+          "name": "OCR MISTRAL"
+        },
+        "mistralCloudApi": {
+          "id": "VzHcIqCsPw3QTDNL",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/ocr",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"mistral-ocr-latest\",\n  \"document\": {\n    \"type\": \"document_url\",\n    \"document_url\": \"{{ $json.url }}\"\n  },\n  \"include_image_base64\": false\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3360,
+        180
+      ],
+      "id": "ac1eeb4c-c265-4e72-953e-44a46b7f1c21",
+      "name": "HTTP Request2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KLy0d5eWgJRSy4Rs",
+          "name": "OCR MISTRAL"
+        },
+        "mistralCloudApi": {
+          "id": "VzHcIqCsPw3QTDNL",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "purpose",
+              "value": "ocr"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data-posterior"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2920,
+        180
+      ],
+      "id": "e704b4d3-af9e-437b-9e1e-4e5d9ed7fe40",
+      "name": "Posterior",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KLy0d5eWgJRSy4Rs",
+          "name": "OCR MISTRAL"
+        },
+        "mistralCloudApi": {
+          "id": "VzHcIqCsPw3QTDNL",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={\n  \"prompt\": {\n    \"role\": \"Extractor de Datos\",\n    \"description\": \"Extrae los datos de consumo mensual en kWh desde una tabla de texto plano como la que aparece en una factura CFE. Busca tablas con columnas de período, demanda kW, consumo kWh, factor potencia, etc.\",\n    \"input_data\": \"{{ $json.pages[0].markdown }}\",\n    \"rules\": [\n      {\n        \"rule\": \"Busca tablas que contengan columnas como 'Periodo', 'Consumo total kWh', 'Demanda kW', etc.\"\n      },\n      {\n        \"rule\": \"Extrae SOLO el período (mes y año) y el consumo en kWh de cada fila.\"\n      },\n      {\n        \"rule\": \"El período debe estar en formato MES + año de 2 dígitos (ej: JUN24, FEB25, DIC24).\"\n      },\n      {\n        \"rule\": \"Si el mes aparece como 3 letras (JUN, FEB, DIC), manténlo así. Si aparece completo, abrevia a 3 letras en español.\"\n      },\n      {\n        \"rule\": \"El consumo debe ser solo el número entero de kWh, sin comas ni símbolos.\"\n      },\n      {\n        \"rule\": \"Si hay filas duplicadas del mismo mes con diferentes consumos, mantén ambas por separado.\"\n      },\n      {\n        \"rule\": \"Ignora encabezados, totales, promedios y cualquier dato que no sea un período específico.\"\n      },\n      {\n        \"rule\": \"Si el consumo contiene comas (ej: 42,842), elimina las comas (42842).\"\n      },\n      {\n        \"rule\": \"Ordena los datos cronológicamente del más antiguo al más reciente.\"\n      },\n      {\n        \"rule\": \"NO inventes valores. Usa SOLO los que están claramente indicados en la tabla.\"\n      },\n      {\n        \"rule\": \"El resultado debe ser ÚNICAMENTE JSON válido, sin texto adicional, explicaciones ni comentarios.\"\n      }\n    ],\n    \"output_example\": {\n      \"consumo_historico\": [\n        {\"periodo\": \"JUN24\", \"kwh\": 42842},\n        {\"periodo\": \"JUL24\", \"kwh\": 56355},\n        {\"periodo\": \"AGO24\", \"kwh\": 60341}\n      ],\n      \"consumo_max\": 62988\n    },\n    \"response_format\": \"JSON\"\n  }\n}",
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"consumo_historico\": [{\n    \"periodo\": \"\",\n    \"kwh\": 0\n  }],\n  \"consumo_max\": 0\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        3580,
+        180
+      ],
+      "id": "a6f26a3a-3218-4cb5-bbc7-8b6784e11669",
+      "name": "datos_recibo_posterior_cfe"
+    },
+    {
+      "parameters": {
+        "functionCode": "// OPCIÓN 1: Hash simple sin crypto (RECOMENDADA)\n// Ahora accedemos correctamente a los datos del nodo anterior 'Set'\nconst lat = $json.latitude || 0;\nconst lng = $json.longitude || 0;\nconst radioKm = 5;\n\n// Verificar que tenemos coordenadas válidas\nif (!lat || !lng) {\n  throw new Error('No se encontraron coordenadas válidas. Latitude: ' + lat + ', Longitude: ' + lng);\n}\n\n// Crear grid redondeado para optimizar caché\nconst latGrid = Math.round(lat * 100) / 100;\nconst lngGrid = Math.round(lng * 100) / 100;\n\n// Hash simple pero efectivo\nfunction createLocationHash(lat, lng) {\n  const str = `${lat},${lng}`;\n  let hash = 0;\n  \n  for (let i = 0; i < str.length; i++) {\n    const char = str.charCodeAt(i);\n    hash = ((hash << 5) - hash) + char;\n    hash = hash & hash;\n  }\n  \n  return Math.abs(hash).toString(36);\n}\n\nconst hashUbicacion = createLocationHash(latGrid, lngGrid);\n\nreturn [{\n  json: {\n    latitude: lat,\n    longitude: lng,\n    lat_grid: latGrid,\n    lng_grid: lngGrid,\n    radio_km: radioKm,\n    hash_ubicacion: hashUbicacion\n  }\n}];"
+      },
+      "name": "Generate Cache Key",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2260,
+        -140
+      ],
+      "id": "57d25410-3de6-43f4-a255-3626c9bc1052"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  datos_nasa_mensuales,\n  irradiacion_promedio_min,\n  irradiacion_promedio_max,\n  irradiacion_promedio_anual,\n  fecha_obtencion,\n  vigente_hasta,\n  hash_ubicacion\nFROM irradiacion_cache \nWHERE hash_ubicacion = '{{ $json.hash_ubicacion }}'\nORDER BY created_at DESC \nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        2480,
+        -140
+      ],
+      "id": "2eeb9fd8-bf09-4888-9071-43020aacdba5",
+      "name": "Query Cache",
+      "alwaysOutputData": true,
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "gDkuViTqq5Eo3arL",
+          "name": "Enerbook test"
+        }
+      },
+      "notes": "0"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hash_ubicacion }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "id": "5cf8b301-7de2-44da-a225-ff4e5e70b422"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2700,
+        -140
+      ],
+      "id": "3870b9a3-1d21-4d4b-9d95-c9232e425566",
+      "name": "Cache Exists?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- INSERT COMPLETO - Todos los campos integrados\nINSERT INTO irradiacion_cache (\n  lat_grid,\n  lng_grid,\n  radio_km,\n  datos_nasa_mensuales,\n  irradiacion_promedio_min,\n  irradiacion_promedio_max,\n  irradiacion_promedio_anual,\n  fecha_obtencion,\n  vigente_hasta,\n  hash_ubicacion,\n  region_nombre\n) VALUES (\n  {{ $node[\"Generate Cache Key\"].json.lat_grid }},\n  {{ $node[\"Generate Cache Key\"].json.lng_grid }},\n  {{ $node[\"Generate Cache Key\"].json.radio_km }},\n  '{{ JSON.stringify($node[\"Calculate Annual Irradiation1\"].json.datos_nasa_mensuales) }}'::jsonb,\n  {{ $node[\"Calculate Annual Irradiation1\"].json.irradiacion_promedio_min }},\n  {{ $node[\"Calculate Annual Irradiation1\"].json.irradiacion_promedio_max }},\n  {{ $node[\"Calculate Annual Irradiation1\"].json.irradiacion_promedio_anual }},\n  NOW(),\n  NOW() + INTERVAL '6 months',\n  '{{ $node[\"Generate Cache Key\"].json.hash_ubicacion }}',\n  \n    '{{ \n    $node[\"Dirección a Pin1\"].json.results[0].address_components\n      .filter(component => component.types.includes(\"administrative_area_level_1\"))[0]\n      ?.long_name || \"Estado no encontrado\"\n  }}'\n)\nRETURNING id, hash_ubicacion;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        3360,
+        -20
+      ],
+      "id": "1db8f7c2-1f2c-4c93-953d-bf9c8bece569",
+      "name": "Save to Cache",
+      "credentials": {
+        "postgres": {
+          "id": "gDkuViTqq5Eo3arL",
+          "name": "Enerbook test"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Fusionar los datos de irradiación con la información de caché guardado\nconst irradiacionData = $node[\"Calculate Annual Irradiation1\"].json;\nconst cacheInfo = $json[0] || {};\n\n// Obtener temp_lead_id desde el nodo datos_recibo_posterior_cfe\nconst tempLeadId = $node[\"datos_recibo_posterior_cfe\"].json?.temp_lead_id || \n                  $node[\"datos_recibo_frontal_cfe1\"].json?.temp_lead_id || \n                  'unknown';\n\nreturn [{\n  json: {\n    ...irradiacionData,\n    cache_saved: true,\n    cache_id: cacheInfo.id,\n    hash_ubicacion: cacheInfo.hash_ubicacion,\n    temp_lead_id: tempLeadId\n  }\n}];"
+      },
+      "name": "Merge Cache Info",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        -20
+      ],
+      "id": "5a4a858b-1a00-4352-8423-ea72088fb6d4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2280,
+        680
+      ],
+      "id": "f6f2e3c4-32bf-43f3-81e1-61d97ef7943b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pJly3N3V4EgGsPXV",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.mistral.ai/v1/files/{{ $json.id }}/url",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "expiry",
+              "value": "24"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        -140
+      ],
+      "id": "7b2b1ccb-09b8-4de0-abab-ed7716449fec",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KLy0d5eWgJRSy4Rs",
+          "name": "OCR MISTRAL"
+        },
+        "mistralCloudApi": {
+          "id": "VzHcIqCsPw3QTDNL",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/ocr",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"mistral-ocr-latest\",\n  \"document\": {\n    \"type\": \"document_url\",\n    \"document_url\": \"{{ $json.url }}\"\n  },\n  \"include_image_base64\": false\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1220,
+        -140
+      ],
+      "id": "324656b0-8524-44a5-a508-8f6cdd915298",
+      "name": "HTTP Request6",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KLy0d5eWgJRSy4Rs",
+          "name": "OCR MISTRAL"
+        },
+        "mistralCloudApi": {
+          "id": "VzHcIqCsPw3QTDNL",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "number": [
+            {
+              "name": "latitude",
+              "value": "={{ $node[\"Dirección a Pin1\"].json[\"results\"][0][\"geometry\"][\"location\"][\"lat\"] }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ $node[\"Dirección a Pin1\"].json[\"results\"][0][\"geometry\"][\"location\"][\"lng\"] }}"
+            }
+          ],
+          "string": [
+            {
+              "name": "place_id",
+              "value": "={{ $node[\"Dirección a Pin1\"].json[\"results\"][0][\"place_id\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        2040,
+        -140
+      ],
+      "id": "4b008a27-0c97-4000-8666-ef2ddbf6d017"
+    },
+    {
+      "parameters": {
+        "text": "=Extrae los datos del recibo CFE del siguiente texto y devuelve ÚNICAMENTE un JSON válido sin explicaciones adicionales.\nREGLAS DE EXTRACCIÓN:\n- no_servicio: busca \"NO. DE SERVICIO:\" y extrae el número\n- RMU: busca \"RMU:\" y extrae el número  \n- cuenta: busca \"CFE CUENTA:\" y extrae el código\n- tarifa: busca \"TARIFA:\" y extrae el código (ej: GDMTH)\n- no_medidor: busca \"NO. MEDIDOR:\" y extrae el código\n- multiplicador: busca \"MULTIPLICADOR:\" y extrae el número\n- no_hilos: busca \"NO HILOS:\" y extrae el número\n- nombre: nombre del cliente (aparece después de los datos de CFE)\n- direccion: dirección completa del cliente tal como aparece en el recibo\n- direccion_formatted: reformatea la dirección para Google Places API siguiendo estas reglas generales para México:\n  * Convierte a formato título (primera letra mayúscula)\n  * Elimina referencias técnicas: NAVE, BODEGA, LOCAL, DEPTO, OFICINA, PISO, INTERIOR + números\n  * Estandariza: AV/AVE → Av., CALLE → Calle, BLVD → Blvd., COL → Col., FRACC → Fracc.\n  * Convierte abreviaciones de estados a nombres completos + \", México\"\n  * Estructura limpia: \"Calle Número, Colonia, CP Ciudad, Estado, México\"\n- periodo_inicio: fecha inicio del período, convierte formato \"31 MAY 25\" a \"2025-05-31\"\n- periodo_fin: fecha fin del período, convierte formato \"30 JUN 25\" a \"2025-06-30\"\n- kwh_total: suma todos los consumos kWh (base + intermedia + otros)\n- total_pagar_mxn: extrae solo el número del monto total a pagar\n\nTEXTO DEL RECIBO:\n{{ $json.pages[0].markdown }}\n\n",
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"no_servicio\": \"\",\n  \"RMU\": \"\",\n  \"cuenta\": \"\",\n  \"tarifa\": \"\",\n  \"no_medidor\": \"\",\n  \"multiplicador\": \"\",\n  \"no_hilos\": \"\",\n  \"nombre\": \"\",\n  \"direccion\": \"\",\n  \"periodo_inicio\": \"YYYY-MM-DD\",\n  \"periodo_fin\": \"YYYY-MM-DD\",\n  \"kwh_total\": \"\",\n  \"total_pagar_mxn\": \"\"\n}",
+        "options": {
+          "systemPromptTemplate": "Eres un extractor de datos especializado en recibos CFE. Devuelves solo JSON válido."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        -140
+      ],
+      "id": "b6eec943-529d-4fb7-a6fd-9cc2d9a24695",
+      "name": "datos_recibo_frontal_cfe1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        4600,
+        -140
+      ],
+      "id": "38f9593b-d3dd-402e-b201-aaa5363658ff",
+      "name": "Irradiación1"
+    },
+    {
+      "parameters": {
+        "url": "https://maps.googleapis.com/maps/api/geocode/json",
+        "options": {},
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "address",
+              "value": "={{ $json.output.direccion }}"
+            },
+            {
+              "name": "key",
+              "value": "AIzaSyBI6Vup5IKvfvlyvdhV_9nipF5FXaVnZ04"
+            }
+          ]
+        }
+      },
+      "name": "Dirección a Pin1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1820,
+        -140
+      ],
+      "id": "f22f8cec-5bb7-4431-aa12-c8fd93f43f0e"
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = $json?.properties?.parameter?.ALLSKY_SFC_SW_DWN ?? {};\nconst keys = Object.keys(data);\n\nif (keys.length === 0) {\n  return {\n    datos_nasa_mensuales: {\n      irradiacion_promedio: [],\n      unidad_medida: \"kWh/m²/día\",\n      resumen: {\n        mejor_mes: null,\n        peor_mes: null\n      }\n    },\n    irradiacion_promedio_min: null,\n    irradiacion_promedio_max: null,\n    irradiacion_promedio_anual: null\n  };\n}\n\n// Mapeo de meses con orden para mantener secuencia correcta\nconst monthsMap = [\n  { numero: \"01\", nombre: \"Enero\",      orden: 1 },\n  { numero: \"02\", nombre: \"Febrero\",    orden: 2 },\n  { numero: \"03\", nombre: \"Marzo\",      orden: 3 },\n  { numero: \"04\", nombre: \"Abril\",      orden: 4 },\n  { numero: \"05\", nombre: \"Mayo\",       orden: 5 },\n  { numero: \"06\", nombre: \"Junio\",      orden: 6 },\n  { numero: \"07\", nombre: \"Julio\",      orden: 7 },\n  { numero: \"08\", nombre: \"Agosto\",     orden: 8 },\n  { numero: \"09\", nombre: \"Septiembre\", orden: 9 },\n  { numero: \"10\", nombre: \"Octubre\",    orden: 10 },\n  { numero: \"11\", nombre: \"Noviembre\",  orden: 11 },\n  { numero: \"12\", nombre: \"Diciembre\",  orden: 12 }\n];\n\n// Acumuladores\nconst sumPerMonth = {};\nconst countPerMonth = {};\nlet totalSum = 0;\nlet totalCount = 0;\n\n// Procesar datos - excluir mes 13 (promedios anuales)\nfor (const k of keys) {\n  const v = +data[k];\n  if (!Number.isFinite(v)) continue;\n  \n  const month = k.slice(4, 6); // YYYYMM...\n  \n  // Saltar mes 13 (promedios anuales en los datos originales)\n  if (month === \"13\") continue;\n  \n  if (!sumPerMonth[month]) {\n    sumPerMonth[month] = 0;\n    countPerMonth[month] = 0;\n  }\n  \n  sumPerMonth[month] += v;\n  countPerMonth[month] += 1;\n  totalSum += v;\n  totalCount += 1;\n}\n\n// Calcular promedio anual\nconst promedioAnual = totalCount > 0 ? +(totalSum / totalCount).toFixed(2) : null;\n\n// Crear array de irradiación promedio (ordenado por mes)\nconst irradiacionPromedio = monthsMap\n  .filter(m => m.numero in sumPerMonth) // Solo meses con datos\n  .map(m => {\n    const avg = sumPerMonth[m.numero] / countPerMonth[m.numero];\n    return {\n      mes: m.nombre,\n      irradiacion: +avg.toFixed(2),\n      orden: m.orden,\n      mes_numero: m.numero\n    };\n  })\n  .sort((a, b) => a.orden - b.orden); // Ordenar por mes natural\n\n// Calcular min y max de los promedios mensuales\nconst irradiacionValues = irradiacionPromedio.map(x => x.irradiacion);\nconst minIrradiacion = irradiacionValues.length > 0 ? Math.min(...irradiacionValues) : null;\nconst maxIrradiacion = irradiacionValues.length > 0 ? Math.max(...irradiacionValues) : null;\n\n// Estructura para datos_nasa_mensuales (JSONB) - formato simplificado\nconst datosNasaMensuales = {\n  irradiacion_promedio: irradiacionPromedio,\n  unidad_medida: \"kWh/m²/día\",\n  resumen: {\n    mejor_mes: irradiacionPromedio.length > 0 \n      ? irradiacionPromedio.reduce((max, curr) => \n          curr.irradiacion > max.irradiacion ? curr : max\n        ).mes \n      : null,\n    peor_mes: irradiacionPromedio.length > 0 \n      ? irradiacionPromedio.reduce((min, curr) => \n          curr.irradiacion < min.irradiacion ? curr : min\n        ).mes \n      : null\n  }\n};\n\n// Retornar objeto con los campos exactos para la base de datos\nreturn {\n  datos_nasa_mensuales: datosNasaMensuales,\n  irradiacion_promedio_min: minIrradiacion,\n  irradiacion_promedio_max: maxIrradiacion,\n  irradiacion_promedio_anual: promedioAnual\n};"
+      },
+      "name": "Calculate Annual Irradiation1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        3140,
+        -20
+      ],
+      "id": "9f089f85-0cae-4ec3-985e-a86fc0173ea2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "purpose",
+              "value": "ocr"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data-frontal"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        -140
+      ],
+      "id": "4e10f38c-224e-4d62-995c-f671f27fb4e8",
+      "name": "Frontal",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KLy0d5eWgJRSy4Rs",
+          "name": "OCR MISTRAL"
+        },
+        "mistralCloudApi": {
+          "id": "VzHcIqCsPw3QTDNL",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/*****************************************************\n * PV Sizing (mínimo-insumos, días/mes fijo = 30.4)\n * Usa SOLO:\n *   • output.consumo_max ............ kWh/mes (pico consumo histórico CFE)\n *   • irradiacion_promedio_anual ..... kWh/m²/día (NASA promedio)\n *****************************************************/\n\n//–––– Parámetros ajustables ––––\nconst PR            = 0.80;\nconst oversizeFact  = 1.05;\nconst panelWp_def   = 550;\nconst DAYS_PER_MONTH = 30.4;\n\n//–––– Entrada ––––\nconst j = items[0].json || {};\n\n// $input.first().json.output.consumo_max\nconst kWhPeak = +j.output?.consumo_max || 0;\nif (!(kWhPeak > 0)) {\n  throw new Error('Falta output.consumo_max (>0).');\n}\nconst kWhYear = kWhPeak * 12;\n\n// $input.first().json.irradiacion_promedio_anual (CORREGIDO)\nconst irrDayAvg = +j.irradiacion_promedio_anual || NaN;\nif (!(irrDayAvg > 0)) {\n  throw new Error('Falta irradiacion_promedio_anual (>0).');\n}\n\n//–––– Rendimientos ––––\nconst specDayAvg = irrDayAvg * PR;\nconst specYieldMonth = specDayAvg * DAYS_PER_MONTH;\nconst specYieldAnnual = specDayAvg * 365;\n\n//–––– Potencia requerida ––––\nconst kWpByYear = kWhYear / specYieldAnnual;\nconst kWpByPeak = kWhPeak / specYieldMonth;\nconst kWpNeededRaw = Math.max(kWpByYear, kWpByPeak);\nconst kWpNeeded = +(kWpNeededRaw * oversizeFact).toFixed(2);\n\n//–––– Módulos ––––\nconst panelWp = +j.panel_wp > 0 ? +j.panel_wp : panelWp_def;\nconst nPanels = Math.ceil((kWpNeeded * 1000) / panelWp);\n\n//–––– Producción ––––\nconst yearlyProd = +(specYieldAnnual * kWpNeeded).toFixed(0);\n\n//–––– Salida ––––\nitems[0].json = {\n  ...j,\n  sizing: {\n    inputs: {\n      kWh_peak_month: kWhPeak,\n      kWh_year_assumed: kWhYear,\n      irr_avg_day: irrDayAvg,\n      days_per_month: DAYS_PER_MONTH,\n      PR,\n      oversize_fact: oversizeFact,\n      // Datos NASA disponibles\n      irr_min: +j.irradiacion_promedio_min || null,\n      irr_max: +j.irradiacion_promedio_max || null,\n      nasa_cache_id: j.id || null,\n      hash_ubicacion: j.hash_ubicacion || null\n    },\n    derived: {\n      spec_yield_avg_day: +specDayAvg.toFixed(2),\n      spec_yield_avg_month: +specYieldMonth.toFixed(2),\n      spec_yield_annual: +specYieldAnnual.toFixed(2),\n    },\n    results: {\n      kWp_needed: kWpNeeded,\n      panel_wp: panelWp,\n      n_panels: nPanels,\n      yearly_prod: yearlyProd,\n    },\n    method_notes:\n      \"Sizing basado en output.consumo_max (pico mensual) y irradiacion_promedio_anual (kWh/m²/día) de NASA; conversión con 30.4 d/mes fijo; anual = 365×promedio.\"\n  }\n};\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4160,
+        -140
+      ],
+      "id": "9ca97225-7171-467a-904d-602bff3ead9c",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO cotizaciones_leads_temp (\n  temp_lead_id,\n  recibo_cfe,\n  consumo_kwh_historico,\n  resumen_energetico,\n  sizing_results,\n  irradiacion_cache_id\n) VALUES (\n  '{{ $json.temp_lead_id || \"unknown\" }}',\n  '{{ JSON.stringify($json.output || {}) }}'::jsonb,\n  '{{ JSON.stringify($json.output?.consumo_historico || []) }}'::jsonb,\n  '{{ JSON.stringify($json.output || {}) }}'::jsonb,\n  '{{ JSON.stringify($json.sizing || {}) }}'::jsonb,\n  {{ $json.id ? \"'\" + $json.id + \"'\" : 'NULL' }}\n) RETURNING id, temp_lead_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        4380,
+        -140
+      ],
+      "id": "fff70345-99f4-4cbf-beb3-f4798107e0cf",
+      "name": "Save Temp Quote",
+      "credentials": {
+        "postgres": {
+          "id": "gDkuViTqq5Eo3arL",
+          "name": "Enerbook test"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3940,
+        -140
+      ],
+      "id": "76e697bd-3322-48bc-94b9-a020d27ad25e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ocr-input",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -100,
+        160
+      ],
+      "id": "59521adc-72e9-41f5-8531-decceee5a193",
+      "name": "Input",
+      "webhookId": "ac352058-a428-4e50-b361-d7d62480c7e7"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = [];\n\n// Obtener el item de entrada\nconst inputItem = $input.all()[0];\n\n// Generar temp_lead_id único\nconst tempLeadId = `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;\n\n// Crear item para data-frontal\nif (inputItem.binary['data-frontal']) {\n  items.push({\n    json: { type: 'frontal', temp_lead_id: tempLeadId },\n    binary: { 'data-frontal': inputItem.binary['data-frontal'] }\n  });\n}\n\n// Crear item para data-posterior  \nif (inputItem.binary['data-posterior']) {\n  items.push({\n    json: { type: 'posterior', temp_lead_id: tempLeadId },\n    binary: { 'data-posterior': inputItem.binary['data-posterior'] }\n  });\n}\n\n// Si no hay binarios, crear item básico con temp_lead_id\nif (items.length === 0) {\n  items.push({\n    json: { type: 'empty', temp_lead_id: tempLeadId }\n  });\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        160
+      ],
+      "id": "3e604e9a-7806-4075-ad16-cbf0967afee1",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ $json.type === 'frontal' ? 0 : 1 }}",
+        "looseTypeValidation": true
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        340,
+        160
+      ],
+      "id": "6122b409-8ab6-43c7-aace-e867904ac6a7",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "url": "https://power.larc.nasa.gov/api/temporal/monthly/point",
+        "options": {},
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "parameters",
+              "value": "ALLSKY_SFC_SW_DWN"
+            },
+            {
+              "name": "community",
+              "value": "RE"
+            },
+            {
+              "name": "latitude",
+              "value": "={{ $('Generate Cache Key').item.json.latitude }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ $('Generate Cache Key').item.json.longitude }}"
+            },
+            {
+              "name": "start",
+              "value": "2015"
+            },
+            {
+              "name": "end",
+              "value": "2024"
+            },
+            {
+              "name": "format",
+              "value": "JSON"
+            }
+          ]
+        }
+      },
+      "name": "Get Annual Solar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        2920,
+        -20
+      ],
+      "id": "20a0e604-b2cc-4478-b2a2-589e18018c4a"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "datos_recibo_posterior_cfe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Posterior": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "datos_recibo_posterior_cfe": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Generate Cache Key": {
+      "main": [
+        [
+          {
+            "node": "Query Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Cache": {
+      "main": [
+        [
+          {
+            "node": "Cache Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cache Exists?": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Annual Solar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Cache": {
+      "main": [
+        [
+          {
+            "node": "Merge Cache Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Cache Info": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "datos_recibo_frontal_cfe1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "datos_recibo_posterior_cfe",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "datos_recibo_frontal_cfe1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "Generate Cache Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "datos_recibo_frontal_cfe1": {
+      "main": [
+        [
+          {
+            "node": "Dirección a Pin1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dirección a Pin1": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Annual Irradiation1": {
+      "main": [
+        [
+          {
+            "node": "Save to Cache",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Cache Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Frontal": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Save Temp Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Temp Quote": {
+      "main": [
+        [
+          {
+            "node": "Irradiación1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Frontal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Posterior",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Annual Solar": {
+      "main": [
+        [
+          {
+            "node": "Calculate Annual Irradiation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "dc6433f2-20d0-446f-b80d-79f7b71dca1e",
+  "meta": {
+    "instanceId": "ace24c3e3f8856d5fe321c9263afe3e32177483bb07d87eae3c4dc2e0d2f2255"
+  },
+  "id": "TuPF7CiYKUcfzmsa",
+  "tags": []
+}
