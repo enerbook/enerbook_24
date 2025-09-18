@@ -1,40 +1,9 @@
 import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
-import { useAuth } from '../../../context/AuthContext';
+import { useDashboardData } from '../../../context/DashboardDataContext';
 
 const ConsumoTab = () => {
-  const { leadData, userType } = useAuth();
-
-  // Procesar datos reales del lead
-  const getConsumoData = () => {
-    if (userType !== 'lead' || !leadData?.consumo_kwh_historico) {
-      return [];
-    }
-
-    const historico = leadData.consumo_kwh_historico;
-    const promedio = historico.reduce((sum, item) => sum + item.kwh, 0) / historico.length;
-
-    return historico.map(item => {
-      const porcentaje = ((item.kwh / promedio) * 100).toFixed(1);
-      const porcentajeNum = parseFloat(porcentaje);
-
-      let color = 'gradient';
-      if (porcentajeNum > 110) color = 'red';
-      else if (porcentajeNum < 85) color = 'green';
-
-      return {
-        periodo: item.periodo,
-        consumo: item.kwh.toString(),
-        porcentaje: `${porcentaje}%`,
-        color
-      };
-    }).sort((a, b) => {
-      // Ordenar por período (más reciente primero)
-      return b.periodo.localeCompare(a.periodo);
-    });
-  };
-
-  const consumoData = getConsumoData();
+  const { consumoData, hasData } = useDashboardData();
 
   return (
     <main className="flex-1 px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
@@ -102,7 +71,7 @@ const ConsumoTab = () => {
                   ) : (
                     <tr>
                       <td colSpan="3" className="py-8 px-4 text-center text-gray-500">
-                        {userType === 'lead' ? 'Cargando datos de consumo...' : 'No hay datos de consumo disponibles'}
+                        {hasData ? 'Cargando datos de consumo...' : 'No hay datos de consumo disponibles'}
                       </td>
                     </tr>
                   )}

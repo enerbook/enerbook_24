@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient'; // Importa el cliente de Supabase
 
 const AuthContext = createContext();
@@ -55,22 +55,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const fetchLeadData = async (tempLeadId) => {
-    console.log('fetchLeadData called with tempLeadId:', tempLeadId);
-    if (!tempLeadId) return null;
+  const fetchLeadData = useCallback(async (requestedLeadId) => {
+    console.log('fetchLeadData called with tempLeadId:', requestedLeadId);
+    if (!requestedLeadId) return null;
+
+    // Si ya tenemos datos para este lead, no hacer otra petición
+    if (leadData && leadData.temp_lead_id === requestedLeadId) {
+      console.log('Lead data already exists for:', requestedLeadId);
+      return leadData;
+    }
 
     try {
       const { data, error } = await supabase
         .from('cotizaciones_leads_temp')
         .select('*')
-        .eq('temp_lead_id', tempLeadId)
+        .eq('temp_lead_id', requestedLeadId)
         .single();
 
       if (error || !data) {
-        console.log('Lead not found in DB, using fallback data for:', tempLeadId);
+        console.log('Lead not found in DB, using fallback data for:', requestedLeadId);
         // Datos de fallback para testing
         return {
-          temp_lead_id: tempLeadId,
+          temp_lead_id: requestedLeadId,
           recibo_cfe: {
             no_servicio: "1234567890123",
             nombre: "Juan Pérez García",
@@ -110,17 +116,24 @@ export const AuthProvider = ({ children }) => {
       console.error('Error in fetchLeadData:', error);
       return null;
     }
-  };
+  }, [leadData]); // Include leadData to check for existing data
 
-  const setLeadMode = async (tempLeadId) => {
-    console.log('Setting lead mode with tempLeadId:', tempLeadId);
-    setTempLeadId(tempLeadId);
+  const setLeadMode = useCallback(async (newTempLeadId) => {
+    console.log('Setting lead mode with tempLeadId:', newTempLeadId);
+
+    // Si ya estamos en modo lead con el mismo ID, no hacer nada
+    if (userType === 'lead' && tempLeadId === newTempLeadId) {
+      console.log('Already in lead mode with same ID:', newTempLeadId);
+      return;
+    }
+
+    setTempLeadId(newTempLeadId);
     setUserType('lead');
 
-    const data = await fetchLeadData(tempLeadId);
+    const data = await fetchLeadData(newTempLeadId);
     setLeadData(data);
     setLoading(false);
-  };
+  }, [userType, tempLeadId, fetchLeadData]); // Include necessary dependencies
 
   useEffect(() => {
     setLoading(true);

@@ -1,9 +1,9 @@
 import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
-import { useAuth } from '../../../context/AuthContext';
+import { useDashboardData } from '../../../context/DashboardDataContext';
 
 const DetallesTab = () => {
-  const { leadData, userType } = useAuth();
+  const { reciboData, resumenEnergetico, sistemaData, consumoData, hasData } = useDashboardData();
   return (
     <main className="flex-1 px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
       <div className="space-y-8">
@@ -37,35 +37,35 @@ const DetallesTab = () => {
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
             <h2 className="text-sm font-bold text-gray-900 mb-4">Datos del Recibo Cfe</h2>
             <div className="space-y-3">
-              {userType === 'lead' && leadData?.recibo_cfe ? (
+              {hasData && reciboData ? (
                 <>
                   <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}>
                     <p className="text-gray-500 font-medium mb-1 text-sm">Cliente</p>
-                    <p className="font-semibold text-gray-900 text-sm">{leadData.recibo_cfe.nombre || 'No disponible'}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{reciboData.nombre || 'No disponible'}</p>
                   </div>
                   <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}>
                     <p className="text-gray-500 font-medium mb-1 text-sm">No. de Servicio</p>
-                    <p className="font-semibold text-gray-900 text-sm">{leadData.recibo_cfe.no_servicio || 'No disponible'}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{reciboData.no_servicio || 'No disponible'}</p>
                   </div>
                   <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}>
                     <p className="text-gray-500 font-medium mb-1 text-sm">RMU</p>
-                    <p className="font-semibold text-gray-900 text-sm">{leadData.recibo_cfe.RMU || 'No disponible'}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{reciboData.RMU || 'No disponible'}</p>
                   </div>
                   <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}>
                     <p className="text-gray-500 font-medium mb-1 text-sm">Cuenta</p>
-                    <p className="font-semibold text-gray-900 text-sm">{leadData.recibo_cfe.cuenta || 'No disponible'}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{reciboData.cuenta || 'No disponible'}</p>
                   </div>
                   <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}>
                     <p className="text-gray-500 font-medium mb-1 text-sm">Tarifa</p>
-                    <p className="font-semibold text-gray-900 text-sm">{leadData.recibo_cfe.tarifa || 'No disponible'}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{reciboData.tarifa || 'No disponible'}</p>
                   </div>
                   <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}>
                     <p className="text-gray-500 font-medium mb-1 text-sm">Multiplicador</p>
-                    <p className="font-semibold text-gray-900 text-sm">{leadData.recibo_cfe.multiplicador || 'No disponible'}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{reciboData.multiplicador || 'No disponible'}</p>
                   </div>
                   <div className="p-3 rounded-lg" style={{ backgroundColor: '#f8f8f8' }}>
                     <p className="text-gray-500 font-medium mb-1 text-sm">Dirección</p>
-                    <p className="font-semibold text-gray-900 text-sm">{leadData.recibo_cfe.direccion || leadData.recibo_cfe.direccion_formatted || 'No disponible'}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{reciboData.direccion || reciboData.direccion_formatted || 'No disponible'}</p>
                   </div>
                 </>
               ) : (
@@ -85,22 +85,22 @@ const DetallesTab = () => {
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
             <h3 className="text-sm font-bold text-orange-500 mb-3">Resumen Energético</h3>
             <div className="space-y-3">
-              {userType === 'lead' && leadData ? (
+              {hasData ? (
                 <>
                   <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{leadData.resumen_energetico?.consumo_max || leadData.consumo_kwh_historico?.reduce((max, curr) => Math.max(max, curr.kwh), 0) || '0'}</span>
+                    <span className="text-sm">{resumenEnergetico?.consumo_max || Math.max(...(consumoData.map(item => parseInt(item.consumo)) || [0]))}</span>
                     <span className="text-sm">Consumo Máximo (kWh)</span>
                   </div>
                   <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{leadData.resumen_energetico?.consumo_promedio || Math.round((leadData.consumo_kwh_historico?.reduce((sum, curr) => sum + curr.kwh, 0) || 0) / (leadData.consumo_kwh_historico?.length || 1))}</span>
+                    <span className="text-sm">{resumenEnergetico?.consumo_promedio || Math.round((consumoData.reduce((sum, item) => sum + parseInt(item.consumo), 0) || 0) / (consumoData.length || 1))}</span>
                     <span className="text-sm">Consumo Promedio (kWh)</span>
                   </div>
                   <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{leadData.resumen_energetico?.periodos_analizados || leadData.consumo_kwh_historico?.length || '0'}</span>
+                    <span className="text-sm">{resumenEnergetico?.periodos_analizados || consumoData.length || '0'}</span>
                     <span className="text-sm">Períodos Analizados</span>
                   </div>
                   <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{((leadData.resumen_energetico?.consumo_max || 0) * 12).toLocaleString()}</span>
+                    <span className="text-sm">{((resumenEnergetico?.consumo_max || Math.max(...(consumoData.map(item => parseInt(item.consumo)) || [0]))) * 12).toLocaleString()}</span>
                     <span className="text-sm">Consumo Anual Máx (kWh)</span>
                   </div>
                 </>
@@ -116,22 +116,22 @@ const DetallesTab = () => {
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
             <h3 className="text-sm font-bold text-gray-900 mb-3">Dimensionamiento del Sistema Solar</h3>
             <div className="space-y-3">
-              {userType === 'lead' && leadData?.sizing_results ? (
+              {hasData && sistemaData ? (
                 <>
                   <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
-                    <span className="text-sm">{leadData.sizing_results.results?.kWp_needed || '0'}</span>
+                    <span className="text-sm">{sistemaData.results?.kWp_needed || '0'}</span>
                     <span className="text-sm">kWp Requeridos</span>
                   </div>
                   <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
-                    <span className="text-sm">{leadData.sizing_results.results?.panel_wp || '550'}</span>
+                    <span className="text-sm">{sistemaData.results?.panel_wp || '550'}</span>
                     <span className="text-sm">Wp por Panel</span>
                   </div>
                   <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
-                    <span className="text-sm">{leadData.sizing_results.results?.n_panels || '0'}</span>
+                    <span className="text-sm">{sistemaData.results?.n_panels || '0'}</span>
                     <span className="text-sm">Número de Paneles</span>
                   </div>
                   <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
-                    <span className="text-sm">{(leadData.sizing_results.results?.yearly_prod || 0).toLocaleString()}</span>
+                    <span className="text-sm">{(sistemaData.results?.yearly_prod || 0).toLocaleString()}</span>
                     <span className="text-sm">Producción Anual (kWh)</span>
                   </div>
                 </>

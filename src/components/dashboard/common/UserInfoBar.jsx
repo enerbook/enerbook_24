@@ -1,18 +1,20 @@
 import React from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import { useDashboardData } from '../../../context/DashboardDataContext';
 
 const UserInfoBar = () => {
-  const { userType, leadData } = useAuth();
+  const { userType } = useAuth();
+  const { reciboData, hasData } = useDashboardData();
 
-  // Para leads, usar datos del leadData
+  // Para leads, usar datos del reciboData
   let userName = 'Usuario';
   let serviceNumber = 'N/A';
   let address = 'Dirección no disponible';
 
-  if (userType === 'lead' && leadData?.recibo_cfe) {
-    userName = leadData.recibo_cfe.nombre || 'Usuario';
-    serviceNumber = leadData.recibo_cfe.no_servicio || 'N/A';
-    address = leadData.recibo_cfe.direccion_formatted || leadData.recibo_cfe.direccion || 'Dirección no disponible';
+  if (userType === 'lead' && hasData && reciboData) {
+    userName = reciboData.nombre || 'Usuario';
+    serviceNumber = reciboData.no_servicio || 'N/A';
+    address = reciboData.direccion_formatted || reciboData.direccion || 'Dirección no disponible';
   } else if (userType === 'cliente') {
     // TODO: Cargar datos del usuario autenticado desde Supabase
     userName = 'Diego Herold Carranza Juárez'; // placeholder

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View } from "react-native";
 import AppLayout from '../src/components/common/AppLayout';
 import { useAuth } from '../src/context/AuthContext';
+import { DashboardDataProvider } from '../src/context/DashboardDataContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 // Import tab components
@@ -14,17 +15,22 @@ import PerfilTab from '../src/components/dashboard/tabs/PerfilTab';
 
 export default function DashboardScreen() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const { user, userType, loading, setLeadMode } = useAuth();
+  const { user, userType, loading, setLeadMode, tempLeadId } = useAuth();
   const router = useRouter();
   const { temp_lead_id } = useLocalSearchParams();
 
   // Detectar temp_lead_id en la URL
   useEffect(() => {
-    if (temp_lead_id && !user) {
+    // Solo establecer modo lead si:
+    // 1. Hay temp_lead_id en la URL
+    // 2. No hay usuario autenticado
+    // 3. No estamos ya en modo lead
+    // 4. El temp_lead_id es diferente al actual
+    if (temp_lead_id && !user && userType !== 'lead' && temp_lead_id !== tempLeadId) {
       console.log('Dashboard: temp_lead_id detected, setting lead mode:', temp_lead_id);
       setLeadMode(temp_lead_id);
     }
-  }, [temp_lead_id, user, setLeadMode]);
+  }, [temp_lead_id, user, userType, tempLeadId, setLeadMode]);
 
   // Mostrar loading mientras se resuelve el estado
   if (loading) {
@@ -63,12 +69,14 @@ export default function DashboardScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <AppLayout 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      >
-        {renderContent()}
-      </AppLayout>
+      <DashboardDataProvider>
+        <AppLayout
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        >
+          {renderContent()}
+        </AppLayout>
+      </DashboardDataProvider>
     </View>
   );
 }

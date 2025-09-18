@@ -1,60 +1,9 @@
 import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
-import { useAuth } from '../../../context/AuthContext';
+import { useDashboardData } from '../../../context/DashboardDataContext';
 
 const IrradiacionTab = () => {
-  const { leadData, userType } = useAuth();
-
-  // Procesar datos reales de irradiación
-  const getIrradiacionData = () => {
-    if (userType !== 'lead' || !leadData?.sizing_results?.inputs) {
-      return [];
-    }
-
-    // Obtener datos de irradiación de NASA (pueden estar en diferentes lugares)
-    const nasaData = leadData.sizing_results.inputs;
-
-    // Datos mensuales simulados basados en los datos disponibles
-    const mesesData = [
-      { mes: 'Enero', orden: 1 },
-      { mes: 'Febrero', orden: 2 },
-      { mes: 'Marzo', orden: 3 },
-      { mes: 'Abril', orden: 4 },
-      { mes: 'Mayo', orden: 5 },
-      { mes: 'Junio', orden: 6 },
-      { mes: 'Julio', orden: 7 },
-      { mes: 'Agosto', orden: 8 },
-      { mes: 'Septiembre', orden: 9 },
-      { mes: 'Octubre', orden: 10 },
-      { mes: 'Noviembre', orden: 11 },
-      { mes: 'Diciembre', orden: 12 }
-    ];
-
-    // Calcular irradiación basada en promedio, mínimo y máximo
-    const promedioAnual = nasaData.irr_avg_day || 5.5;
-    const variacion = (nasaData.irr_max - nasaData.irr_min) / 2 || 1;
-
-    const irradiacionData = mesesData.map((mes, index) => {
-      // Simular variación estacional (más alto en primavera/verano)
-      const factor = 0.5 + 0.5 * Math.cos((mes.orden - 5) * Math.PI / 6);
-      const irradiacion = (promedioAnual + variacion * (factor - 0.5)).toFixed(2);
-
-      return {
-        mes: mes.mes,
-        irradiacion,
-        ranking: `#${index + 1}`,
-        valor: parseFloat(irradiacion)
-      };
-    });
-
-    // Ordenar por irradiación (mayor a menor)
-    return irradiacionData.sort((a, b) => b.valor - a.valor).map((item, index) => ({
-      ...item,
-      ranking: `#${index + 1}`
-    }));
-  };
-
-  const irradiacionData = getIrradiacionData();
+  const { irradiacionData, hasData } = useDashboardData();
 
   return (
     <main className="flex-1 px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
@@ -109,7 +58,7 @@ const IrradiacionTab = () => {
                   ) : (
                     <tr>
                       <td colSpan="3" className="py-8 px-4 text-center text-gray-500">
-                        {userType === 'lead' ? 'Cargando datos de irradiación...' : 'No hay datos de irradiación disponibles'}
+                        {hasData ? 'Cargando datos de irradiación...' : 'No hay datos de irradiación disponibles'}
                       </td>
                     </tr>
                   )}
