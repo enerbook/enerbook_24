@@ -52,6 +52,6 @@ app-example
 
 contexto/
 
-n8n/
-estructura_db/
+.n8n/
+.estructura_db/
 
