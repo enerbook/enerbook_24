@@ -16,7 +16,7 @@ export function useOcr() {
       return;
     }
 
-    const webhookUrl = 'https://primary-production-0f9d.up.railway.app/webhook/ocr-input';
+    const webhookUrl = 'https://services.enerbook.mx/webhook/ocr-input';
     const formData = new FormData();
 
     files.forEach((file) => {
