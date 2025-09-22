@@ -1,0 +1,32 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "created_at": "2025-01-15T10:30:00Z",
+    "updated_at": "2025-01-15T10:30:00Z",
+    "nombre": "Juan Pérez García",
+    "correo_electronico": "juan.perez@ejemplo.com",
+    "telefono": "+525551234567",
+    "fecha_nacimiento": "1985-03-15",
+    "rfc": "PEGJ850315ABC"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "created_at": "2025-01-16T14:20:00Z",
+    "updated_at": "2025-01-16T14:20:00Z",
+    "nombre": "María González López",
+    "correo_electronico": "maria.gonzalez@ejemplo.com",
+    "telefono": "+525557654321",
+    "fecha_nacimiento": "1990-07-22",
+    "rfc": "GOLM900722XYZ"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440003",
+    "created_at": "2025-01-17T09:15:00Z",
+    "updated_at": "2025-01-17T09:15:00Z",
+    "nombre": "Carlos Rodríguez Martínez",
+    "correo_electronico": "carlos.rodriguez@ejemplo.com",
+    "telefono": "+525559876543",
+    "fecha_nacimiento": "1982-11-08",
+    "rfc": "ROMC821108DEF"
+  }
+]

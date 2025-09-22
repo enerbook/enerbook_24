@@ -1,0 +1,311 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440301",
+    "created_at": "2025-01-18T09:15:00Z",
+    "updated_at": "2025-01-18T09:15:00Z",
+    "temp_lead_id": "lead_1737187742_abc123def",
+    "recibo_cfe": {
+      "no_servicio": "1234567890123",
+      "RMU": "RMU987654321",
+      "cuenta": "CTA9876543210",
+      "tarifa": "GDMTH",
+      "no_medidor": "MED789456123",
+      "multiplicador": "1.0",
+      "no_hilos": "3",
+      "nombre": "Juan Pérez García",
+      "direccion": "CALLE INSURGENTES 456, COL. ROMA NORTE, CDMX, C.P. 06700",
+      "direccion_formatted": "Calle Insurgentes 456, Col. Roma Norte, CP 06700 Ciudad de México, Ciudad de México, México",
+      "periodo_inicio": "2024-12-15",
+      "periodo_fin": "2025-01-14",
+      "kwh_total": "385",
+      "total_pagar_mxn": "1245.80"
+    },
+    "consumo_kwh_historico": [
+      {
+        "periodo": "ENE25",
+        "kwh": 385
+      },
+      {
+        "periodo": "DIC24",
+        "kwh": 420
+      },
+      {
+        "periodo": "NOV24",
+        "kwh": 358
+      },
+      {
+        "periodo": "OCT24",
+        "kwh": 394
+      },
+      {
+        "periodo": "SEP24",
+        "kwh": 405
+      },
+      {
+        "periodo": "AGO24",
+        "kwh": 456
+      },
+      {
+        "periodo": "JUL24",
+        "kwh": 478
+      },
+      {
+        "periodo": "JUN24",
+        "kwh": 442
+      },
+      {
+        "periodo": "MAY24",
+        "kwh": 398
+      },
+      {
+        "periodo": "ABR24",
+        "kwh": 367
+      },
+      {
+        "periodo": "MAR24",
+        "kwh": 334
+      },
+      {
+        "periodo": "FEB24",
+        "kwh": 312
+      }
+    ],
+    "resumen_energetico": {
+      "consumo_max": 478,
+      "temp_lead_id": "lead_1737187742_abc123def"
+    },
+    "sizing_results": {
+      "inputs": {
+        "kWh_peak_month": 478,
+        "kWh_year_assumed": 5736,
+        "irr_avg_day": 5.89,
+        "days_per_month": 30.4,
+        "PR": 0.8,
+        "oversize_fact": 1.05,
+        "irr_min": 4.23,
+        "irr_max": 7.12,
+        "nasa_cache_id": "550e8400-e29b-41d4-a716-446655440101",
+        "hash_ubicacion": "abc123def"
+      },
+      "derived": {
+        "spec_yield_avg_day": 4.71,
+        "spec_yield_avg_month": 143.18,
+        "spec_yield_annual": 1719.15
+      },
+      "results": {
+        "kWp_needed": 3.49,
+        "panel_wp": 550,
+        "n_panels": 7,
+        "yearly_prod": 6000
+      },
+      "method_notes": "Sizing basado en output.consumo_max (pico mensual) y irradiacion_promedio_anual (kWh/m²/día) de NASA; conversión con 30.4 d/mes fijo; anual = 365×promedio."
+    },
+    "irradiacion_cache_id": "550e8400-e29b-41d4-a716-446655440101"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440302",
+    "created_at": "2025-01-18T10:30:00Z",
+    "updated_at": "2025-01-18T10:30:00Z",
+    "temp_lead_id": "lead_1737192247_xyz789ghi",
+    "recibo_cfe": {
+      "no_servicio": "2345678901234",
+      "RMU": "RMU876543210",
+      "cuenta": "CTA8765432109",
+      "tarifa": "GDMTO",
+      "no_medidor": "MED678345012",
+      "multiplicador": "1.0",
+      "no_hilos": "2",
+      "nombre": "María González López",
+      "direccion": "AV. REVOLUCIÓN 789, COL. SAN ÁNGEL, CDMX, C.P. 01000",
+      "direccion_formatted": "Av. Revolución 789, Col. San Ángel, CP 01000 Ciudad de México, Ciudad de México, México",
+      "periodo_inicio": "2024-12-20",
+      "periodo_fin": "2025-01-19",
+      "kwh_total": "285",
+      "total_pagar_mxn": "845.60"
+    },
+    "consumo_kwh_historico": [
+      {
+        "periodo": "ENE25",
+        "kwh": 285
+      },
+      {
+        "periodo": "DIC24",
+        "kwh": 310
+      },
+      {
+        "periodo": "NOV24",
+        "kwh": 268
+      },
+      {
+        "periodo": "OCT24",
+        "kwh": 294
+      },
+      {
+        "periodo": "SEP24",
+        "kwh": 305
+      },
+      {
+        "periodo": "AGO24",
+        "kwh": 356
+      },
+      {
+        "periodo": "JUL24",
+        "kwh": 378
+      },
+      {
+        "periodo": "JUN24",
+        "kwh": 342
+      },
+      {
+        "periodo": "MAY24",
+        "kwh": 298
+      },
+      {
+        "periodo": "ABR24",
+        "kwh": 267
+      },
+      {
+        "periodo": "MAR24",
+        "kwh": 254
+      },
+      {
+        "periodo": "FEB24",
+        "kwh": 242
+      }
+    ],
+    "resumen_energetico": {
+      "consumo_max": 378,
+      "temp_lead_id": "lead_1737192247_xyz789ghi"
+    },
+    "sizing_results": {
+      "inputs": {
+        "kWh_peak_month": 378,
+        "kWh_year_assumed": 4536,
+        "irr_avg_day": 5.89,
+        "days_per_month": 30.4,
+        "PR": 0.8,
+        "oversize_fact": 1.05,
+        "irr_min": 4.23,
+        "irr_max": 7.12,
+        "nasa_cache_id": "550e8400-e29b-41d4-a716-446655440101",
+        "hash_ubicacion": "xyz789ghi"
+      },
+      "derived": {
+        "spec_yield_avg_day": 4.71,
+        "spec_yield_avg_month": 143.18,
+        "spec_yield_annual": 1719.15
+      },
+      "results": {
+        "kWp_needed": 2.76,
+        "panel_wp": 550,
+        "n_panels": 5,
+        "yearly_prod": 4746
+      },
+      "method_notes": "Sizing basado en output.consumo_max (pico mensual) y irradiacion_promedio_anual (kWh/m²/día) de NASA; conversión con 30.4 d/mes fijo; anual = 365×promedio."
+    },
+    "irradiacion_cache_id": "550e8400-e29b-41d4-a716-446655440101"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440303",
+    "created_at": "2025-01-18T14:45:00Z",
+    "updated_at": "2025-01-18T14:45:00Z",
+    "temp_lead_id": "lead_1737207912_def456jkl",
+    "recibo_cfe": {
+      "no_servicio": "3456789012345",
+      "RMU": "RMU765432109",
+      "cuenta": "CTA7654321098",
+      "tarifa": "GDMTH",
+      "no_medidor": "MED567234901",
+      "multiplicador": "1.0",
+      "no_hilos": "3",
+      "nombre": "Carlos Rodríguez Mendoza",
+      "direccion": "BLVD. MANUEL ÁVILA CAMACHO 1234, COL. LOMAS DE CHAPULTEPEC, MIGUEL HIDALGO, CDMX, C.P. 11000",
+      "direccion_formatted": "Blvd. Manuel Ávila Camacho 1234, Col. Lomas de Chapultepec, CP 11000 Miguel Hidalgo, Ciudad de México, México",
+      "periodo_inicio": "2025-01-01",
+      "periodo_fin": "2025-01-31",
+      "kwh_total": "642",
+      "total_pagar_mxn": "2456.70"
+    },
+    "consumo_kwh_historico": [
+      {
+        "periodo": "ENE25",
+        "kwh": 642
+      },
+      {
+        "periodo": "DIC24",
+        "kwh": 678
+      },
+      {
+        "periodo": "NOV24",
+        "kwh": 589
+      },
+      {
+        "periodo": "OCT24",
+        "kwh": 612
+      },
+      {
+        "periodo": "SEP24",
+        "kwh": 634
+      },
+      {
+        "periodo": "AGO24",
+        "kwh": 745
+      },
+      {
+        "periodo": "JUL24",
+        "kwh": 798
+      },
+      {
+        "periodo": "JUN24",
+        "kwh": 723
+      },
+      {
+        "periodo": "MAY24",
+        "kwh": 667
+      },
+      {
+        "periodo": "ABR24",
+        "kwh": 598
+      },
+      {
+        "periodo": "MAR24",
+        "kwh": 534
+      },
+      {
+        "periodo": "FEB24",
+        "kwh": 487
+      }
+    ],
+    "resumen_energetico": {
+      "consumo_max": 798,
+      "temp_lead_id": "lead_1737207912_def456jkl"
+    },
+    "sizing_results": {
+      "inputs": {
+        "kWh_peak_month": 798,
+        "kWh_year_assumed": 9576,
+        "irr_avg_day": 5.89,
+        "days_per_month": 30.4,
+        "PR": 0.8,
+        "oversize_fact": 1.05,
+        "irr_min": 4.23,
+        "irr_max": 7.12,
+        "nasa_cache_id": "550e8400-e29b-41d4-a716-446655440101",
+        "hash_ubicacion": "def456jkl"
+      },
+      "derived": {
+        "spec_yield_avg_day": 4.71,
+        "spec_yield_avg_month": 143.18,
+        "spec_yield_annual": 1719.15
+      },
+      "results": {
+        "kWp_needed": 5.83,
+        "panel_wp": 550,
+        "n_panels": 11,
+        "yearly_prod": 10023
+      },
+      "method_notes": "Sizing basado en output.consumo_max (pico mensual) y irradiacion_promedio_anual (kWh/m²/día) de NASA; conversión con 30.4 d/mes fijo; anual = 365×promedio."
+    },
+    "irradiacion_cache_id": "550e8400-e29b-41d4-a716-446655440101"
+  }
+]

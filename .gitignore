@@ -35,7 +35,7 @@ yarn-error.*
 
 # local env files
 .env*.local
-.env
+## .env
 .env.local
 .env.development
 .env.production
@@ -52,6 +52,6 @@ app-example
 
 contexto/
 
-.n8n/
-.estructura_db/
+## .n8n/
+## .estructura_db/
 
