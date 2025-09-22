@@ -23,7 +23,7 @@ export default function LoginNavbar({ onNavigate }) {
             <img
               src="/img/Fulllogonegro.svg"
               alt="Enerbook"
-              className="h-12 w-12 lg:h-14 lg:w-14 shrink-0"
+              className="h-14 w-auto object-contain"
             />
           </div>
 
@@ -76,7 +76,7 @@ export default function LoginNavbar({ onNavigate }) {
             <img
               src="/img/Fulllogonegro.svg"
               alt="Enerbook"
-              className="h-10 w-10 shrink-0"
+              className="h-12 w-auto object-contain"
             />
           </div>
 

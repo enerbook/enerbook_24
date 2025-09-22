@@ -87,14 +87,14 @@ export default function Login({ onNavigate }) {
             <div className="flex items-center">
               <div
                 onClick={() => setRemember((v) => !v)}
-                className={`w-10 h-6 rounded-full shadow-inner transition-colors duration-200 ease-in-out cursor-pointer ${
-                  remember ? "bg-orange-500" : "bg-gray-200"
-                }`}
+                className="w-10 h-6 rounded-full shadow-inner transition-colors duration-200 ease-in-out cursor-pointer"
+                style={remember ? {background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'} : {backgroundColor: '#e5e7eb'}}
               >
                 <div
-                  className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out translate-y-1 ${
+                  className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
                     remember ? "translate-x-5" : "translate-x-1"
                   }`}
+                  style={{marginTop: '2px'}}
                 />
               </div>
               <label

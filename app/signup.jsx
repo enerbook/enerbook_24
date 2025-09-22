@@ -1,187 +1,186 @@
 import React, { useState } from "react";
 import { router } from 'expo-router';
+import LoginNavbar from "../src/components/auth/LoginNavbar";
+import { useAuth } from "../src/context/AuthContext";
 
 export default function SignUp({ onNavigate }) {
+  const { clientSignup } = useAuth();
   const [remember, setRemember] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    const result = await clientSignup(
+      formData.email,
+      formData.password,
+      {
+        name: formData.name,
+        phone: formData.phone
+      }
+    );
+
+    if (result.error) {
+      setError(result.error.message);
+    } else if (result.needsEmailConfirmation) {
+      // Mostrar mensaje de éxito y confirmación de email necesaria
+      setError('');
+      alert('¡Registro exitoso! Por favor revisa tu correo electrónico para confirmar tu cuenta antes de iniciar sesión.');
+      // Redirigir al login después de 3 segundos
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
+    } else {
+      // Si no necesita confirmación, la redirección la manejará _layout.jsx
+      setError('');
+    }
+
+    setIsLoading(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Banda oscura con navbar y encabezado */}
-      <section className="mx-4 mt-4 rounded-3xl bg-[#0B1020] text-white shadow-lg ring-1 ring-white/10">
-        {/* Navbar */}
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-6">
-            {/* Logo */}
-            <button
-              type="button"
-              onClick={() => router.push('/')}
-              className="flex items-center"
-            >
-    <img
-  src="/img/FulllogoBlanco.svg"
-  alt="Enerbook"
-  className="h-24 w-auto md:h-28"
-/>
-
-
-
-
-             
-            </button>
-
-        <div className="flex flex-1 justify-center">
-  <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-white/90">
-    <a 
-      href="#"
-      onClick={(e) => {
-        e.preventDefault();
-        router.push('/');
-      }}
-    >
-      Inicio
-    </a>
-    <a href="#">Cómo funciona</a>
-    <a href="#">Conoce más</a>
-    <a 
-      href="#"
-      onClick={(e) => {
-        e.preventDefault();
-        router.push('/login');
-      }}
-    >
-      Sign In
-    </a>
-  </nav>
-</div>
-
-
-            {/* CTA pill derecha */}
-            <a
-              href="#"
-              className="ml-auto inline-flex items-center rounded-full bg-white/95 px-5 py-2 text-[13px] font-semibold text-slate-900 shadow hover:bg-white"
-              onClick={(e) => {
-                e.preventDefault();
-                router.push('/installer-login');
-              }}
-            >
-              ¿Eres instalador?
-            </a>
-          </div>
-        </div>
-
-        {/* Encabezado centrado dentro de la banda */}
-        <div className="max-w-xl mx-auto px-6 pb-56 md:pb-50   text-center">
-
-          <h1 className="text-3xl md:text-4xl font-extrabold mb-2">
-            ¡Bienvenido a Enerbook!
-          </h1>
-          <p className="text-white/80 text-sm">
-            Tu cuenta para cotizar energía solar 100% en línea.
-          </p>
-          <p className="text-white/80 text-sm">
-            Crea una cuenta para empezar a ahorrar energía desde hoy.
-          </p>
-        </div>
-      </section>
-
-      {/* Tarjeta del formulario superpuesta */}
-      <div className="relative -mt-44 px-4 pb-16">
-        <div className="max-w-md mx-auto">
-          <div className="rounded-2xl bg-white p-8 shadow-xl ring-1 ring-black/5">
-            {/* Logo dentro de la tarjeta */}
-            <div className="mb-6 flex justify-center">
-              <img src="/img/Iconcolor.svg" alt="Enerbook" className="h-24 w-24" />
+    <>
+      <LoginNavbar onNavigate={onNavigate} />
+      <div className="min-h-screen bg-white flex overflow-hidden">
+        {/* Lado izquierdo: formulario */}
+        <section className="w-full lg:w-1/2 flex items-center justify-center px-6 lg:px-16 bg-white overflow-y-auto">
+          <div className="w-full max-w-sm py-8">
+            {/* Encabezado */}
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                ¡Bienvenido a Enerbook!
+              </h2>
+              <p className="text-gray-400">Crea tu cuenta para empezar</p>
             </div>
 
-            <form className="space-y-4">
+            {/* Mensaje de error */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <p>{error}</p>
+              </div>
+            )}
+
+            {/* Formulario */}
+            <form
+              className="space-y-6"
+              onSubmit={handleSubmit}
+            >
               {/* Nombre */}
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Nombre
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre Completo
                 </label>
                 <input
                   type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
                   placeholder="Tu nombre completo"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
                   required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none ring-orange-500/0 focus:ring-2 focus:ring-orange-500"
                 />
               </div>
 
-              {/* Correo */}
+              {/* Email */}
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Correo Electrónico
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   placeholder="Tu correo"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
                   required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none ring-orange-500/0 focus:ring-2 focus:ring-orange-500"
                 />
               </div>
 
               {/* Celular */}
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Número Celular
                 </label>
                 <input
                   type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
                   placeholder="Tu número celular"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
                   required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none ring-orange-500/0 focus:ring-2 focus:ring-orange-500"
                 />
               </div>
 
-              {/* Contraseña */}
+              {/* Password */}
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Contraseña
                 </label>
                 <input
                   type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
                   placeholder="Tu contraseña"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
                   required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none ring-orange-500/0 focus:ring-2 focus:ring-orange-500"
                 />
               </div>
 
               {/* Recordarme */}
-              <div className="flex items-center py-1.5">
-                <button
-                  type="button"
+              <div className="flex items-center">
+                <div
                   onClick={() => setRemember((v) => !v)}
-                  className={`h-6 w-10 cursor-pointer rounded-full transition-colors ${
-                    remember ? "bg-orange-500" : "bg-gray-200"
-                  }`}
+                  className="w-10 h-6 rounded-full shadow-inner transition-colors duration-200 ease-in-out cursor-pointer"
+                  style={remember ? {background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'} : {backgroundColor: '#e5e7eb'}}
                 >
-                  <span
-                    className={`block h-4 w-4 translate-y-1 rounded-full bg-white shadow transition-transform ${
+                  <div
+                    className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
                       remember ? "translate-x-5" : "translate-x-1"
                     }`}
+                    style={{marginTop: '2px'}}
                   />
-                </button>
+                </div>
                 <label
                   onClick={() => setRemember((v) => !v)}
-                  className="ml-3 cursor-pointer text-sm text-gray-700"
+                  className="ml-3 text-sm text-gray-700 cursor-pointer"
                 >
-                  Recuérdame
+                  Recordarme
                 </label>
               </div>
 
               {/* Botón */}
               <button
                 type="submit"
-                className="w-full rounded-lg py-3 text-sm font-semibold text-white shadow"
+                disabled={isLoading}
+                className="w-full py-3 px-4 rounded-lg text-white font-medium text-sm disabled:opacity-50"
                 style={{
-                  background:
-                    "linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)",
+                  background: "linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)",
                 }}
               >
-                Unirme
+                {isLoading ? 'Registrando...' : 'Unirme'}
               </button>
 
-              {/* Sign in */}
+              {/* Login */}
               <p className="text-center text-sm text-gray-400">
                 ¿Ya tienes cuenta?{" "}
                 <a
@@ -198,8 +197,20 @@ export default function SignUp({ onNavigate }) {
               </p>
             </form>
           </div>
-        </div>
+        </section>
+
+        {/* Lado derecho: contenedor oscuro */}
+        <aside className="hidden lg:flex w-1/2 items-start justify-center">
+          <div className="w-full h-[75%] bg-[#090e1a] rounded-l-3xl flex items-center justify-center">
+            <img
+              src="/img/FulllogoColor.svg"
+              alt="enerbook"
+              className="h-56 w-auto"
+              draggable="false"
+            />
+          </div>
+        </aside>
       </div>
-    </div>
+    </>
   );
 }

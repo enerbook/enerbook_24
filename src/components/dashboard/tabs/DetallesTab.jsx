@@ -83,7 +83,7 @@ const DetallesTab = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Resumen Energético */}
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
-            <h3 className="text-sm font-bold text-orange-500 mb-3">Resumen Energético</h3>
+            <h3 className="text-sm font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent mb-3">Resumen Energético</h3>
             <div className="space-y-3">
               {hasData ? (
                 <>

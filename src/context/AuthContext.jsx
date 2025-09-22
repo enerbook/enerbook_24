@@ -212,6 +212,54 @@ export const AuthProvider = ({ children }) => {
     return { data, error };
   };
 
+  const clientSignup = async (email, password, metadata = {}) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          user_type: 'cliente',
+          nombre: metadata.name || '',
+          telefono: metadata.phone || ''
+        }
+      }
+    });
+
+    if (error) return { error };
+
+    // Si el signup fue exitoso pero necesita confirmación de email
+    if (data.user && !data.session) {
+      // El usuario fue creado pero necesita confirmar su email
+      return {
+        data,
+        error: null,
+        needsEmailConfirmation: true,
+        message: "Registro exitoso. Por favor revisa tu correo electrónico para confirmar tu cuenta."
+      };
+    }
+
+    // Si el usuario fue creado y la sesión está activa (email no requiere confirmación)
+    if (data.user && data.session) {
+      // Crear el registro en la tabla usuarios con la sesión activa
+      const { error: usuarioError } = await supabase
+        .from('usuarios')
+        .upsert({
+          id: data.user.id,
+          nombre: metadata.name || '',
+          correo_electronico: email,
+          telefono: metadata.phone || ''
+        }, {
+          onConflict: 'id'
+        });
+
+      if (usuarioError) {
+        console.error('Error creando perfil de usuario:', usuarioError);
+      }
+    }
+
+    return { data, error };
+  };
+
   const clientLogin = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -276,6 +324,7 @@ export const AuthProvider = ({ children }) => {
       tempLeadId,
       installerLogin,
       clientLogin,
+      clientSignup,
       logout,
       loading,
       setLeadMode
