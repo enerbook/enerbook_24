@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
 
 // Combined navigation button component for consistency
-const NavButton = ({ item, activeTab, setActiveTab }) => {
+const NavButton = ({ item, activeTab, setActiveTab, onClose }) => {
   const Icon = item.icon;
   const isActive = activeTab === item.id;
 
@@ -14,6 +14,7 @@ const NavButton = ({ item, activeTab, setActiveTab }) => {
       item.action();
     } else {
       setActiveTab(item.id);
+      if (onClose) onClose(); // Cerrar sidebar en móvil
     }
   };
 
@@ -40,7 +41,7 @@ const NavButton = ({ item, activeTab, setActiveTab }) => {
 };
 
 
-const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
+const UnifiedSidebar = ({ activeTab, setActiveTab, onClose }) => {
   const { user, userType, logout } = useAuth();
   const router = useRouter();
 
@@ -105,7 +106,7 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
   console.log('Sidebar items to show:', sidebarItems.map(item => item.label));
 
   return (
-    <div className="hidden lg:flex lg:w-48 bg-gray-50 flex-col max-h-screen">
+    <div className="flex w-64 lg:w-48 bg-white lg:bg-gray-50 flex-col h-full lg:max-h-screen shadow-xl lg:shadow-none">
       <div className="p-2 -mt-6 flex-shrink-0">
         <div className="flex items-center justify-center">
           <img src="/img/FulllogoColor.svg" alt="Enerbook" className="h-32 w-auto" />
@@ -117,7 +118,7 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
         {userType && sidebarItems.length > 0 && (
           <div className="space-y-1">
             {sidebarItems.map((item) => (
-              <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} />
+              <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} onClose={onClose} />
             ))}
           </div>
         )}
@@ -130,7 +131,7 @@ const UnifiedSidebar = ({ activeTab, setActiveTab }) => {
             </h3>
             <div className="space-y-1">
               {commonAccountItems.map((item) => (
-                 <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} />
+                 <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} onClose={onClose} />
               ))}
             </div>
           </div>

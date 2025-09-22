@@ -25,8 +25,8 @@ const MetricsGrid = () => {
   }
 
   return (
-    <div className="flex-1">
-      <div className="grid grid-cols-2 gap-3">
+    <div className="w-full lg:flex-1">
+      <div className="grid grid-cols-2 gap-2 lg:gap-3">
         <MetricTile title="Consumo Promedio" value={consumoPromedio} subtitle="Mensual" />
         <MetricTile title="Sistema Requerido" value={sistemaRequerido} subtitle={nPaneles} />
         <MetricTile title="Irradiación Promedio" value={irradiacionPromedio} subtitle={ubicacion} />

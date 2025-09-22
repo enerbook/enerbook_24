@@ -2,12 +2,12 @@ import React from 'react';
 
 const QuotesCTA = () => {
   return (
-    <div className="flex-1">
+    <div className="w-full lg:flex-1">
       <div
-        className="p-3 rounded-2xl border border-gray-100 h-full flex items-center justify-between"
+        className="p-4 lg:p-3 rounded-2xl border border-gray-100 h-full flex flex-col lg:flex-row items-center justify-between gap-4"
         style={{ backgroundColor: "#fcfcfc" }}
       >
-        <div className="flex-1 pr-3">
+        <div className="flex-1 text-center lg:text-left">
           <h2 className="text-sm font-extrabold text-gray-900 mb-1">
             Cotiza energía solar de forma segura
           </h2>
@@ -16,9 +16,9 @@ const QuotesCTA = () => {
           </p>
         </div>
 
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 w-full lg:w-auto">
           <button
-            className="rounded-2xl w-[280px] h-[160px] grid place-items-center"
+            className="rounded-2xl w-full lg:w-[280px] h-[120px] lg:h-[160px] grid place-items-center"
             style={{ backgroundColor: "#0b0f17" }}
           >
             <div className="text-center leading-[1.05]">

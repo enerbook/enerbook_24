@@ -5,12 +5,12 @@ import { useDashboardData } from '../../../context/DashboardDataContext';
 const DetallesTab = () => {
   const { reciboData, resumenEnergetico, sistemaData, consumoData, hasData } = useDashboardData();
   return (
-    <main className="flex-1 px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
-      <div className="space-y-8">
+    <main className="flex-1 px-2 lg:px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
+      <div className="space-y-6 lg:space-y-8">
         {/* Top Section - Cotizar energía solar */}
-        <div className="w-1/2">
-          <div className="p-6 rounded-lg border border-gray-100 flex items-center justify-between" style={{ backgroundColor: '#fcfcfc' }}>
-            <div className="flex-1">
+        <div className="w-full lg:w-1/2">
+          <div className="p-4 lg:p-6 rounded-lg border border-gray-100 flex flex-col lg:flex-row items-center justify-between gap-4" style={{ backgroundColor: '#fcfcfc' }}>
+            <div className="flex-1 text-center lg:text-left">
               <h2 className="text-sm font-bold text-gray-900 mb-3">
                 Cotiza energía solar de forma segura
               </h2>
@@ -18,8 +18,8 @@ const DetallesTab = () => {
                 Recibe propuestas de instaladores verificados y selecciona la mejor opción para tu proyecto.
               </p>
             </div>
-            <div className="ml-8">
-              <button className="bg-gray-900 hover:bg-black text-white rounded-2xl px-5 py-3 transition-all group">
+            <div className="w-full lg:w-auto lg:ml-8">
+              <button className="bg-gray-900 hover:bg-black text-white rounded-2xl px-5 py-3 transition-all group w-full lg:w-auto">
                 <div className="text-center">
                   <h3 className="text-sm font-bold mb-1">Solicitar</h3>
                   <h3 className="text-sm font-bold mb-2">Cotizaciones</h3>
@@ -33,7 +33,7 @@ const DetallesTab = () => {
         </div>
 
         {/* Datos del Recibo CFE Section */}
-        <div className="w-1/2">
+        <div className="w-full lg:w-1/2">
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
             <h2 className="text-sm font-bold text-gray-900 mb-4">Datos del Recibo Cfe</h2>
             <div className="space-y-3">
@@ -80,7 +80,7 @@ const DetallesTab = () => {
         <div className="py-4"></div>
 
         {/* Barras de Resumen */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
           {/* Resumen Energético */}
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
             <h3 className="text-sm font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent mb-3">Resumen Energético</h3>
