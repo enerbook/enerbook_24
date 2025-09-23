@@ -14,7 +14,7 @@ const RootLayoutNav = () => {
     if (loading) return;
 
     const inProtectedRoute = segments[0] === 'installer' || segments[0] === 'dashboard';
-    const inAuthRoute = segments[0] === 'installer-login' || segments[0] === 'login' || segments[0] === 'installer-signup';
+    const inAuthRoute = segments[0] === 'installer-login' || segments[0] === 'login' || segments[0] === 'installer-signup' || segments[0] === 'signup';
 
     // Obtener la URL completa actual
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -47,7 +47,7 @@ const RootLayoutNav = () => {
         router.replace('/login');
       }
     } 
-    // Si hay usuario y userType y está en página de login, redirigir al dashboard
+    // Si hay usuario y userType y está en página de auth, redirigir al dashboard apropiado
     else if (user && userType && userType !== 'lead' && inAuthRoute) {
       console.log('Redirecting to dashboard - user logged in on auth route');
       if (userType === 'instalador') {

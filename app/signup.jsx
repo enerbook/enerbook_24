@@ -65,11 +65,16 @@ export default function SignUp({ onNavigate }) {
           router.push('/login');
         }, 3000);
       } else {
-        // Si no necesita confirmación o la migración fue exitosa, la redirección la manejará _layout.jsx
+        // Si no necesita confirmación o la migración fue exitosa, redirigir al dashboard
         setError('');
         if (result.migrated) {
           console.log('Lead migration completed successfully');
         }
+
+        // Redirección inmediata al dashboard
+        setTimeout(() => {
+          router.replace('/dashboard');
+        }, 100);
       }
     } catch (error) {
       setError(error.message || 'Error durante el registro');
