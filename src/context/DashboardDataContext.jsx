@@ -4,11 +4,20 @@ import { useAuth } from './AuthContext';
 const DashboardDataContext = createContext();
 
 export const DashboardDataProvider = ({ children }) => {
-  const { leadData, userType } = useAuth();
+  const { leadData, userType, clientData } = useAuth();
 
-  // Procesar todos los datos una sola vez cuando cambien los datos del lead
+  // Procesar todos los datos una sola vez cuando cambien los datos
   const dashboardData = useMemo(() => {
-    if (userType !== 'lead' || !leadData) {
+    // Determinar fuente de datos según tipo de usuario
+    let sourceData = null;
+
+    if (userType === 'lead' && leadData) {
+      sourceData = leadData;
+    } else if (userType === 'cliente' && clientData?.cotizacion) {
+      sourceData = clientData.cotizacion;
+    }
+
+    if (!sourceData) {
       return {
         consumoData: [],
         irradiacionData: [],
@@ -16,15 +25,16 @@ export const DashboardDataProvider = ({ children }) => {
         reciboData: null,
         resumenEnergetico: null,
         sistemaData: null,
+        userData: userType === 'cliente' ? clientData?.user : null,
         isLoading: false,
         hasData: false
       };
     }
 
     // Procesar datos de consumo histórico
-    const consumoData = leadData.consumo_kwh_historico ?
-      leadData.consumo_kwh_historico.map((item) => {
-        const promedio = leadData.consumo_kwh_historico.reduce((sum, item) => sum + item.kwh, 0) / leadData.consumo_kwh_historico.length;
+    const consumoData = sourceData.consumo_kwh_historico ?
+      sourceData.consumo_kwh_historico.map((item) => {
+        const promedio = sourceData.consumo_kwh_historico.reduce((sum, item) => sum + item.kwh, 0) / sourceData.consumo_kwh_historico.length;
         const porcentaje = ((item.kwh / promedio) * 100).toFixed(1);
         const porcentajeNum = parseFloat(porcentaje);
 
@@ -46,9 +56,9 @@ export const DashboardDataProvider = ({ children }) => {
       : [];
 
     // Procesar datos de irradiación
-    const irradiacionData = leadData.sizing_results?.inputs ?
+    const irradiacionData = sourceData.sizing_results?.inputs ?
       (() => {
-        const nasaData = leadData.sizing_results.inputs;
+        const nasaData = sourceData.sizing_results.inputs;
         const promedioAnual = nasaData.irr_avg_day || 5.5;
         const variacion = (nasaData.irr_max - nasaData.irr_min) / 2 || 1;
 
@@ -89,24 +99,25 @@ export const DashboardDataProvider = ({ children }) => {
       : [];
 
     // Calcular métricas
-    const metricsData = leadData.consumo_kwh_historico ? {
-      consumoPromedio: Math.round(leadData.consumo_kwh_historico.reduce((sum, item) => sum + item.kwh, 0) / leadData.consumo_kwh_historico.length),
-      consumoMaximo: Math.max(...leadData.consumo_kwh_historico.map(item => item.kwh)),
-      irradiacionPromedio: leadData.sizing_results?.inputs?.irr_avg_day || 0,
-      sistemaRequerido: leadData.sizing_results?.results?.kWp_needed || 0
+    const metricsData = sourceData.consumo_kwh_historico ? {
+      consumoPromedio: Math.round(sourceData.consumo_kwh_historico.reduce((sum, item) => sum + item.kwh, 0) / sourceData.consumo_kwh_historico.length),
+      consumoMaximo: Math.max(...sourceData.consumo_kwh_historico.map(item => item.kwh)),
+      irradiacionPromedio: sourceData.sizing_results?.inputs?.irr_avg_day || 0,
+      sistemaRequerido: sourceData.sizing_results?.results?.kWp_needed || 0
     } : null;
 
     return {
       consumoData,
       irradiacionData,
       metricsData,
-      reciboData: leadData.recibo_cfe,
-      resumenEnergetico: leadData.resumen_energetico,
-      sistemaData: leadData.sizing_results,
+      reciboData: sourceData.recibo_cfe,
+      resumenEnergetico: sourceData.resumen_energetico,
+      sistemaData: sourceData.sizing_results,
+      userData: userType === 'cliente' ? clientData?.user : null,
       isLoading: false,
       hasData: true
     };
-  }, [leadData, userType]);
+  }, [leadData, userType, clientData]);
 
   return (
     <DashboardDataContext.Provider value={dashboardData}>

@@ -4,10 +4,10 @@ import LoginNavbar from "../src/components/auth/LoginNavbar";
 import { useAuth } from "../src/context/AuthContext";
 
 export default function SignUp({ onNavigate }) {
-  const { clientSignup } = useAuth();
+  const { clientSignup, migrateLeadToClient, userType, leadData } = useAuth();
   const [remember, setRemember] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
+    name: (userType === 'lead' && leadData?.recibo_cfe?.nombre) ? leadData.recibo_cfe.nombre : '',
     email: '',
     phone: '',
     password: ''
@@ -28,28 +28,51 @@ export default function SignUp({ onNavigate }) {
     setIsLoading(true);
     setError('');
 
-    const result = await clientSignup(
-      formData.email,
-      formData.password,
-      {
-        name: formData.name,
-        phone: formData.phone
-      }
-    );
+    try {
+      let result;
 
-    if (result.error) {
-      setError(result.error.message);
-    } else if (result.needsEmailConfirmation) {
-      // Mostrar mensaje de éxito y confirmación de email necesaria
-      setError('');
-      alert('¡Registro exitoso! Por favor revisa tu correo electrónico para confirmar tu cuenta antes de iniciar sesión.');
-      // Redirigir al login después de 3 segundos
-      setTimeout(() => {
-        router.push('/login');
-      }, 3000);
-    } else {
-      // Si no necesita confirmación, la redirección la manejará _layout.jsx
-      setError('');
+      // Si hay datos de lead, usar migración
+      if (userType === 'lead' && leadData) {
+        console.log('Migrating lead to client...');
+        result = await migrateLeadToClient(
+          formData.email,
+          formData.password,
+          {
+            name: formData.name,
+            phone: formData.phone
+          }
+        );
+      } else {
+        // Signup normal
+        result = await clientSignup(
+          formData.email,
+          formData.password,
+          {
+            name: formData.name,
+            phone: formData.phone
+          }
+        );
+      }
+
+      if (result.error) {
+        setError(result.error.message);
+      } else if (result.needsEmailConfirmation) {
+        // Mostrar mensaje de éxito y confirmación de email necesaria
+        setError('');
+        alert('¡Registro exitoso! Por favor revisa tu correo electrónico para confirmar tu cuenta antes de iniciar sesión.');
+        // Redirigir al login después de 3 segundos
+        setTimeout(() => {
+          router.push('/login');
+        }, 3000);
+      } else {
+        // Si no necesita confirmación o la migración fue exitosa, la redirección la manejará _layout.jsx
+        setError('');
+        if (result.migrated) {
+          console.log('Lead migration completed successfully');
+        }
+      }
+    } catch (error) {
+      setError(error.message || 'Error durante el registro');
     }
 
     setIsLoading(false);
@@ -67,7 +90,13 @@ export default function SignUp({ onNavigate }) {
               <h2 className="text-3xl font-bold text-gray-900 mb-2">
                 ¡Bienvenido a Enerbook!
               </h2>
-              <p className="text-gray-400">Crea tu cuenta para empezar</p>
+              {userType === 'lead' && leadData ? (
+                <p className="text-orange-500 font-medium">
+                  🔄 Completa tu registro para guardar tu análisis de recibo CFE
+                </p>
+              ) : (
+                <p className="text-gray-400">Crea tu cuenta para empezar</p>
+              )}
             </div>
 
             {/* Mensaje de error */}
@@ -177,7 +206,10 @@ export default function SignUp({ onNavigate }) {
                   background: "linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)",
                 }}
               >
-                {isLoading ? 'Registrando...' : 'Unirme'}
+                {isLoading ?
+                  (userType === 'lead' && leadData ? 'Guardando análisis...' : 'Registrando...') :
+                  (userType === 'lead' && leadData ? 'Guardar y Continuar' : 'Unirme')
+                }
               </button>
 
               {/* Login */}

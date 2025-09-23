@@ -1,7 +1,34 @@
 import React from 'react';
 import { FiChevronRight, FiUser } from 'react-icons/fi';
+import { useDashboardData } from '../../../context/DashboardDataContext';
+import { useAuth } from '../../../context/AuthContext';
 
 const PerfilTab = () => {
+  const { userData, reciboData } = useDashboardData();
+  const { userType, user } = useAuth();
+
+  // Determinar nombre del usuario
+  const userName = (() => {
+    if (userType === 'cliente' && userData?.nombre) {
+      return userData.nombre;
+    } else if (reciboData?.nombre) {
+      return reciboData.nombre;
+    } else if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'Usuario';
+  })();
+
+  const userEmail = user?.email || userData?.correo_electronico || 'email@ejemplo.com';
+
+  // Fecha actual
+  const currentDate = new Date().toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
   return (
     <main className="flex-1 px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
       <div className="space-y-8">
@@ -34,8 +61,8 @@ const PerfilTab = () => {
 
         {/* Welcome Message */}
         <div className="ml-8">
-          <h2 className="text-sm font-bold text-gray-900 mb-2">Bienvenido, Diego Herold Carranza Juárez</h2>
-          <p className="text-gray-400 text-sm">Miércoles Agosto 6 del 2025</p>
+          <h2 className="text-sm font-bold text-gray-900 mb-2">Bienvenido, {userName}</h2>
+          <p className="text-gray-400 text-sm">{currentDate}</p>
         </div>
 
         <div className="py-4"></div>
@@ -48,8 +75,8 @@ const PerfilTab = () => {
                 <FiUser className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-gray-900">Diego Herold Carranza Juárez</h3>
-                <p className="text-sm text-gray-600">diegocarranzajuarez@enerbook.mx</p>
+                <h3 className="text-sm font-bold text-gray-900">{userName}</h3>
+                <p className="text-sm text-gray-600">{userEmail}</p>
               </div>
             </div>
             <button
@@ -61,18 +88,18 @@ const PerfilTab = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-6">
-            <div><label className="block text-sm font-medium text-gray-600 mb-2">Nombre Completo</label><input type="text" placeholder="Tu Nombre Completo" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" /></div>
-            <div><label className="block text-sm font-medium text-gray-600 mb-2">Registro Federal de Contribuyentes</label><input type="text" placeholder="Tu RFC" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" /></div>
+            <div><label className="block text-sm font-medium text-gray-600 mb-2">Nombre Completo</label><input type="text" defaultValue={userName} placeholder="Tu Nombre Completo" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" /></div>
+            <div><label className="block text-sm font-medium text-gray-600 mb-2">Registro Federal de Contribuyentes</label><input type="text" defaultValue={userData?.rfc || ''} placeholder="Tu RFC" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" /></div>
             <div><label className="block text-sm font-medium text-gray-600 mb-2">Género</label><select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"><option>Seleccionar</option><option>Masculino</option><option>Femenino</option><option>Otro</option></select></div>
-            <div><label className="block text-sm font-medium text-gray-600 mb-2">Número Celular</label><input type="tel" placeholder="Tu Número Celular" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" /></div>
+            <div><label className="block text-sm font-medium text-gray-600 mb-2">Número Celular</label><input type="tel" defaultValue={userData?.telefono || ''} placeholder="Tu Número Celular" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" /></div>
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-2">Mi correo electrónico</label>
               <div className="relative">
-                <input type="email" placeholder="ejemplo@enerbook.mx" className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
+                <input type="email" defaultValue={userEmail} placeholder="ejemplo@enerbook.mx" className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
                 <div className="absolute left-3 top-3 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="white" strokeWidth="2" fill="none" /><path d="M22 6L12 13L2 6" stroke="white" strokeWidth="2" fill="none" /></svg></div>
               </div>
             </div>
-            <div><label className="block text-sm font-medium text-gray-600 mb-2">Fecha de Nacimiento</label><input type="date" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" /></div>
+            <div><label className="block text-sm font-medium text-gray-600 mb-2">Fecha de Nacimiento</label><input type="date" defaultValue={userData?.fecha_nacimiento || ''} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" /></div>
           </div>
         </div>
       </div>

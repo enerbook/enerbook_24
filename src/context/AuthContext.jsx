@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [leadData, setLeadData] = useState(null);
   const [tempLeadId, setTempLeadId] = useState(null);
+  const [clientData, setClientData] = useState(null);
 
   const fetchUserRole = async (userId) => {
     console.log('fetchUserRole called with userId:', userId);
@@ -135,6 +136,52 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, [userType, tempLeadId, fetchLeadData]); // Include necessary dependencies
 
+
+  const fetchClientData = useCallback(async (userId) => {
+    console.log('fetchClientData called with userId:', userId);
+    if (!userId) return null;
+
+    try {
+      // Obtener datos del usuario
+      const { data: userData, error: userError } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+        return null;
+      }
+
+      // Obtener cotización inicial del usuario
+      const { data: cotizacionData, error: cotizacionError } = await supabase
+        .from('cotizaciones_inicial')
+        .select('*')
+        .eq('usuarios_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (cotizacionError) {
+        console.log('No initial quote found for user:', userId);
+        return {
+          user: userData,
+          cotizacion: null
+        };
+      }
+
+      console.log('Client data fetched successfully:', { userData, cotizacionData });
+      return {
+        user: userData,
+        cotizacion: cotizacionData
+      };
+    } catch (error) {
+      console.error('Error in fetchClientData:', error);
+      return null;
+    }
+  }, []);
+
   useEffect(() => {
     setLoading(true);
 
@@ -149,9 +196,16 @@ export const AuthProvider = ({ children }) => {
         const role = await fetchUserRole(user.id);
         console.log('Setting userType to:', role);
         setUserType(role);
+
+        // Si es cliente, cargar sus datos
+        if (role === 'cliente') {
+          const data = await fetchClientData(user.id);
+          setClientData(data);
+        }
       } else {
         console.log('No user, setting userType to null');
         setUserType(null);
+        setClientData(null);
       }
       setLoading(false);
     };
@@ -169,9 +223,16 @@ export const AuthProvider = ({ children }) => {
           const role = await fetchUserRole(user.id);
           console.log('Auth listener - Setting userType to:', role);
           setUserType(role);
+
+          // Si es cliente, cargar sus datos
+          if (role === 'cliente') {
+            const data = await fetchClientData(user.id);
+            setClientData(data);
+          }
         } else {
           console.log('Auth listener - No user, setting userType to null');
           setUserType(null);
+          setClientData(null);
         }
         setLoading(false);
       }
@@ -260,6 +321,67 @@ export const AuthProvider = ({ children }) => {
     return { data, error };
   };
 
+  const migrateLeadToClient = useCallback(async (email, password, metadata = {}) => {
+    console.log('Starting lead to client migration for tempLeadId:', tempLeadId);
+
+    if (!tempLeadId || !leadData) {
+      throw new Error('No hay datos de lead para migrar');
+    }
+
+    try {
+      setLoading(true);
+
+      // 1. Crear usuario cliente
+      const signupResult = await clientSignup(email, password, {
+        name: leadData.recibo_cfe?.nombre || metadata.name || '',
+        phone: metadata.phone || ''
+      });
+
+      if (signupResult.error) {
+        throw signupResult.error;
+      }
+
+      // Si necesita confirmación de email, retornar sin migrar datos
+      if (signupResult.needsEmailConfirmation) {
+        return signupResult;
+      }
+
+      // 2. Migrar datos de cotizaciones_leads_temp a cotizaciones_inicial
+      const { data: insertResult, error: insertError } = await supabase
+        .from('cotizaciones_inicial')
+        .insert({
+          usuarios_id: signupResult.data.user.id,
+          recibo_cfe: leadData.recibo_cfe,
+          consumo_kwh_historico: leadData.consumo_kwh_historico,
+          resumen_energetico: leadData.resumen_energetico,
+          sizing_results: leadData.sizing_results,
+          irradiacion_cache_id: leadData.irradiacion_cache_id
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Error migrating lead data:', insertError);
+        throw new Error('Error al migrar datos del lead');
+      }
+
+      console.log('Lead data migrated successfully:', insertResult);
+
+      // 3. Limpiar estado de lead y establecer como cliente
+      setLeadData(null);
+      setTempLeadId(null);
+      setUserType('cliente');
+
+      console.log('Migration completed successfully');
+      return { ...signupResult, migrated: true };
+
+    } catch (error) {
+      console.error('Error in migrateLeadToClient:', error);
+      setLoading(false);
+      throw error;
+    }
+  }, [tempLeadId, leadData, clientSignup]);
+
   const clientLogin = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -322,12 +444,15 @@ export const AuthProvider = ({ children }) => {
       userType,
       leadData,
       tempLeadId,
+      clientData,
       installerLogin,
       clientLogin,
       clientSignup,
       logout,
       loading,
-      setLeadMode
+      setLeadMode,
+      migrateLeadToClient,
+      fetchClientData
     }}>
       {children}
     </AuthContext.Provider>

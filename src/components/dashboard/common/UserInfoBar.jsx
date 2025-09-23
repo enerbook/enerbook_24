@@ -4,22 +4,23 @@ import { useDashboardData } from '../../../context/DashboardDataContext';
 
 const UserInfoBar = () => {
   const { userType } = useAuth();
-  const { reciboData, hasData } = useDashboardData();
+  const { reciboData, userData, hasData } = useDashboardData();
 
-  // Para leads, usar datos del reciboData
+  // Determinar datos según tipo de usuario
   let userName = 'Usuario';
   let serviceNumber = 'N/A';
   let address = 'Dirección no disponible';
 
-  if (userType === 'lead' && hasData && reciboData) {
+  if ((userType === 'lead' || userType === 'cliente') && hasData && reciboData) {
+    // Para leads y clientes con datos de recibo
     userName = reciboData.nombre || 'Usuario';
     serviceNumber = reciboData.no_servicio || 'N/A';
     address = reciboData.direccion_formatted || reciboData.direccion || 'Dirección no disponible';
-  } else if (userType === 'cliente') {
-    // TODO: Cargar datos del usuario autenticado desde Supabase
-    userName = 'Diego Herold Carranza Juárez'; // placeholder
-    serviceNumber = '1234567890'; // placeholder
-    address = 'Calle Principal #123, Colonia Centro, Ciudad, Estado, C.P. 12345'; // placeholder
+  } else if (userType === 'cliente' && userData) {
+    // Para clientes sin recibo pero con datos de usuario
+    userName = userData.nombre || 'Cliente';
+    serviceNumber = 'Sin recibo';
+    address = 'Dirección no registrada';
   }
 
   return (
