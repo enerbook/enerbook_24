@@ -8,14 +8,22 @@ export const DashboardDataProvider = ({ children }) => {
 
   // Procesar todos los datos una sola vez cuando cambien los datos
   const dashboardData = useMemo(() => {
+    console.log('DashboardDataContext - userType:', userType);
+    console.log('DashboardDataContext - leadData:', leadData);
+    console.log('DashboardDataContext - clientData:', clientData);
+
     // Determinar fuente de datos según tipo de usuario
     let sourceData = null;
 
     if (userType === 'lead' && leadData) {
       sourceData = leadData;
+      console.log('DashboardDataContext - Using lead data as source');
     } else if (userType === 'cliente' && clientData?.cotizacion) {
       sourceData = clientData.cotizacion;
+      console.log('DashboardDataContext - Using client cotizacion data as source');
     }
+
+    console.log('DashboardDataContext - sourceData:', sourceData);
 
     if (!sourceData) {
       return {

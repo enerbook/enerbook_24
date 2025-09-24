@@ -8,44 +8,31 @@ const ProyectosTab = () => {
           {/* Mis Cotizaciones */}
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
             <h2 className="text-sm font-bold text-gray-900 mb-6">Mis Cotizaciones</h2>
-            {/* Proyecto 1 */}
-            <div className="border border-gray-200 rounded-lg p-4 mb-4">
-              <h3 className="font-bold text-gray-900 mb-2">Proyecto 1</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-600">Proyecto:</span><span className="text-gray-900">Paneles para Casa en Cholula</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Estado:</span><span className="text-gray-900">Abierto</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Cotizaciones:</span><span className="text-gray-900">3</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Fecha límite:</span><span className="text-gray-900">12 de agosto 2025</span></div>
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">
+                <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
               </div>
-              <button className="w-full mt-4 px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>Ver Cotizaciones</button>
-            </div>
-            {/* Proyecto 2 */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-bold text-gray-900 mb-2">Proyecto 2</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-600">Proyecto:</span><span className="text-gray-900">Paneles para tienda de abarrotes</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Estado:</span><span className="text-gray-900">Cerrado</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Cotizaciones:</span><span className="text-gray-900">7</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Fecha límite:</span><span className="text-gray-900">25 de abril 2025</span></div>
-              </div>
-              <button className="w-full mt-4 px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>Ver Cotizaciones</button>
+              <h3 className="text-sm font-medium text-gray-900 mb-2">No Tienes Cotizaciones Activas</h3>
+              <p className="text-sm text-gray-500 mb-6">Solicita cotizaciones de instaladores para tu sistema solar</p>
+              <button className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
+                Solicitar Cotizaciones
+              </button>
             </div>
           </div>
 
           {/* Mis Contratos */}
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
             <h2 className="text-sm font-bold text-gray-900 mb-6">Mis Contratos</h2>
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-bold text-gray-900 mb-2">Proyecto 1</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-600">Proyecto:</span><span className="text-gray-900">Sistema Solar Casa Metepec</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Proveedor:</span><span className="text-gray-900">Solaris Energy</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Producción Estimada:</span><span className="text-gray-900">5,410 kWh/año</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Precio Final:</span><span className="text-gray-900">$55,000 MXN</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Garantía:</span><span className="text-gray-900">POPTR 238043</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">Tipo de Pago:</span><span className="text-gray-900">Financiamiento (48 meses)</span></div>
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">
+                <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
               </div>
-              <button className="w-full mt-4 px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>Ver Proyecto</button>
+              <h3 className="text-sm font-medium text-gray-900 mb-2">No Tienes Contratos Activos</h3>
+              <p className="text-sm text-gray-500">Una vez que aceptes una cotización, aparecerá aquí como contrato</p>
             </div>
           </div>
         </div>

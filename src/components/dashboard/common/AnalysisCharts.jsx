@@ -3,7 +3,11 @@ import { useDashboardData } from '../../../context/DashboardDataContext';
 import ChartCard from '../ChartCard';
 
 const AnalysisCharts = () => {
-  const { consumoData, irradiacionData } = useDashboardData();
+  const { consumoData, irradiacionData, hasData } = useDashboardData();
+
+  console.log('AnalysisCharts - consumoData:', consumoData);
+  console.log('AnalysisCharts - irradiacionData:', irradiacionData);
+  console.log('AnalysisCharts - hasData:', hasData);
 
   // Preparar datos para las gráficas (solo los campos necesarios)
   const consumoChartData = consumoData.map(item => ({
@@ -17,6 +21,9 @@ const AnalysisCharts = () => {
     label: item.label,
     fullLabel: item.fullLabel
   }));
+
+  console.log('AnalysisCharts - consumoChartData:', consumoChartData);
+  console.log('AnalysisCharts - irradiacionChartData:', irradiacionChartData);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
       <ChartCard

@@ -62,15 +62,6 @@ export default function InstallerNavbar({ currentPage }) {
             </a>
           </nav>
 
-          {/* CTA Button */}
-          <button
-            className="relative z-10 px-6 py-2 text-white rounded-full text-sm font-medium
-                     hover:scale-105 transition-transform"
-            style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
-            onClick={() => router.push('/login')}
-          >
-            ¿Eres cliente?
-          </button>
         </div>
 
         {/* Mobile navbar */}
@@ -119,16 +110,6 @@ export default function InstallerNavbar({ currentPage }) {
                 ))}
               </nav>
 
-              <div className="pt-3 mt-3 border-t border-gray-200/30">
-                <button
-                  className="w-full px-4 py-2 text-white rounded-full text-sm font-medium
-                           hover:scale-105 transition-transform"
-                  style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
-                  onClick={() => router.push('/login')}
-                >
-                  ¿Eres cliente?
-                </button>
-              </div>
             </div>
           </div>
         </div>

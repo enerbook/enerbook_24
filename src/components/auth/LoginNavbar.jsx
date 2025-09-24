@@ -45,16 +45,6 @@ export default function LoginNavbar({ onNavigate }) {
             <a href="#" className="text-gray-700 hover:text-gray-900 text-sm font-medium transition-colors">
               Conoce más
             </a>
-            <a 
-              href="#" 
-              className="text-gray-700 hover:text-gray-900 text-sm font-medium transition-colors"
-              onClick={(e) => {
-                e.preventDefault();
-                router.push('/signup');
-              }}
-            >
-              Registrarse
-            </a>
           </nav>
 
           {/* CTA Button */}
@@ -112,16 +102,6 @@ export default function LoginNavbar({ onNavigate }) {
                 </a>
                 <a href="#" className="block py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors">
                   Conoce más
-                </a>
-                <a 
-                  href="#" 
-                  className="block py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    router.push('/signup');
-                  }}
-                >
-                  Registrarse
                 </a>
               </nav>
 

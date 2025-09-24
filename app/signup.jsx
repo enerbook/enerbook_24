@@ -97,7 +97,7 @@ export default function SignUp({ onNavigate }) {
               </h2>
               {userType === 'lead' && leadData ? (
                 <p className="text-orange-500 font-medium">
-                  🔄 Completa tu registro para guardar tu análisis de recibo CFE
+                  Completa tu registro para guardar tu análisis de recibo CFE
                 </p>
               ) : (
                 <p className="text-gray-400">Crea tu cuenta para empezar</p>
@@ -106,8 +106,8 @@ export default function SignUp({ onNavigate }) {
 
             {/* Mensaje de error */}
             {error && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                <p>{error}</p>
+              <div className="mb-4 p-4 border border-orange-200 text-orange-800 rounded-lg" style={{backgroundColor: '#FFF7ED'}}>
+                <p className="text-sm font-medium">{error}</p>
               </div>
             )}
 

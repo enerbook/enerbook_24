@@ -25,11 +25,10 @@ export const AuthProvider = ({ children }) => {
       const { data: proveedorData, error: proveedorError } = await supabase
         .from('proveedores')
         .select('id')
-        .eq('auth_user_id', userId)
-        .single();
+        .eq('auth_user_id', userId);
 
       console.log('Proveedor check result:', { proveedorData, proveedorError });
-      if (proveedorData) {
+      if (proveedorData && proveedorData.length > 0) {
         console.log('User is instalador');
         return 'instalador';
       }
@@ -39,11 +38,10 @@ export const AuthProvider = ({ children }) => {
       const { data: clienteData, error: clienteError } = await supabase
         .from('usuarios')
         .select('id')
-        .eq('id', userId)
-        .single();
+        .eq('id', userId);
 
       console.log('Cliente check result:', { clienteData, clienteError });
-      if (clienteData) {
+      if (clienteData && clienteData.length > 0) {
         console.log('User is cliente');
         return 'cliente';
       }
@@ -255,15 +253,14 @@ export const AuthProvider = ({ children }) => {
       const { data: proveedorData, error: proveedorError } = await supabase
         .from('proveedores')
         .select('activo')
-        .eq('auth_user_id', data.user.id)
-        .single();
+        .eq('auth_user_id', data.user.id);
 
-      if (proveedorError) {
+      if (proveedorError || !proveedorData || proveedorData.length === 0) {
         await supabase.auth.signOut();
         return { error: { message: "No se encontró un perfil de proveedor asociado." } };
       }
 
-      if (proveedorData?.activo !== true) {
+      if (proveedorData[0]?.activo !== true) {
         await supabase.auth.signOut();
         return { error: { message: "Tu cuenta de proveedor no está activa." } };
       }
@@ -299,9 +296,9 @@ export const AuthProvider = ({ children }) => {
       };
     }
 
-    // Si el usuario fue creado y la sesión está activa (email no requiere confirmación)
-    if (data.user && data.session) {
-      // Crear el registro en la tabla usuarios con la sesión activa
+    // Si el usuario fue creado, crear el registro en la tabla usuarios
+    if (data.user) {
+      console.log('Creating user profile in usuarios table for:', data.user.id);
       const { error: usuarioError } = await supabase
         .from('usuarios')
         .upsert({
@@ -315,6 +312,9 @@ export const AuthProvider = ({ children }) => {
 
       if (usuarioError) {
         console.error('Error creando perfil de usuario:', usuarioError);
+        return { error: usuarioError };
+      } else {
+        console.log('User profile created successfully in usuarios table');
       }
     }
 
@@ -333,7 +333,7 @@ export const AuthProvider = ({ children }) => {
 
       // 1. Crear usuario cliente
       const signupResult = await clientSignup(email, password, {
-        name: leadData.recibo_cfe?.nombre || metadata.name || '',
+        name: metadata.name || leadData.recibo_cfe?.nombre || '',
         phone: metadata.phone || ''
       });
 
@@ -370,6 +370,10 @@ export const AuthProvider = ({ children }) => {
       // 3. Limpiar estado de lead y establecer como cliente
       setLeadData(null);
       setTempLeadId(null);
+
+      // Cargar datos del cliente recién creado
+      const clientDataResult = await fetchClientData(signupResult.data.user.id);
+      setClientData(clientDataResult);
       setUserType('cliente');
 
       console.log('Migration completed successfully');
@@ -394,10 +398,9 @@ export const AuthProvider = ({ children }) => {
       const { data: clienteData, error: clienteError } = await supabase
         .from('usuarios')
         .select('id')
-        .eq('id', data.user.id)
-        .single();
+        .eq('id', data.user.id);
 
-      if (clienteError || !clienteData) {
+      if (clienteError || !clienteData || clienteData.length === 0) {
         await supabase.auth.signOut();
         return { error: { message: "No se encontró un perfil de cliente asociado." } };
       }
@@ -424,10 +427,10 @@ export const AuthProvider = ({ children }) => {
         console.log('Router available, redirecting...');
         if (currentType === 'instalador') {
           console.log('Redirecting to installer login');
-          router.replace('/installer-login');
+          router.push('/installer-login');
         } else {
           console.log('Redirecting to client login');
-          router.replace('/login');
+          router.push('/login');
         }
       } else {
         console.log('No router provided to logout function');
@@ -445,6 +448,7 @@ export const AuthProvider = ({ children }) => {
       leadData,
       tempLeadId,
       clientData,
+      setClientData,
       installerLogin,
       clientLogin,
       clientSignup,

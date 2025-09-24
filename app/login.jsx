@@ -118,20 +118,9 @@ export default function Login({ onNavigate }) {
               {isLoading ? 'Ingresando...' : 'Ingresar'}
             </button>
 
-            {/* Registro */}
+            {/* Mensaje informativo */}
             <p className="text-center text-sm text-gray-400">
-              ¿No tienes cuenta?{" "}
-              <a 
-                href="#" 
-                className="font-medium" 
-                style={{ color: "#F59E0B" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  router.push('/signup');
-                }}
-              >
-                Regístrate
-              </a>
+              Para crear una cuenta, primero analiza tu recibo CFE en nuestra página principal
             </p>
           </form>
         </div>
