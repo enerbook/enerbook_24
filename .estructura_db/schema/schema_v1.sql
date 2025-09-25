@@ -1,6 +1,6 @@
 -- ============================================================================
 -- ESQUEMA SUPABASE - SISTEMA DE COTIZACIONES SOLARES CON LÓGICA DE PAGOS
--- Solo estructura de tablas y relaciones
+-- Actualizado con la estructura real de la base de datos
 -- ============================================================================
 
 -- Habilitar extensiones necesarias
@@ -18,7 +18,8 @@ CREATE TABLE usuarios (
     correo_electronico  text NOT NULL DEFAULT '',
     telefono            text,
     fecha_nacimiento    date,
-    rfc                 text
+    rfc                 text,
+    genero              text
 );
 
 -- RLS (Row Level Security)
@@ -30,6 +31,24 @@ CREATE POLICY "Users can view own data" ON usuarios
 
 CREATE POLICY "Users can update own data" ON usuarios
     FOR UPDATE USING (auth.uid()::text = id::text);
+
+-- ----------------------------------------------------------------------------
+-- TABLA: administradores
+-- Descripción: Tabla para gestionar usuarios administradores del sistema
+-- ----------------------------------------------------------------------------
+CREATE TABLE administradores (
+    id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    usuario_id  uuid NOT NULL UNIQUE REFERENCES usuarios(id) ON DELETE CASCADE,
+    nivel_acceso text DEFAULT 'admin' CHECK (nivel_acceso IN ('admin', 'super_admin')),
+    permisos    jsonb DEFAULT '{}',
+    activo      boolean DEFAULT true,
+    created_at  timestamp with time zone DEFAULT now(),
+    updated_at  timestamp with time zone DEFAULT now(),
+    created_by  uuid REFERENCES usuarios(id)
+);
+
+-- RLS - No habilitado por defecto para administradores
+-- ALTER TABLE administradores ENABLE ROW LEVEL SECURITY;
 
 -- ----------------------------------------------------------------------------
 -- TABLA: irradiacion_cache
@@ -121,6 +140,8 @@ CREATE TABLE proveedores (
     created_at                      timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at                      timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     nombre                          text NOT NULL,
+    nombre_empresa                  text,
+    nombre_contacto                 text,
     email                           text,
     telefono                        text,
     direccion                       text,
@@ -183,7 +204,7 @@ CREATE TABLE proyectos (
     created_at              timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at              timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     cotizaciones_inicial_id uuid REFERENCES cotizaciones_inicial(id) ON DELETE CASCADE,
-    estado                  text DEFAULT 'abierto' CHECK (estado IN ('abierto', 'cerrado', 'adjudicado')),
+    estado                  text DEFAULT 'abierto' CHECK (estado IN ('abierto', 'cerrado', 'adjudicado', 'cotizacion', 'en_progreso', 'completado', 'cancelado', 'en_espera')),
     descripcion             text,
     fecha_limite            timestamp with time zone,
     titulo                  text NOT NULL,
@@ -220,7 +241,7 @@ CREATE TABLE cotizaciones_final (
     notas_proveedor     text,
     -- Opciones de pago que ofrece el proveedor
     opciones_pago       jsonb, -- Array: [{"tipo":"upfront","precio":100000}, {"tipo":"milestones","config":[...]}, {"tipo":"financing","disponible":true}]
-    
+
     UNIQUE (proyectos_id, proveedores_id)
 );
 
@@ -231,8 +252,8 @@ ALTER TABLE cotizaciones_final ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Project owners can view all quotes" ON cotizaciones_final
     FOR SELECT USING (
         EXISTS (
-            SELECT 1 FROM proyectos 
-            WHERE proyectos.id = cotizaciones_final.proyectos_id 
+            SELECT 1 FROM proyectos
+            WHERE proyectos.id = cotizaciones_final.proyectos_id
             AND proyectos.usuarios_id::text = auth.uid()::text
         )
     );
@@ -241,8 +262,8 @@ CREATE POLICY "Project owners can view all quotes" ON cotizaciones_final
 CREATE POLICY "Providers can manage own quotes" ON cotizaciones_final
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM proveedores 
-            WHERE proveedores.id = cotizaciones_final.proveedores_id 
+            SELECT 1 FROM proveedores
+            WHERE proveedores.id = cotizaciones_final.proveedores_id
             AND proveedores.auth_user_id = auth.uid()
         )
     );
@@ -258,25 +279,25 @@ CREATE TABLE contratos (
     cotizaciones_final_id       uuid REFERENCES cotizaciones_final(id) ON DELETE CASCADE UNIQUE,
     usuarios_id                 uuid REFERENCES usuarios(id) ON DELETE CASCADE,
     proveedores_id              uuid REFERENCES proveedores(id) ON DELETE CASCADE,
-    
+
     -- Información del contrato
     numero_contrato             text NOT NULL UNIQUE,
     precio_total_sistema        numeric NOT NULL,
     tipo_pago_seleccionado      text NOT NULL CHECK (tipo_pago_seleccionado IN ('upfront', 'milestones', 'financing')),
-    
+
     -- Configuración específica del pago elegido (se guarda como JSON)
     configuracion_pago          jsonb NOT NULL,
-    
+
     -- Estado del contrato
     estado                      text DEFAULT 'activo' CHECK (estado IN ('activo', 'completado', 'cancelado')),
     fecha_firma                 timestamp with time zone DEFAULT timezone('utc'::text, now()),
     fecha_inicio_instalacion    timestamp with time zone,
     fecha_completado            timestamp with time zone,
-    
+
     -- Documentos
     archivo_contrato_url        text,
     documentos_adicionales      jsonb,
-    
+
     -- Stripe Payment Intent Tracking
     stripe_payment_intent_id    text,
     stripe_client_secret        text,
@@ -291,10 +312,10 @@ ALTER TABLE contratos ENABLE ROW LEVEL SECURITY;
 -- Política: Solo las partes involucradas pueden ver el contrato
 CREATE POLICY "Contract parties can view contracts" ON contratos
     FOR SELECT USING (
-        auth.uid()::text = usuarios_id::text OR 
+        auth.uid()::text = usuarios_id::text OR
         EXISTS (
-            SELECT 1 FROM proveedores 
-            WHERE proveedores.id = contratos.proveedores_id 
+            SELECT 1 FROM proveedores
+            WHERE proveedores.id = contratos.proveedores_id
             AND proveedores.auth_user_id = auth.uid()
         )
     );
@@ -312,33 +333,33 @@ CREATE TABLE pagos_milestones (
     created_at              timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at              timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     contratos_id            uuid REFERENCES contratos(id) ON DELETE CASCADE,
-    
+
     -- Información del milestone
     numero_milestone        integer NOT NULL,
     nombre_milestone        text NOT NULL, -- "Acepta oferta", "Inicio instalación", "Entrega"
     descripcion             text,
     porcentaje_pago         numeric NOT NULL CHECK (porcentaje_pago > 0 AND porcentaje_pago <= 100),
     monto_pago              numeric NOT NULL,
-    
+
     -- Estado y fechas
     estado                  text DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'completado', 'vencido')),
     fecha_objetivo          timestamp with time zone,
     fecha_completado        timestamp with time zone,
-    
+
     -- Comisión Enerbook para este milestone
     comision_enerbook_monto numeric NOT NULL DEFAULT 0,
     comision_pagada         boolean DEFAULT false,
     fecha_pago_comision     timestamp with time zone,
-    
+
     -- Evidencia
     documentos_evidencia    jsonb,
-    
+
     -- Stripe Individual Payment Intents
     stripe_payment_intent_id text,
     stripe_transfer_id      text,
     stripe_application_fee_amount numeric,
     stripe_client_secret    text,
-    
+
     UNIQUE (contratos_id, numero_milestone)
 );
 
@@ -349,13 +370,13 @@ ALTER TABLE pagos_milestones ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Contract parties can view milestones" ON pagos_milestones
     FOR SELECT USING (
         EXISTS (
-            SELECT 1 FROM contratos 
-            WHERE contratos.id = pagos_milestones.contratos_id 
+            SELECT 1 FROM contratos
+            WHERE contratos.id = pagos_milestones.contratos_id
             AND (
-                contratos.usuarios_id::text = auth.uid()::text OR 
+                contratos.usuarios_id::text = auth.uid()::text OR
                 EXISTS (
-                    SELECT 1 FROM proveedores 
-                    WHERE proveedores.id = contratos.proveedores_id 
+                    SELECT 1 FROM proveedores
+                    WHERE proveedores.id = contratos.proveedores_id
                     AND proveedores.auth_user_id = auth.uid()
                 )
             )
@@ -371,30 +392,30 @@ CREATE TABLE transacciones_financiamiento (
     created_at                  timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at                  timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     contratos_id                uuid REFERENCES contratos(id) ON DELETE CASCADE UNIQUE,
-    
+
     -- Información del financiamiento
     proveedor_financiero        text NOT NULL, -- Nombre del lender/banco
     monto_financiado            numeric NOT NULL, -- Monto que financia el lender al proveedor
     tasa_interes               numeric NOT NULL,
     plazo_meses                integer NOT NULL,
     pago_mensual               numeric NOT NULL, -- Lo que paga el cliente mensualmente al lender
-    
+
     -- Service/Booking fee de Enerbook (LO PAGA EL CLIENTE)
     service_fee_porcentaje     numeric NOT NULL DEFAULT 6.0, -- 4-8% según imagen
     service_fee_monto          numeric NOT NULL, -- Fee que paga el cliente a Enerbook
     service_fee_pagado_cliente boolean DEFAULT false, -- Cliente pagó el service fee
     fecha_pago_service_fee     timestamp with time zone,
-    
+
     -- Stripe Service Fee Payment
     stripe_service_fee_payment_intent_id text,
     stripe_service_fee_client_secret text,
-    
+
     -- Estado del financiamiento
     estado                     text DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'aprobado', 'rechazado', 'desembolsado')),
     fecha_aprobacion           timestamp with time zone,
     fecha_desembolso           timestamp with time zone, -- Cuando el lender paga al proveedor
     fecha_primer_pago_cliente  timestamp with time zone, -- Primer pago del cliente al lender
-    
+
     -- Información del crédito
     numero_credito             text,
     documentos_credito         jsonb
@@ -407,13 +428,13 @@ ALTER TABLE transacciones_financiamiento ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Contract parties can view financing" ON transacciones_financiamiento
     FOR SELECT USING (
         EXISTS (
-            SELECT 1 FROM contratos 
-            WHERE contratos.id = transacciones_financiamiento.contratos_id 
+            SELECT 1 FROM contratos
+            WHERE contratos.id = transacciones_financiamiento.contratos_id
             AND (
-                contratos.usuarios_id::text = auth.uid()::text OR 
+                contratos.usuarios_id::text = auth.uid()::text OR
                 EXISTS (
-                    SELECT 1 FROM proveedores 
-                    WHERE proveedores.id = contratos.proveedores_id 
+                    SELECT 1 FROM proveedores
+                    WHERE proveedores.id = contratos.proveedores_id
                     AND proveedores.auth_user_id = auth.uid()
                 )
             )
@@ -429,31 +450,31 @@ CREATE TABLE comisiones_enerbook (
     created_at              timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at              timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     contratos_id            uuid REFERENCES contratos(id) ON DELETE CASCADE,
-    
+
     -- Tipo de comisión según modelo de pago
     tipo_comision           text NOT NULL CHECK (tipo_comision IN ('upfront_withhold', 'milestone_prorrateado', 'service_fee_cliente')),
-    
+
     -- Quién paga la comisión
     pagador                 text NOT NULL CHECK (pagador IN ('cliente', 'proveedor')),
-    
+
     -- Montos
     monto_base              numeric NOT NULL,
     porcentaje_comision     numeric NOT NULL,
     monto_comision          numeric NOT NULL,
-    
+
     -- Referencias a milestone o financiamiento específico
     milestone_id            uuid REFERENCES pagos_milestones(id),
     financiamiento_id       uuid REFERENCES transacciones_financiamiento(id),
-    
+
     -- Estado del cobro
     estado                  text DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'cobrado', 'reembolsado')),
     fecha_cobro             timestamp with time zone,
     fecha_pago_proveedor    timestamp with time zone, -- Solo si pagador = 'proveedor'
-    
+
     -- Detalles
     descripcion             text,
     referencia_pago         text,
-    
+
     -- Stripe Fee Tracking
     stripe_application_fee_id text,
     stripe_transfer_id      text,
@@ -480,7 +501,7 @@ CREATE TABLE resenas (
     puntuacion                  integer NOT NULL CHECK (puntuacion >= 1 AND puntuacion <= 5),
     comentario                  text,
     usuarios_id                 uuid REFERENCES usuarios(id) ON DELETE CASCADE,
-    
+
     -- Puntuaciones específicas
     puntuacion_calidad          integer CHECK (puntuacion_calidad >= 1 AND puntuacion_calidad <= 5),
     puntuacion_tiempo           integer CHECK (puntuacion_tiempo >= 1 AND puntuacion_tiempo <= 5),
@@ -499,33 +520,6 @@ CREATE POLICY "Reviews are publicly readable" ON resenas
 -- Política: Solo el dueño del contrato puede crear reseñas
 CREATE POLICY "Contract owners can create reviews" ON resenas
     FOR INSERT WITH CHECK (auth.uid()::text = usuarios_id::text);
-
--- ============================================================================
--- TRIGGERS PARA updated_at
--- ============================================================================
-
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = timezone('utc'::text, now());
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Aplicar trigger a todas las tablas
-CREATE TRIGGER update_usuarios_updated_at BEFORE UPDATE ON usuarios FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_irradiacion_cache_updated_at BEFORE UPDATE ON irradiacion_cache FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_cotizaciones_inicial_updated_at BEFORE UPDATE ON cotizaciones_inicial FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_cotizaciones_leads_temp_updated_at BEFORE UPDATE ON cotizaciones_leads_temp FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_proveedores_updated_at BEFORE UPDATE ON proveedores FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_certificaciones_updated_at BEFORE UPDATE ON certificaciones FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_proyectos_updated_at BEFORE UPDATE ON proyectos FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_cotizaciones_final_updated_at BEFORE UPDATE ON cotizaciones_final FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_contratos_updated_at BEFORE UPDATE ON contratos FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_pagos_milestones_updated_at BEFORE UPDATE ON pagos_milestones FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_transacciones_financiamiento_updated_at BEFORE UPDATE ON transacciones_financiamiento FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_comisiones_enerbook_updated_at BEFORE UPDATE ON comisiones_enerbook FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_resenas_updated_at BEFORE UPDATE ON resenas FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ----------------------------------------------------------------------------
 -- TABLA: stripe_webhooks_log
@@ -577,7 +571,33 @@ ALTER TABLE stripe_disputes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admin can view disputes" ON stripe_disputes
     FOR SELECT USING (true);
 
--- Trigger para updated_at
+-- ============================================================================
+-- TRIGGERS PARA updated_at
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = timezone('utc'::text, now());
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Aplicar trigger a todas las tablas
+CREATE TRIGGER update_usuarios_updated_at BEFORE UPDATE ON usuarios FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_administradores_updated_at BEFORE UPDATE ON administradores FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_irradiacion_cache_updated_at BEFORE UPDATE ON irradiacion_cache FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_cotizaciones_inicial_updated_at BEFORE UPDATE ON cotizaciones_inicial FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_cotizaciones_leads_temp_updated_at BEFORE UPDATE ON cotizaciones_leads_temp FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_proveedores_updated_at BEFORE UPDATE ON proveedores FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_certificaciones_updated_at BEFORE UPDATE ON certificaciones FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_proyectos_updated_at BEFORE UPDATE ON proyectos FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_cotizaciones_final_updated_at BEFORE UPDATE ON cotizaciones_final FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_contratos_updated_at BEFORE UPDATE ON contratos FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_pagos_milestones_updated_at BEFORE UPDATE ON pagos_milestones FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_transacciones_financiamiento_updated_at BEFORE UPDATE ON transacciones_financiamiento FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_comisiones_enerbook_updated_at BEFORE UPDATE ON comisiones_enerbook FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_resenas_updated_at BEFORE UPDATE ON resenas FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_stripe_disputes_updated_at BEFORE UPDATE ON stripe_disputes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
@@ -620,12 +640,17 @@ CREATE INDEX idx_disputes_contratos_id ON stripe_disputes(contratos_id);
 CREATE INDEX idx_comisiones_stripe_application_fee ON comisiones_enerbook(stripe_application_fee_id);
 CREATE INDEX idx_comisiones_stripe_transfer ON comisiones_enerbook(stripe_transfer_id);
 
+-- Índices para administradores
+CREATE INDEX idx_administradores_usuario_id ON administradores(usuario_id);
+CREATE INDEX idx_administradores_activo ON administradores(activo);
+
 -- ============================================================================
 -- RELACIONES Y FLUJO DEL SISTEMA:
 --
 -- irradiacion_cache → cotizaciones_leads_temp (1:N) - Temp quotes antes de registro
 -- cotizaciones_leads_temp → cotizaciones_inicial (1:1) - Migración tras registro
 -- usuarios → cotizaciones_inicial (1:N)
+-- usuarios → administradores (1:1) - Tabla adicional para gestión admin
 -- irradiacion_cache → cotizaciones_inicial (1:N)
 -- cotizaciones_inicial → proyectos (1:1)
 -- usuarios → proyectos (1:N)
@@ -639,7 +664,10 @@ CREATE INDEX idx_comisiones_stripe_transfer ON comisiones_enerbook(stripe_transf
 -- contratos → resenas (1:1) - Solo contratos completados se reseñan
 -- pagos_milestones → comisiones_enerbook (1:N) - Comisiones por milestone
 -- transacciones_financiamiento → comisiones_enerbook (1:1) - Booking fee
--- 
+-- contratos → stripe_disputes (1:N) - Tracking de disputas
+-- contratos → stripe_webhooks_log (1:N) - Log de webhooks relacionados
+-- pagos_milestones → stripe_webhooks_log (1:N) - Log de webhooks de milestones
+--
 -- FLUJO DEL SISTEMA:
 -- 0. Usuario sube recibo CFE → OCR procesa → Se guarda en cotizaciones_leads_temp
 -- 1. Usuario se registra → Se migra temp quote a cotizaciones_inicial
@@ -652,7 +680,7 @@ CREATE INDEX idx_comisiones_stripe_transfer ON comisiones_enerbook(stripe_transf
 --    - transacciones_financiamiento (si financing)
 -- 7. Se van registrando comisiones_enerbook según el modelo
 -- 8. Al completar se puede crear reseña
--- 
+--
 -- MODELOS DE COMISIÓN (manejados en backend):
 -- 1. upfront: Enerbook retiene % del pago único (PROVEEDOR paga comisión vía retención)
 -- 2. milestones: Comisión prorrateada por cada hito completado (PROVEEDOR paga comisión vía retención)
@@ -663,4 +691,9 @@ CREATE INDEX idx_comisiones_stripe_transfer ON comisiones_enerbook(stripe_transf
 -- - Lender aprueba crédito y desembolsa monto_financiado al proveedor
 -- - Cliente paga service fee a Enerbook (checkout inmediato)
 -- - Cliente paga cuotas mensuales al lender directamente
+--
+-- ADMINISTRACIÓN:
+-- - La tabla administradores gestiona usuarios con acceso admin
+-- - Niveles: 'admin' (acceso básico) y 'super_admin' (acceso completo)
+-- - Permisos granulares en formato JSON para flexibilidad
 -- ============================================================================
