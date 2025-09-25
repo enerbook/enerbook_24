@@ -372,7 +372,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ \n  {\n    \"success\": true,\n    \"temp_lead_id\": $node[\"Save Temp Quote\"].json.temp_lead_id || \"unknown\",\n    \"message\": \"Análisis energético completado\",\n    \"redirect_url\": \"/dashboard?temp_lead_id=\" + ($node[\"Save Temp Quote\"].json.temp_lead_id || \"unknown\"),\n    \"data\": {\n      \"consumo_max\": $json.output?.consumo_max || null,\n      \"sistema_requerido\": $json.sizing?.results?.kWp_needed || null,\n      \"paneles\": $json.sizing?.results?.n_panels || null,\n      \"produccion_anual\": $json.sizing?.results?.yearly_prod || null\n    }\n  }\n}}",
+        "responseBody": "={{ \n  {\n    \"success\": true,\n    \"temp_lead_id\": $node[\"Save Temp Quote\"].json.temp_lead_id || \"unknown\",\n    \"message\": \"Análisis energético completado\",\n    \"redirect_url\": \"/leads-users-dashboard?temp_lead_id=\" + ($node[\"Save Temp Quote\"].json.temp_lead_id || \"unknown\"),\n    \"data\": {\n      \"consumo_max\": $json.output?.consumo_max || null,\n      \"sistema_requerido\": $json.sizing?.results?.kWp_needed || null,\n      \"paneles\": $json.sizing?.results?.n_panels || null,\n      \"produccion_anual\": $json.sizing?.results?.yearly_prod || null\n    }\n  }\n}}",
         "options": {
           "responseCode": 200
         }

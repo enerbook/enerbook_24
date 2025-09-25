@@ -428,6 +428,7 @@ export const AuthProvider = ({ children }) => {
     console.log('Logout function called with router:', router);
     const currentType = userType;
     console.log('Current user type:', currentType);
+    console.log('Current user email:', user?.email);
     
     try {
       await supabase.auth.signOut();

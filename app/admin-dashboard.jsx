@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FiLogOut } from 'react-icons/fi';
-import { useAuth } from '../../src/context/AuthContext';
-import { supabase } from '../../src/lib/supabaseClient';
-import AppLayout from '../../src/components/common/AppLayout';
-import ResumenTab from '../../src/components/admin/tabs/ResumenTab';
-import FinanzasTab from '../../src/components/admin/tabs/FinanzasTabSimple';
-import ProveedoresTab from '../../src/components/admin/tabs/ProveedoresTab';
-import ProyectosTab from '../../src/components/admin/tabs/ProyectosTabSimple';
-import AlertasTab from '../../src/components/admin/tabs/AlertasTab';
+import { useAuth } from '../src/context/AuthContext';
+import { supabase } from '../src/lib/supabaseClient';
+import AppLayout from '../src/components/common/AppLayout';
+import ResumenTab from '../src/components/admin/tabs/ResumenTab';
+import FinanzasTab from '../src/components/admin/tabs/FinanzasTabSimple';
+import ProveedoresTab from '../src/components/admin/tabs/ProveedoresTab';
+import ProyectosTab from '../src/components/admin/tabs/ProyectosTabSimple';
+import AlertasTab from '../src/components/admin/tabs/AlertasTab';
 
 const AdminDashboard = () => {
   const { user, userType, logout } = useAuth();

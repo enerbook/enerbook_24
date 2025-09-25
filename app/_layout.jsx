@@ -13,7 +13,7 @@ const RootLayoutNav = () => {
   useEffect(() => {
     if (loading) return;
 
-    const inProtectedRoute = segments[0] === 'installer' || segments[0] === 'dashboard' || segments[0] === 'admin';
+    const inProtectedRoute = segments[0] === 'installer-dashboard' || segments[0] === 'leads-users-dashboard' || segments[0] === 'admin';
     const inAuthRoute = segments[0] === 'installer-login' || segments[0] === 'login' || segments[0] === 'installer-signup' || segments[0] === 'signup';
 
     // Obtener la URL completa actual
@@ -23,7 +23,7 @@ const RootLayoutNav = () => {
     console.log('_layout - user:', user?.email, 'userType:', userType, 'segments:', segments, 'URL has lead ID:', hasLeadIdInUrl);
 
     // Si el userType es 'lead' o hay temp_lead_id en la URL, permitir acceso al dashboard
-    if ((userType === 'lead' || hasLeadIdInUrl) && segments[0] === 'dashboard') {
+    if ((userType === 'lead' || hasLeadIdInUrl) && segments[0] === 'leads-users-dashboard') {
       console.log('Lead mode detected or temp_lead_id in URL, allowing dashboard access');
       return;
     }
@@ -31,7 +31,7 @@ const RootLayoutNav = () => {
     // Si no hay usuario y está en ruta protegida, verificar si es modo lead
     if (!user && inProtectedRoute) {
       // Para dashboard, verificar si hay temp_lead_id en la URL
-      if (segments[0] === 'dashboard') {
+      if (segments[0] === 'leads-users-dashboard') {
         if (hasLeadIdInUrl) {
           console.log('Dashboard access with temp_lead_id in URL - allowing lead mode');
           return; // Permitir acceso sin redireccionar
@@ -39,7 +39,7 @@ const RootLayoutNav = () => {
           console.log('Dashboard access without temp_lead_id - redirecting to login');
           router.replace('/login');
         }
-      } else if (segments[0] === 'installer') {
+      } else if (segments[0] === 'installer-dashboard') {
         console.log('Redirecting to installer-login');
         router.replace('/installer-login');
       } else if (segments[0] === 'admin') {
@@ -54,11 +54,11 @@ const RootLayoutNav = () => {
     else if (user && userType && userType !== 'lead' && inAuthRoute) {
       console.log('Redirecting to dashboard - user logged in on auth route');
       if (userType === 'admin') {
-        router.replace('/admin/dashboard');
+        router.replace('/admin-dashboard');
       } else if (userType === 'instalador') {
-        router.replace('/installer');
+        router.replace('/installer-dashboard');
       } else if (userType === 'cliente') {
-        router.replace('/dashboard');
+        router.replace('/leads-users-dashboard');
       }
     }
     // Si hay usuario pero no userType, esperar
