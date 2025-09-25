@@ -13,7 +13,7 @@ const RootLayoutNav = () => {
   useEffect(() => {
     if (loading) return;
 
-    const inProtectedRoute = segments[0] === 'installer' || segments[0] === 'dashboard';
+    const inProtectedRoute = segments[0] === 'installer' || segments[0] === 'dashboard' || segments[0] === 'admin';
     const inAuthRoute = segments[0] === 'installer-login' || segments[0] === 'login' || segments[0] === 'installer-signup' || segments[0] === 'signup';
 
     // Obtener la URL completa actual
@@ -42,15 +42,20 @@ const RootLayoutNav = () => {
       } else if (segments[0] === 'installer') {
         console.log('Redirecting to installer-login');
         router.replace('/installer-login');
+      } else if (segments[0] === 'admin') {
+        console.log('Admin area access without user - redirecting to login');
+        router.replace('/login');
       } else {
         console.log('Redirecting to default login');
         router.replace('/login');
       }
-    } 
+    }
     // Si hay usuario y userType y está en página de auth, redirigir al dashboard apropiado
     else if (user && userType && userType !== 'lead' && inAuthRoute) {
       console.log('Redirecting to dashboard - user logged in on auth route');
-      if (userType === 'instalador') {
+      if (userType === 'admin') {
+        router.replace('/admin/dashboard');
+      } else if (userType === 'instalador') {
         router.replace('/installer');
       } else if (userType === 'cliente') {
         router.replace('/dashboard');

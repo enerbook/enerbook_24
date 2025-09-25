@@ -20,6 +20,20 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
+      // Check if user is an admin first
+      console.log('Checking administradores table...');
+      const { data: adminData, error: adminError } = await supabase
+        .from('administradores')
+        .select('id, activo')
+        .eq('usuario_id', userId)
+        .eq('activo', true);
+
+      console.log('Admin check result:', { adminData, adminError });
+      if (adminData && adminData.length > 0) {
+        console.log('User is admin');
+        return 'admin';
+      }
+
       // Check if user is an installer
       console.log('Checking proveedores table...');
       const { data: proveedorData, error: proveedorError } = await supabase
