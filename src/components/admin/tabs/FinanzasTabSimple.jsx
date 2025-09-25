@@ -98,10 +98,10 @@ const FinanzasTab = () => {
   const processTiposPagoData = (contratos) => {
     if (!contratos) return [];
     const tipos = {
-      contado: { name: 'Contado', value: 0, color: '#10B981' },
-      financiamiento: { name: 'Financiamiento', value: 0, color: '#3B82F6' },
-      tarjeta: { name: 'Tarjeta', value: 0, color: '#F59E0B' },
-      transferencia: { name: 'Transferencia', value: 0, color: '#8B5CF6' }
+      contado: { name: 'Contado', value: 0, color: '#f59e0b' },
+      financiamiento: { name: 'Financiamiento', value: 0, color: '#090e1a' },
+      tarjeta: { name: 'Tarjeta', value: 0, color: '#f59e0b' },
+      transferencia: { name: 'Transferencia', value: 0, color: '#090e1a' }
     };
 
     contratos.forEach(c => {
@@ -134,9 +134,9 @@ const FinanzasTab = () => {
     });
 
     return [
-      { name: 'Pendientes', value: estados.pendiente, color: '#F59E0B' },
-      { name: 'Pagados', value: estados.pagado, color: '#10B981' },
-      { name: 'Vencidos', value: estados.vencido, color: '#EF4444' }
+      { name: 'Pendientes', value: estados.pendiente, color: '#f59e0b' },
+      { name: 'Pagados', value: estados.pagado, color: '#f59e0b' },
+      { name: 'Vencidos', value: estados.vencido, color: '#090e1a' }
     ];
   };
 
@@ -157,7 +157,7 @@ const FinanzasTab = () => {
   if (loading) {
     return (
       <div className="flex-1 items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
         <p className="text-sm text-gray-600 mt-4">Cargando Datos Financieros...</p>
       </div>
     );
@@ -177,7 +177,7 @@ const FinanzasTab = () => {
                 onClick={() => setSelectedPeriod(period.id)}
                 className={`px-4 py-2 rounded-lg mr-2 ${
                   selectedPeriod === period.id
-                    ? 'bg-amber-500'
+                    ? 'bg-orange-500'
                     : 'bg-gray-100'
                 }`}
               >
@@ -277,14 +277,14 @@ const FinanzasTab = () => {
           </div>
         </div>
 
-        <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+        <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
           <div className="flex items-start">
-            <Ionicons name="bulb" size={20} color="#F59E0B" />
+            <Ionicons name="bulb" size={20} color="#f59e0b" />
             <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-amber-900">
+              <p className="text-sm font-medium text-gray-900">
                 Resumen Financiero
               </p>
-              <p className="text-sm text-amber-700 mt-1">
+              <p className="text-sm text-gray-700 mt-1">
                 El sistema ha generado {formatCurrency(financeData.resumen.totalComisiones)} en comisiones,
                 con {formatCurrency(financeData.resumen.comisionesPendientes)} pendientes de cobro.
                 Los service fees de Stripe suman {formatCurrency(financeData.resumen.serviceFees)}.

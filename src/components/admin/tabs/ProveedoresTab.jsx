@@ -109,10 +109,10 @@ const ProveedoresTab = () => {
     });
 
     return [
-      { name: 'Express', value: tipos.express, color: '#10B981' },
-      { name: 'Standard', value: tipos.standard, color: '#3B82F6' },
-      { name: 'Custom', value: tipos.custom, color: '#8B5CF6' },
-      { name: 'Pendiente', value: tipos.pendiente, color: '#EF4444' }
+      { name: 'Express', value: tipos.express, color: '#f59e0b' },
+      { name: 'Standard', value: tipos.standard, color: '#090e1a' },
+      { name: 'Custom', value: tipos.custom, color: '#090e1a' },
+      { name: 'Pendiente', value: tipos.pendiente, color: '#090e1a' }
     ].filter(t => t.value > 0);
   };
 
@@ -147,9 +147,9 @@ const ProveedoresTab = () => {
       return { text: 'Inactivo', color: 'bg-gray-100 text-gray-700' };
     }
     if (!proveedor.stripe_onboarding_completed) {
-      return { text: 'Stripe Pendiente', color: 'bg-yellow-100 text-yellow-700' };
+      return { text: 'Stripe Pendiente', color: 'bg-orange-100 text-orange-700' };
     }
-    return { text: 'Activo', color: 'bg-green-100 text-green-700' };
+    return { text: 'Activo', color: 'bg-orange-100 text-orange-700' };
   };
 
   const formatDate = (dateString) => {
@@ -164,7 +164,7 @@ const ProveedoresTab = () => {
   if (loading) {
     return (
       <div className="flex-1 items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
         <p className="text-sm text-gray-600 mt-4">Cargando Proveedores...</p>
       </div>
     );
@@ -180,7 +180,7 @@ const ProveedoresTab = () => {
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-100">
             <p className="text-sm text-gray-600">Activos</p>
-            <p className="text-2xl font-bold text-green-600">{proveedoresStats.activos}</p>
+            <p className="text-2xl font-bold text-orange-600">{proveedoresStats.activos}</p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-100">
             <p className="text-sm text-gray-600">Inactivos</p>
@@ -188,15 +188,15 @@ const ProveedoresTab = () => {
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-100">
             <p className="text-sm text-gray-600">Stripe OK</p>
-            <p className="text-2xl font-bold text-blue-600">{proveedoresStats.stripeCompleto}</p>
+            <p className="text-2xl font-bold text-orange-600">{proveedoresStats.stripeCompleto}</p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-100">
             <p className="text-sm text-gray-600">Stripe Pendiente</p>
-            <p className="text-2xl font-bold text-yellow-600">{proveedoresStats.stripePendiente}</p>
+            <p className="text-2xl font-bold text-orange-600">{proveedoresStats.stripePendiente}</p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-100">
             <p className="text-sm text-gray-600">Con Financiamiento</p>
-            <p className="text-2xl font-bold text-purple-600">{proveedoresStats.conFinanciamiento}</p>
+            <p className="text-2xl font-bold text-orange-600">{proveedoresStats.conFinanciamiento}</p>
           </div>
         </div>
 
@@ -235,7 +235,7 @@ const ProveedoresTab = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  <div className="w-3 h-3 rounded-full bg-orange-500" />
                   <p className="text-sm text-gray-700 ml-3">Onboarding Completo</p>
                 </div>
                 <div className="flex items-center">
@@ -249,7 +249,7 @@ const ProveedoresTab = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                  <div className="w-3 h-3 rounded-full bg-orange-500" />
                   <p className="text-sm text-gray-700 ml-3">Onboarding Pendiente</p>
                 </div>
                 <div className="flex items-center">
@@ -264,7 +264,7 @@ const ProveedoresTab = () => {
               <div className="h-px bg-gray-200 my-2" />
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-purple-500" />
+                  <div className="w-3 h-3 rounded-full bg-gray-800" />
                   <p className="text-sm text-gray-700 ml-3">Acepta Financiamiento</p>
                 </div>
                 <div className="flex items-center">
@@ -302,7 +302,7 @@ const ProveedoresTab = () => {
                 <button
                   onClick={() => setFilterStatus('activos')}
                   className={`px-3 py-1 rounded-lg mr-2 ${
-                    filterStatus === 'activos' ? 'bg-green-600' : 'bg-gray-100'
+                    filterStatus === 'activos' ? 'bg-orange-500' : 'bg-gray-100'
                   }`}
                 >
                   <p className={`text-sm ${
@@ -314,7 +314,7 @@ const ProveedoresTab = () => {
                 <button
                   onClick={() => setFilterStatus('stripe-pendiente')}
                   className={`px-3 py-1 rounded-lg ${
-                    filterStatus === 'stripe-pendiente' ? 'bg-yellow-600' : 'bg-gray-100'
+                    filterStatus === 'stripe-pendiente' ? 'bg-orange-500' : 'bg-gray-100'
                   }`}
                 >
                   <p className={`text-sm ${
@@ -374,8 +374,8 @@ const ProveedoresTab = () => {
                         )}
                         {proveedor.acepta_financiamiento_externo && (
                           <div className="flex items-center">
-                            <Ionicons name="cash" size={14} color="#8B5CF6" />
-                            <p className="text-sm text-purple-600 ml-1">
+                            <Ionicons name="cash" size={14} color="#f59e0b" />
+                            <p className="text-sm text-orange-600 ml-1">
                               Financiamiento
                             </p>
                           </div>
@@ -393,14 +393,14 @@ const ProveedoresTab = () => {
         </div>
 
         {proveedoresStats.stripePendiente > 0 && (
-          <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200 mt-6">
+          <div className="bg-orange-50 rounded-lg p-4 border border-orange-200 mt-6">
             <div className="flex items-start">
               <Ionicons name="warning" size={20} color="#F59E0B" />
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-yellow-900">
+                <p className="text-sm font-medium text-gray-900">
                   Atención Requerida
                 </p>
-                <p className="text-sm text-yellow-700 mt-1">
+                <p className="text-sm text-gray-700 mt-1">
                   Hay {proveedoresStats.stripePendiente} proveedores con onboarding de Stripe pendiente.
                   Es importante completar este proceso para que puedan recibir pagos.
                 </p>

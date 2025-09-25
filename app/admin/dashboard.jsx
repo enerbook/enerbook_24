@@ -150,9 +150,16 @@ const AdminDashboard = () => {
         {/* Header */}
         <div className="bg-white border-b border-gray-100">
           <div className="px-6 py-4 flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard Administrador</h1>
-              <p className="text-sm text-gray-600 mt-1">Panel de Control y Métricas del Sistema</p>
+            <div className="flex items-center">
+              <img
+                src="/img/FulllogoColor.svg"
+                alt="Enerbook"
+                className="h-20 w-auto mr-6"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Dashboard Administrador</h1>
+                <p className="text-sm text-gray-600 mt-1">Panel de Control y Métricas del Sistema</p>
+              </div>
             </div>
             <button
               onClick={handleLogout}

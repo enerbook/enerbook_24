@@ -45,7 +45,7 @@ const AlertasTab = () => {
           fecha: milestone.fecha_objetivo,
           accion: 'Contactar al proveedor',
           icono: 'calendar',
-          color: diasVencido > 7 ? '#EF4444' : '#F59E0B'
+          color: diasVencido > 7 ? '#090e1a' : '#f59e0b'
         });
       });
 
@@ -71,7 +71,7 @@ const AlertasTab = () => {
           fecha: webhook.created_at,
           accion: 'Revisar logs de Stripe',
           icono: 'alert-circle',
-          color: horasDesde > 24 ? '#EF4444' : '#F59E0B'
+          color: horasDesde > 24 ? '#090e1a' : '#f59e0b'
         });
       });
 
@@ -97,7 +97,7 @@ const AlertasTab = () => {
             fecha: proveedor.created_at,
             accion: 'Enviar recordatorio',
             icono: 'person-add',
-            color: diasDesde > 7 ? '#F59E0B' : '#3B82F6'
+            color: diasDesde > 7 ? '#f59e0b' : '#090e1a'
           });
         }
       });
@@ -118,7 +118,7 @@ const AlertasTab = () => {
           fecha: dispute.created,
           accion: 'Responder en Stripe',
           icono: 'warning',
-          color: '#EF4444'
+          color: '#090e1a'
         });
       });
 
@@ -144,7 +144,7 @@ const AlertasTab = () => {
             fecha: contrato.created_at,
             accion: 'Enviar recordatorio de pago',
             icono: 'card',
-            color: diasDesde > 5 ? '#F59E0B' : '#3B82F6'
+            color: diasDesde > 5 ? '#f59e0b' : '#090e1a'
           });
         }
       });
@@ -170,7 +170,7 @@ const AlertasTab = () => {
             fecha: proyecto.updated_at,
             accion: 'Contactar proveedor',
             icono: 'time',
-            color: '#3B82F6'
+            color: '#090e1a'
           });
         }
       });
@@ -248,11 +248,11 @@ const AlertasTab = () => {
   const getTipoBadgeStyle = (tipo) => {
     switch (tipo) {
       case 'critica':
-        return 'bg-red-100 text-red-700';
+        return 'bg-gray-800 text-white';
       case 'advertencia':
-        return 'bg-yellow-100 text-yellow-700';
+        return 'bg-orange-100 text-orange-700';
       case 'info':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-gray-100 text-gray-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
@@ -261,7 +261,7 @@ const AlertasTab = () => {
   if (loading && alertas.length === 0) {
     return (
       <div className="flex-1 items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" size="large" color="#F59E0B" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400" />
         <p className="text-sm text-gray-600 mt-4">Cargando Alertas...</p>
       </div>
     );
@@ -308,7 +308,7 @@ const AlertasTab = () => {
               onClick={() => setFilterType('critica')}
               className={`p-4 rounded-lg border ${
                 filterType === 'critica'
-                  ? 'bg-red-500 border-red-500'
+                  ? 'bg-gray-800 border-gray-800'
                   : 'bg-white border-gray-200'
               }`}
             >
@@ -318,7 +318,7 @@ const AlertasTab = () => {
                 Críticas
               </p>
               <p className={`text-2xl font-bold ${
-                filterType === 'critica' ? 'text-white' : 'text-red-600'
+                filterType === 'critica' ? 'text-white' : 'text-gray-900'
               }`}>
                 {stats.criticas}
               </p>
@@ -328,7 +328,7 @@ const AlertasTab = () => {
               onClick={() => setFilterType('advertencia')}
               className={`p-4 rounded-lg border ${
                 filterType === 'advertencia'
-                  ? 'bg-yellow-500 border-yellow-500'
+                  ? 'bg-orange-500 border-orange-500'
                   : 'bg-white border-gray-200'
               }`}
             >
@@ -338,7 +338,7 @@ const AlertasTab = () => {
                 Advertencias
               </p>
               <p className={`text-2xl font-bold ${
-                filterType === 'advertencia' ? 'text-white' : 'text-yellow-600'
+                filterType === 'advertencia' ? 'text-white' : 'text-orange-600'
               }`}>
                 {stats.advertencias}
               </p>
@@ -348,7 +348,7 @@ const AlertasTab = () => {
               onClick={() => setFilterType('info')}
               className={`p-4 rounded-lg border ${
                 filterType === 'info'
-                  ? 'bg-blue-500 border-blue-500'
+                  ? 'bg-gray-600 border-gray-600'
                   : 'bg-white border-gray-200'
               }`}
             >
@@ -358,7 +358,7 @@ const AlertasTab = () => {
                 Información
               </p>
               <p className={`text-2xl font-bold ${
-                filterType === 'info' ? 'text-white' : 'text-blue-600'
+                filterType === 'info' ? 'text-white' : 'text-gray-600'
               }`}>
                 {stats.info}
               </p>
@@ -367,7 +367,7 @@ const AlertasTab = () => {
 
           {getFilteredAlertas().length === 0 ? (
             <div className="py-12 items-center">
-              <Ionicons name="checkmark-circle" size={48} color="#10B981" />
+              <Ionicons name="checkmark-circle" size={48} color="#f59e0b" />
               <p className="text-lg font-medium text-gray-900 mt-4">
                 No hay alertas activas
               </p>
@@ -417,8 +417,8 @@ const AlertasTab = () => {
                   {alerta.accion && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       <button className="flex items-center">
-                        <Ionicons name="arrow-forward-circle" size={16} color="#3B82F6" />
-                        <p className="text-sm text-blue-600 ml-2 font-medium">
+                        <Ionicons name="arrow-forward-circle" size={16} color="#f59e0b" />
+                        <p className="text-sm text-orange-600 ml-2 font-medium">
                           {alerta.accion}
                         </p>
                       </button>
@@ -431,14 +431,14 @@ const AlertasTab = () => {
         </div>
 
         {stats.criticas > 0 && (
-          <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+          <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
             <div className="flex items-start">
-              <Ionicons name="alert-circle" size={20} color="#EF4444" />
+              <Ionicons name="alert-circle" size={20} color="#f59e0b" />
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-red-900">
+                <p className="text-sm font-medium text-gray-900">
                   Atención Inmediata Requerida
                 </p>
-                <p className="text-sm text-red-700 mt-1">
+                <p className="text-sm text-gray-700 mt-1">
                   Hay {stats.criticas} alertas críticas que requieren atención inmediata.
                   Estas incluyen milestones muy vencidos, disputas activas y webhooks sin procesar.
                 </p>

@@ -95,11 +95,11 @@ const ProyectosTab = () => {
     });
 
     return [
-      { name: 'Cotización', value: estados['Cotización'], color: '#3B82F6' },
-      { name: 'En Progreso', value: estados['En Progreso'], color: '#F59E0B' },
-      { name: 'Completado', value: estados['Completado'], color: '#10B981' },
-      { name: 'Cancelado', value: estados['Cancelado'], color: '#EF4444' },
-      { name: 'En Espera', value: estados['En Espera'], color: '#8B5CF6' }
+      { name: 'Cotización', value: estados['Cotización'], color: '#090e1a' },
+      { name: 'En Progreso', value: estados['En Progreso'], color: '#f59e0b' },
+      { name: 'Completado', value: estados['Completado'], color: '#f59e0b' },
+      { name: 'Cancelado', value: estados['Cancelado'], color: '#090e1a' },
+      { name: 'En Espera', value: estados['En Espera'], color: '#090e1a' }
     ].filter(e => e.value > 0);
   };
 
@@ -115,7 +115,7 @@ const ProyectosTab = () => {
   if (loading) {
     return (
       <div className="flex-1 items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" size="large" color="#F59E0B" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400" size="large" color="#f59e0b" />
         <p className="text-sm text-gray-600 mt-4">Cargando Proyectos...</p>
       </div>
     );
@@ -136,7 +136,7 @@ const ProyectosTab = () => {
                   onClick={() => setSelectedRegion(region)}
                   className={`px-4 py-2 rounded-lg mr-2 ${
                     selectedRegion === region
-                      ? 'bg-amber-500'
+                      ? 'bg-orange-500'
                       : 'bg-gray-100'
                   }`}
                 >
@@ -207,14 +207,14 @@ const ProyectosTab = () => {
           </div>
         </div>
 
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+        <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
           <div className="flex items-start">
             <Ionicons name="information-circle" size={20} color="#3B82F6" />
             <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-blue-900">
+              <p className="text-sm font-medium text-gray-900">
                 Análisis de Proyectos
               </p>
-              <p className="text-sm text-blue-700 mt-1">
+              <p className="text-sm text-gray-700 mt-1">
                 El sistema cuenta con {proyectosData.resumen.total} proyectos totales,
                 de los cuales {proyectosData.resumen.completados} han sido completados exitosamente
                 y {proyectosData.resumen.enProgreso} están actualmente en progreso.
