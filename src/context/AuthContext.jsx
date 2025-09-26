@@ -3,6 +3,13 @@ import { supabase } from '../lib/supabaseClient'; // Importa el cliente de Supab
 
 const AuthContext = createContext();
 
+// Debug function - only logs in development
+const debugLog = (message, ...args) => {
+  if (__DEV__) {
+    console.log('[AuthContext]', message, ...args);
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
@@ -13,54 +20,40 @@ export const AuthProvider = ({ children }) => {
   const [clientData, setClientData] = useState(null);
 
   const fetchUserRole = async (userId) => {
-    console.log('fetchUserRole called with userId:', userId);
-    if (!userId) {
-      console.log('fetchUserRole: no userId provided');
-      return null;
-    }
+    if (!userId) return null;
 
     try {
       // Check if user is an admin first
-      console.log('Checking administradores table...');
       const { data: adminData, error: adminError } = await supabase
         .from('administradores')
         .select('id, activo')
         .eq('usuario_id', userId)
         .eq('activo', true);
 
-      console.log('Admin check result:', { adminData, adminError });
       if (adminData && adminData.length > 0) {
-        console.log('User is admin');
         return 'admin';
       }
 
       // Check if user is an installer
-      console.log('Checking proveedores table...');
       const { data: proveedorData, error: proveedorError } = await supabase
         .from('proveedores')
         .select('id')
         .eq('auth_user_id', userId);
 
-      console.log('Proveedor check result:', { proveedorData, proveedorError });
       if (proveedorData && proveedorData.length > 0) {
-        console.log('User is instalador');
         return 'instalador';
       }
 
       // Check if user is a client
-      console.log('Checking usuarios table...');
       const { data: clienteData, error: clienteError } = await supabase
         .from('usuarios')
         .select('id')
         .eq('id', userId);
 
-      console.log('Cliente check result:', { clienteData, clienteError });
       if (clienteData && clienteData.length > 0) {
-        console.log('User is cliente');
         return 'cliente';
       }
 
-      console.log('No role found for user:', userId);
       return null;
     } catch (error) {
       console.error('Error in fetchUserRole:', error);
@@ -69,12 +62,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const fetchLeadData = useCallback(async (requestedLeadId) => {
-    console.log('fetchLeadData called with tempLeadId:', requestedLeadId);
     if (!requestedLeadId) return null;
 
     // Si ya tenemos datos para este lead, no hacer otra petición
     if (leadData && leadData.temp_lead_id === requestedLeadId) {
-      console.log('Lead data already exists for:', requestedLeadId);
       return leadData;
     }
 
@@ -86,7 +77,6 @@ export const AuthProvider = ({ children }) => {
         .single();
 
       if (error || !data) {
-        console.log('Lead not found in DB, using fallback data for:', requestedLeadId);
         // Datos de fallback para testing
         return {
           temp_lead_id: requestedLeadId,
@@ -231,9 +221,7 @@ export const AuthProvider = ({ children }) => {
         setToken(session?.access_token ?? null);
         
         if (user) {
-          console.log('Auth listener - Getting user role for:', user.email);
           const role = await fetchUserRole(user.id);
-          console.log('Auth listener - Setting userType to:', role);
           setUserType(role);
 
           // Si es cliente, cargar sus datos
@@ -242,7 +230,6 @@ export const AuthProvider = ({ children }) => {
             setClientData(data);
           }
         } else {
-          console.log('Auth listener - No user, setting userType to null');
           setUserType(null);
           setClientData(null);
         }

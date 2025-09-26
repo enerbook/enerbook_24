@@ -27,13 +27,6 @@ const SolicitarCotizacionesModal = ({ isOpen, onClose, onSuccess }) => {
       if (cotizacionError || !cotizacionInicial) {
         console.log('Creating new cotizacion_inicial with current data');
 
-        // DEBUG: Log data being saved
-        console.log('=== DEBUG SAVING DATA ===');
-        console.log('reciboData:', reciboData);
-        console.log('consumoData:', consumoData);
-        console.log('resumenEnergetico:', resumenEnergetico);
-        console.log('sistemaData?.results:', sistemaData?.results);
-        console.log('=== END DEBUG SAVING ===');
 
         const { data: newCotizacion, error: newCotizacionError } = await supabase
           .from('cotizaciones_inicial')

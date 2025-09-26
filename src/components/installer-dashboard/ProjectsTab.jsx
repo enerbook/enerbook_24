@@ -48,16 +48,6 @@ const ProjectsTab = ({ setSelectedProject, setShowProjectModal, setShowQuoteModa
         const resumenEnergetico = cotizacion?.resumen_energetico;
         const irradiacionData = cotizacion?.irradiacion_cache;
 
-        // DEBUG: Log all data to console to see structure
-        console.log('=== DEBUG PROJECT DATA ===');
-        console.log('Proyecto:', proyecto.titulo);
-        console.log('Cotizacion completa:', cotizacion);
-        console.log('Sizing results:', sizingResults);
-        console.log('Recibo data:', reciboData);
-        console.log('Consumo historico:', consumoHistorico);
-        console.log('Resumen energetico:', resumenEnergetico);
-        console.log('Irradiacion data:', irradiacionData);
-        console.log('=== END DEBUG ===');
 
         // Calcular datos de consumo
         let consumoAnual = 'No disponible';

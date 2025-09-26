@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizaciones';
 import SolicitarCotizacionesModal from '../modals/SolicitarCotizacionesModal';
+import NuevoProyectoModal from '../modals/NuevoProyectoModal';
 
 const ProyectosTab = () => {
   const [proyectos, setProyectos] = useState([]);
@@ -9,6 +10,7 @@ const ProyectosTab = () => {
   const [contratos, setContratos] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
+  const [showNuevoProyectoModal, setShowNuevoProyectoModal] = useState(false);
 
   useEffect(() => {
     loadUserData();
@@ -97,6 +99,18 @@ const ProyectosTab = () => {
   return (
     <main className="flex-1 px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
       <div className="space-y-8">
+        {/* Header with Nuevo Proyecto button */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-lg font-bold text-gray-900">Mis Proyectos</h1>
+          <button
+            onClick={() => setShowNuevoProyectoModal(true)}
+            className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+            style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+          >
+            + Nuevo Proyecto
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Mis Cotizaciones */}
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
@@ -245,6 +259,15 @@ const ProyectosTab = () => {
         isOpen={isModalOpen}
         onClose={closeModal}
         onSuccess={handleSuccessWithReload}
+      />
+
+      <NuevoProyectoModal
+        isOpen={showNuevoProyectoModal}
+        onClose={() => setShowNuevoProyectoModal(false)}
+        onSuccess={() => {
+          setShowNuevoProyectoModal(false);
+          loadUserData(); // Reload data to show new project
+        }}
       />
     </main>
   );
