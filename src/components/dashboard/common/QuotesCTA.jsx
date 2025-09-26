@@ -1,6 +1,10 @@
 import React from 'react';
+import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizaciones';
+import SolicitarCotizacionesModal from '../modals/SolicitarCotizacionesModal';
 
 const QuotesCTA = () => {
+  const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
+
   return (
     <div className="w-full lg:flex-1">
       <div
@@ -18,7 +22,8 @@ const QuotesCTA = () => {
 
         <div className="flex-shrink-0 w-full lg:w-auto">
           <button
-            className="rounded-2xl w-full lg:w-[280px] h-[120px] lg:h-[160px] grid place-items-center"
+            onClick={openModal}
+            className="rounded-2xl w-full lg:w-[280px] h-[120px] lg:h-[160px] grid place-items-center hover:opacity-90 transition-opacity"
             style={{ backgroundColor: "#0b0f17" }}
           >
             <div className="text-center leading-[1.05]">
@@ -33,6 +38,12 @@ const QuotesCTA = () => {
           </button>
         </div>
       </div>
+
+      <SolicitarCotizacionesModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSuccess={handleSuccess}
+      />
     </div>
   );
 };

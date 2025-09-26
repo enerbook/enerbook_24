@@ -1,56 +1,130 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabaseClient';
 import QuotationCard from './QuotationCard';
 import QuotationDetailsModal from './QuotationDetailsModal';
 
 const QuotationsView = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
+  const [quotations, setQuotations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data basado en la imagen
-  const quotations = [
-    {
-      id: 1,
-      projectName: 'Paneles para Lomas 3',
-      clientName: 'Daniel Ruiz Herrera',
-      sentDate: '09/09/2025',
-      totalAmount: '$110,000 MXN',
-      status: 'En revisión',
-      details: {
-        capacity: '9.62 kWp',
-        panels: 'JA Solar 545W',
-        inverter: 'Huawei SUN2000-3/4/5/6/8/10KTL-M1',
-        production: '18,350 kWh/año',
-        structure: 'Coplanar',
-        panelWarranty: '22 años',
-        inverterWarranty: '18 años',
-        installationWarranty: '7 años',
-        installationTime: '21 días',
-        paymentOptions: ['Contado', 'Mensualidades', 'Financiamiento'],
-        notes: 'El sistema está diseñado para una posible expansión, debido a que el consumo histórico muestra una tendencia a seguir incrementando.'
+  useEffect(() => {
+    loadMyQuotations();
+  }, []);
+
+  const loadMyQuotations = async () => {
+    setLoading(true);
+    try {
+      // Get current user's provider ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('No authenticated user');
+        return;
       }
-    },
-    {
-      id: 2,
-      projectName: 'Proyecto 2',
-      clientName: 'Victor Varela Morales',
-      sentDate: '11/06/2025',
-      totalAmount: '$320,600 MXN',
-      status: 'Rechazada',
-      details: {
-        capacity: '15.2 kWp',
-        panels: 'Canadian Solar 560W',
-        inverter: 'SolarEdge SE15000H-RW',
-        production: '24,180 kWh/año',
-        structure: 'Elevada, techo inclinado',
-        panelWarranty: '25 años',
-        inverterWarranty: '25 años',
-        installationWarranty: '15 años',
-        installationTime: '45 días',
-        paymentOptions: ['Contado', 'Financiamiento'],
-        notes: 'Sistema comercial de gran capacidad con estructura elevada especializada.'
+
+      // Find provider by auth user ID
+      const { data: proveedor } = await supabase
+        .from('proveedores')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!proveedor) {
+        console.error('No provider found for user');
+        return;
       }
+
+      // Get quotations for this provider
+      const { data: cotizaciones, error } = await supabase
+        .from('cotizaciones_final')
+        .select(`
+          *,
+          proyectos:proyectos_id (
+            titulo,
+            usuarios:usuarios_id (
+              nombre,
+              correo_electronico
+            ),
+            cotizaciones_inicial:cotizaciones_inicial_id (
+              sizing_results
+            )
+          )
+        `)
+        .eq('proveedores_id', proveedor.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading quotations:', error);
+        return;
+      }
+
+      const formattedQuotations = cotizaciones?.map(cotizacion => {
+        const proyecto = cotizacion.proyectos;
+        const usuario = proyecto?.usuarios;
+        const sizingResults = proyecto?.cotizaciones_inicial?.sizing_results;
+        const precioFinal = cotizacion.precio_final;
+        const paneles = cotizacion.paneles;
+        const inversores = cotizacion.inversores;
+        const estructura = cotizacion.estructura;
+        const sistemaElectrico = cotizacion.sistema_electrico;
+        const opcionesPago = cotizacion.opciones_pago;
+
+        return {
+          id: cotizacion.id,
+          projectName: proyecto?.titulo || `Proyecto ${proyecto?.id?.slice(0, 8)}`,
+          clientName: usuario?.nombre || 'Cliente no especificado',
+          clientEmail: usuario?.correo_electronico,
+          sentDate: new Date(cotizacion.created_at).toLocaleDateString('es-MX'),
+          totalAmount: precioFinal?.total ?
+            `$${precioFinal.total.toLocaleString()} MXN` :
+            'Por definir',
+          status: getStatusLabel(cotizacion.estado),
+          rawStatus: cotizacion.estado,
+          details: {
+            capacity: sizingResults?.potencia_sistema ? `${sizingResults.potencia_sistema} kWp` : 'No especificada',
+            panels: paneles?.modelo || 'No especificado',
+            panelCount: paneles?.cantidad || 'N/A',
+            inverter: inversores?.modelo || 'No especificado',
+            production: sizingResults?.generacion_anual ?
+              `${sizingResults.generacion_anual.toLocaleString()} kWh/año` :
+              'No calculada',
+            structure: estructura?.tipo || 'No especificada',
+            panelWarranty: paneles?.garantia_anos ? `${paneles.garantia_anos} años` : 'No especificada',
+            inverterWarranty: inversores?.garantia_anos ? `${inversores.garantia_anos} años` : 'No especificada',
+            installationWarranty: sistemaElectrico?.garantia_instalacion_anos ?
+              `${sistemaElectrico.garantia_instalacion_anos} años` :
+              'No especificada',
+            installationTime: estructura?.tiempo_instalacion_dias ?
+              `${estructura.tiempo_instalacion_dias} días` :
+              'No especificado',
+            paymentOptions: opcionesPago?.tipos || ['Contado'],
+            notes: cotizacion.notas_proveedor || 'Sin notas adicionales'
+          },
+          rawData: cotizacion
+        };
+      }) || [];
+
+      setQuotations(formattedQuotations);
+    } catch (error) {
+      console.error('Error loading quotations:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'pendiente':
+        return 'En revisión';
+      case 'aceptada':
+        return 'Aceptada';
+      case 'rechazada':
+        return 'Rechazada';
+      default:
+        return status || 'Sin estado';
+    }
+  };
 
   const handleViewDetails = (quotation) => {
     setSelectedQuotation(quotation);
@@ -64,16 +138,33 @@ const QuotationsView = () => {
 
   return (
     <div className="w-full mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {quotations.map((quotation) => (
-          <QuotationCard 
-            key={quotation.id}
-            quotation={quotation}
-            onViewDetails={handleViewDetails}
-            onCancel={handleCancel}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+          <p className="text-sm text-gray-600 ml-4">Cargando cotizaciones...</p>
+        </div>
+      ) : quotations.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay cotizaciones</h3>
+          <p className="text-sm text-gray-600">Aún no has enviado cotizaciones a ningún proyecto.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {quotations.map((quotation) => (
+            <QuotationCard
+              key={quotation.id}
+              quotation={quotation}
+              onViewDetails={handleViewDetails}
+              onCancel={handleCancel}
+            />
+          ))}
+        </div>
+      )}
 
       {showDetailsModal && selectedQuotation && (
         <QuotationDetailsModal 

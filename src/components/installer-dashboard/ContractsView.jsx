@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabaseClient';
 import ContractCard from './ContractCard';
 import ContractDetailsModal from './ContractDetailsModal';
 import UpdateStatusModal from './UpdateStatusModal';
@@ -7,76 +8,189 @@ const ContractsView = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedContract, setSelectedContract] = useState(null);
+  const [contracts, setContracts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data basado en la imagen
-  const contracts = [
-    {
-      id: 1,
-      projectName: 'Proyecto 1',
-      projectDescription: 'Instalación en Los Fuentes 9 kWp',
-      clientName: 'Luis Raúl Morales Hernández',
-      totalAmount: '$87,500 MXN',
-      status: 'Contrato Activo',
-      details: {
-        projectTitle: 'Instalación en Lomas 9 wKp',
-        systemCapacity: '5.4 kWp',
-        panelType: '10 x Longi 550W',
-        inverterType: '2 x Huawei 5KW',
-        estimatedProduction: '8,540 kWh/año',
-        structureType: 'Coplanar, techo de lámina',
-        contractNumber: '#CNTR-239823',
-        paymentType: 'Financiamiento (48 meses)',
-        additionalNotes: 'El sistema fue diseñado para un voltaje de 220V, sin embargo se dejó capacidad e infraestructura para soportar hasta 440V.',
-        signatureDate: '8/11/2025',
-        phone: '222 707 8965',
-        installationWarranty: '10 años',
-        inverterWarranty: '18 años',
-        panelWarranty: '20 años'
+  useEffect(() => {
+    loadMyContracts();
+  }, []);
+
+  const loadMyContracts = async () => {
+    setLoading(true);
+    try {
+      // Get current user's provider ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('No authenticated user');
+        return;
       }
-    },
-    {
-      id: 2,
-      projectName: 'Proyecto 2',
-      projectDescription: '30 paneles en mercado "La Cruz"',
-      clientName: 'Daniela Hernández Cortes',
-      totalAmount: '$54,000 MXN',
-      status: 'Instalación en Proceso',
-      details: {
-        capacity: '16.35 kWp',
-        panels: 'Canadian Solar 545W',
-        inverter: 'SolarEdge SE15000H-RW',
-        production: '26,500 kWh/año',
-        structure: 'Estructura comercial elevada',
-        contractDate: '02/02/2025',
-        installationDate: '01/03/2025',
-        expectedCompletion: '15/03/2025',
-        paymentMethod: 'Contado',
-        notes: 'Instalación comercial en proceso. Estimado de finalización: 15 de marzo.'
+
+      // Find provider by auth user ID
+      const { data: proveedor } = await supabase
+        .from('proveedores')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!proveedor) {
+        console.error('No provider found for user');
+        return;
       }
-    },
-    {
-      id: 3,
-      projectName: 'Proyecto 3',
-      projectDescription: 'Sistema solar para Sodium',
-      clientName: 'Rodrigo Herrera Herrera',
-      totalAmount: '$440,000 MXN',
-      status: 'Contrato Finalizado',
-      details: {
-        capacity: '50.0 kWp',
-        panels: 'Trina Solar 545W',
-        inverter: 'Fronius Eco 50.0-3-S',
-        production: '85,000 kWh/año',
-        structure: 'Sistema industrial con seguimiento solar',
-        contractDate: '10/10/2024',
-        installationDate: '15/11/2024',
-        completionDate: '20/12/2024',
-        paymentMethod: 'Contado',
-        customerRating: 5,
-        customerReview: 'Excelente trabajo, muy profesional y cumplieron con todos los tiempos.',
-        notes: 'Proyecto industrial completado exitosamente. Cliente muy satisfecho con el resultado.'
+
+      // Get contracts for this provider
+      const { data: contratos, error } = await supabase
+        .from('contratos')
+        .select(`
+          *,
+          usuarios:usuarios_id (
+            nombre,
+            correo_electronico,
+            telefono
+          ),
+          cotizaciones_final:cotizaciones_final_id (
+            paneles,
+            inversores,
+            estructura,
+            sistema_electrico,
+            proyectos:proyectos_id (
+              titulo,
+              descripcion,
+              cotizaciones_inicial:cotizaciones_inicial_id (
+                sizing_results
+              )
+            )
+          ),
+          resenas:resenas (
+            puntuacion,
+            comentario,
+            puntuacion_calidad,
+            puntuacion_tiempo,
+            puntuacion_comunicacion,
+            recomendaria
+          )
+        `)
+        .eq('proveedores_id', proveedor.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading contracts:', error);
+        return;
       }
+
+      const formattedContracts = contratos?.map(contrato => {
+        const usuario = contrato.usuarios;
+        const cotizacion = contrato.cotizaciones_final;
+        const proyecto = cotizacion?.proyectos;
+        const sizingResults = proyecto?.cotizaciones_inicial?.sizing_results;
+        const paneles = cotizacion?.paneles;
+        const inversores = cotizacion?.inversores;
+        const estructura = cotizacion?.estructura;
+        const sistemaElectrico = cotizacion?.sistema_electrico;
+        const resena = contrato.resenas?.length > 0 ? contrato.resenas[0] : null;
+
+        return {
+          id: contrato.id,
+          projectName: proyecto?.titulo || `Proyecto ${proyecto?.id?.slice(0, 8)}`,
+          projectDescription: proyecto?.descripcion || 'Sin descripción',
+          clientName: usuario?.nombre || 'Cliente no especificado',
+          clientEmail: usuario?.correo_electronico,
+          clientPhone: usuario?.telefono,
+          totalAmount: `$${contrato.precio_total_sistema?.toLocaleString()} MXN`,
+          status: getContractStatusLabel(contrato.estado),
+          rawStatus: contrato.estado,
+          details: {
+            projectTitle: proyecto?.titulo || 'Sin título',
+            systemCapacity: sizingResults?.potencia_sistema ? `${sizingResults.potencia_sistema} kWp` : 'No especificada',
+            panelType: paneles?.cantidad && paneles?.modelo ?
+              `${paneles.cantidad} x ${paneles.modelo}` :
+              'No especificado',
+            inverterType: inversores?.cantidad && inversores?.modelo ?
+              `${inversores.cantidad} x ${inversores.modelo}` :
+              'No especificado',
+            estimatedProduction: sizingResults?.generacion_anual ?
+              `${sizingResults.generacion_anual.toLocaleString()} kWh/año` :
+              'No calculada',
+            structureType: estructura?.tipo || 'No especificada',
+            contractNumber: contrato.numero_contrato || `#${contrato.id.slice(0, 8)}`,
+            paymentType: getPaymentTypeLabel(contrato.tipo_pago_seleccionado),
+            additionalNotes: proyecto?.descripcion || 'Sin notas adicionales',
+            signatureDate: contrato.fecha_firma ?
+              new Date(contrato.fecha_firma).toLocaleDateString('es-MX') :
+              'No especificada',
+            installationDate: contrato.fecha_inicio_instalacion ?
+              new Date(contrato.fecha_inicio_instalacion).toLocaleDateString('es-MX') :
+              null,
+            completionDate: contrato.fecha_completado ?
+              new Date(contrato.fecha_completado).toLocaleDateString('es-MX') :
+              null,
+            phone: usuario?.telefono || 'No disponible',
+            installationWarranty: sistemaElectrico?.garantia_instalacion_anos ?
+              `${sistemaElectrico.garantia_instalacion_anos} años` :
+              'No especificada',
+            inverterWarranty: inversores?.garantia_anos ?
+              `${inversores.garantia_anos} años` :
+              'No especificada',
+            panelWarranty: paneles?.garantia_anos ?
+              `${paneles.garantia_anos} años` :
+              'No especificada',
+            customerRating: resena?.puntuacion || null,
+            customerReview: resena?.comentario || null,
+            paymentStatus: getPaymentStatusLabel(contrato.estado_pago)
+          },
+          rawData: contrato
+        };
+      }) || [];
+
+      setContracts(formattedContracts);
+    } catch (error) {
+      console.error('Error loading contracts:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const getContractStatusLabel = (status) => {
+    switch (status) {
+      case 'activo':
+        return 'Contrato Activo';
+      case 'completado':
+        return 'Contrato Finalizado';
+      case 'cancelado':
+        return 'Contrato Cancelado';
+      default:
+        return status || 'Sin estado';
+    }
+  };
+
+  const getPaymentTypeLabel = (paymentType) => {
+    switch (paymentType) {
+      case 'upfront':
+        return 'Pago por adelantado';
+      case 'milestones':
+        return 'Pago por hitos';
+      case 'financing':
+        return 'Financiamiento';
+      default:
+        return paymentType || 'No especificado';
+    }
+  };
+
+  const getPaymentStatusLabel = (paymentStatus) => {
+    switch (paymentStatus) {
+      case 'pendiente':
+        return 'Pago Pendiente';
+      case 'processing':
+        return 'Procesando Pago';
+      case 'succeeded':
+        return 'Pago Completado';
+      case 'canceled':
+        return 'Pago Cancelado';
+      case 'requires_action':
+        return 'Acción Requerida';
+      default:
+        return paymentStatus || 'Sin estado';
+    }
+  };
 
   const handleViewDetails = (contract) => {
     setSelectedContract(contract);
@@ -100,17 +214,34 @@ const ContractsView = () => {
 
   return (
     <div className="w-full mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {contracts.map((contract) => (
-          <ContractCard 
-            key={contract.id}
-            contract={contract}
-            onViewDetails={handleViewDetails}
-            onUpdateStatus={handleUpdateStatus}
-            onViewReview={handleViewReview}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+          <p className="text-sm text-gray-600 ml-4">Cargando contratos...</p>
+        </div>
+      ) : contracts.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay contratos</h3>
+          <p className="text-sm text-gray-600">Aún no tienes contratos firmados con clientes.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {contracts.map((contract) => (
+            <ContractCard
+              key={contract.id}
+              contract={contract}
+              onViewDetails={handleViewDetails}
+              onUpdateStatus={handleUpdateStatus}
+              onViewReview={handleViewReview}
+            />
+          ))}
+        </div>
+      )}
 
       {showDetailsModal && selectedContract && (
         <ContractDetailsModal 

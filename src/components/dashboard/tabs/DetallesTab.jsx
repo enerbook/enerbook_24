@@ -1,9 +1,13 @@
 import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
 import { useDashboardData } from '../../../context/DashboardDataContext';
+import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizaciones';
+import SolicitarCotizacionesModal from '../modals/SolicitarCotizacionesModal';
 
 const DetallesTab = () => {
   const { reciboData, resumenEnergetico, sistemaData, consumoData, hasData } = useDashboardData();
+  const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
+
   return (
     <main className="flex-1 px-2 lg:px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
       <div className="space-y-6 lg:space-y-8">
@@ -19,7 +23,10 @@ const DetallesTab = () => {
               </p>
             </div>
             <div className="w-full lg:w-auto lg:ml-8">
-              <button className="bg-gray-900 hover:bg-black text-white rounded-2xl px-5 py-3 transition-all group w-full lg:w-auto">
+              <button
+                onClick={openModal}
+                className="bg-gray-900 hover:bg-black text-white rounded-2xl px-5 py-3 transition-all group w-full lg:w-auto"
+              >
                 <div className="text-center">
                   <h3 className="text-sm font-bold mb-1">Solicitar</h3>
                   <h3 className="text-sm font-bold mb-2">Cotizaciones</h3>
@@ -144,6 +151,12 @@ const DetallesTab = () => {
           </div>
         </div>
       </div>
+
+      <SolicitarCotizacionesModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSuccess={handleSuccess}
+      />
     </main>
   );
 };
