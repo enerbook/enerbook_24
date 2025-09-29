@@ -40,17 +40,31 @@ export function useOcr() {
       });
 
       if (response.ok) {
-        const result = await response.json();
-        setOcrData(result);
-        console.log('OCR data received:', result);
+        // Verificar que hay contenido antes de parsear JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const text = await response.text();
+          if (text) {
+            const result = JSON.parse(text);
+            setOcrData(result);
+            console.log('OCR data received:', result);
 
-        // Si el OCR devuelve temp_lead_id, redirigir inmediatamente al dashboard de lead
-        if (result.temp_lead_id) {
-          console.log('Redirecting to lead dashboard with ID:', result.temp_lead_id);
-          router.push(`/leads-users-dashboard?temp_lead_id=${result.temp_lead_id}`);
+            // Si el OCR devuelve temp_lead_id, redirigir inmediatamente al dashboard de lead
+            if (result.temp_lead_id) {
+              console.log('Redirecting to lead dashboard with ID:', result.temp_lead_id);
+              router.push(`/leads-users-dashboard?temp_lead_id=${result.temp_lead_id}`);
+            }
+          } else {
+            console.error('Empty response from webhook');
+            alert('El servidor devolvió una respuesta vacía. Por favor, inténtalo de nuevo.');
+          }
+        } else {
+          console.error('Response is not JSON:', contentType);
+          alert('Error en el formato de respuesta del servidor. Por favor, contacta al administrador.');
         }
       } else {
-        console.error('Failed to process files:', await response.text());
+        const errorText = await response.text();
+        console.error('Failed to process files:', errorText);
         alert('Error al procesar el recibo. Por favor, inténtalo de nuevo.');
       }
     } catch (error) {
