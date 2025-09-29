@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
-import AppLayout from '../src/components/common/AppLayout';
+import AppLayout from '../src/features/shared/components/layout/AppLayout';
 import { useAuth } from '../src/context/AuthContext';
-import ProfileTab from '../src/components/installer-dashboard/ProfileTab';
-import DocumentsTab from '../src/components/installer-dashboard/DocumentsTab';
-import CertificationsTab from '../src/components/installer-dashboard/CertificationsTab';
-import ProjectsTab from '../src/components/installer-dashboard/ProjectsTab';
-import ProjectDetailsModal from '../src/components/installer-dashboard/ProjectDetailsModal';
-import SendQuoteModal from '../src/components/installer-dashboard/SendQuoteModal';
-import UploadDocumentModal from '../src/components/installer-dashboard/UploadDocumentModal';
-import UploadCertificationModal from '../src/components/installer-dashboard/UploadCertificationModal';
+import ProfileTab from '../src/features/instalador/components/dashboard/ProfileTab';
+import DocumentsTab from '../src/features/instalador/components/dashboard/DocumentsTab';
+import CertificationsTab from '../src/features/instalador/components/dashboard/CertificationsTab';
+import ProjectsTab from '../src/features/instalador/components/dashboard/ProjectsTab';
+import ProjectDetailsModal from '../src/features/instalador/components/modals/ProjectDetailsModal';
+import SendQuoteModal from '../src/features/instalador/components/modals/SendQuoteModal';
+import UploadDocumentModal from '../src/features/instalador/components/modals/UploadDocumentModal';
+import UploadCertificationModal from '../src/features/instalador/components/modals/UploadCertificationModal';
 
 const InstallerDashboard = () => {
   const [activeTab, setActiveTab] = useState('proyectos');

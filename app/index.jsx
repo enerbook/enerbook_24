@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
-import Navbar from "../src/components/landing/Navbar";
-import Hero from "../src/components/landing/Hero";
-import Stats from "../src/components/landing/Stats";
-import Partners from "../src/components/landing/Partners";
-import Reviews from "../src/components/landing/Reviews";
-import HowItWorks from "../src/components/landing/HowItWorks";
-import Experts from "../src/components/landing/Experts";
-import Footer from "../src/components/landing/Footer";
-import InstallersCTA from "../src/components/landing/InstallersCTA";
-import ReceiptUploadModal from "../src/components/common/ReceiptUploadModal";
-import { useOcr } from "../src/hooks/useOcr";
+import Navbar from "../src/features/shared/components/landing/Navbar";
+import Hero from "../src/features/shared/components/landing/Hero";
+import Stats from "../src/features/shared/components/landing/Stats";
+import Partners from "../src/features/shared/components/landing/Partners";
+import Reviews from "../src/features/shared/components/landing/Reviews";
+import HowItWorks from "../src/features/shared/components/landing/HowItWorks";
+import Experts from "../src/features/shared/components/landing/Experts";
+import Footer from "../src/features/shared/components/landing/Footer";
+import InstallersCTA from "../src/features/shared/components/landing/InstallersCTA";
+import ReceiptUploadModal from "../src/features/lead/components/camera/ReceiptUploadModal";
+import { useOcr } from "../src/features/lead/hooks/useOcr";
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);

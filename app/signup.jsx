@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { router } from 'expo-router';
-import LoginNavbar from "../src/components/auth/LoginNavbar";
+import LoginNavbar from "../src/features/cliente/components/auth/LoginNavbar";
 import { useAuth } from "../src/context/AuthContext";
 
 export default function SignUp({ onNavigate }) {
