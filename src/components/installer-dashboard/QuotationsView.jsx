@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
 import QuotationCard from './QuotationCard';
 import QuotationDetailsModal from './QuotationDetailsModal';
+import { authService, installerService, quotationService } from '../../services';
 
 const QuotationsView = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -17,47 +17,21 @@ const QuotationsView = () => {
     setLoading(true);
     try {
       // Get current user's provider ID
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await authService.getCurrentUser();
       if (!user) {
         console.error('No authenticated user');
         return;
       }
 
       // Find provider by auth user ID
-      const { data: proveedor } = await supabase
-        .from('proveedores')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
+      const proveedor = await installerService.getInstallerByUserId(user.id);
       if (!proveedor) {
         console.error('No provider found for user');
         return;
       }
 
-      // Get quotations for this provider
-      const { data: cotizaciones, error } = await supabase
-        .from('cotizaciones_final')
-        .select(`
-          *,
-          proyectos:proyectos_id (
-            titulo,
-            usuarios:usuarios_id (
-              nombre,
-              correo_electronico
-            ),
-            cotizaciones_inicial:cotizaciones_inicial_id (
-              sizing_results
-            )
-          )
-        `)
-        .eq('proveedores_id', proveedor.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading quotations:', error);
-        return;
-      }
+      // Get quotations for this provider using quotationService
+      const cotizaciones = await quotationService.getInstallerQuotations(proveedor.id);
 
       const formattedQuotations = cotizaciones?.map(cotizacion => {
         const proyecto = cotizacion.proyectos;

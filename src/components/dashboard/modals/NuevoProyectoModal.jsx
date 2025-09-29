@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
+import { authService } from '../../../services';
 
 const NuevoProyectoModal = ({ isOpen, onClose, onSuccess }) => {
   const [files, setFiles] = useState([]);
@@ -52,7 +52,7 @@ const NuevoProyectoModal = ({ isOpen, onClose, onSuccess }) => {
 
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await authService.getCurrentUser();
       if (!user) {
         throw new Error('Usuario no autenticado');
       }

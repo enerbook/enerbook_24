@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
 import ContractCard from './ContractCard';
 import ContractDetailsModal from './ContractDetailsModal';
 import UpdateStatusModal from './UpdateStatusModal';
+import { authService, installerService, contractService } from '../../services';
 
 const ContractsView = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -19,63 +19,21 @@ const ContractsView = () => {
     setLoading(true);
     try {
       // Get current user's provider ID
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await authService.getCurrentUser();
       if (!user) {
         console.error('No authenticated user');
         return;
       }
 
       // Find provider by auth user ID
-      const { data: proveedor } = await supabase
-        .from('proveedores')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
+      const proveedor = await installerService.getInstallerByUserId(user.id);
       if (!proveedor) {
         console.error('No provider found for user');
         return;
       }
 
-      // Get contracts for this provider
-      const { data: contratos, error } = await supabase
-        .from('contratos')
-        .select(`
-          *,
-          usuarios:usuarios_id (
-            nombre,
-            correo_electronico,
-            telefono
-          ),
-          cotizaciones_final:cotizaciones_final_id (
-            paneles,
-            inversores,
-            estructura,
-            sistema_electrico,
-            proyectos:proyectos_id (
-              titulo,
-              descripcion,
-              cotizaciones_inicial:cotizaciones_inicial_id (
-                sizing_results
-              )
-            )
-          ),
-          resenas:resenas (
-            puntuacion,
-            comentario,
-            puntuacion_calidad,
-            puntuacion_tiempo,
-            puntuacion_comunicacion,
-            recomendaria
-          )
-        `)
-        .eq('proveedores_id', proveedor.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading contracts:', error);
-        return;
-      }
+      // Get contracts for this provider using contractService
+      const contratos = await contractService.getInstallerContracts(proveedor.id);
 
       const formattedContracts = contratos?.map(contrato => {
         const usuario = contrato.usuarios;

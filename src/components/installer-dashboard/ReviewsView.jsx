@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
 import ReviewCard from './ReviewCard';
+import { authService, installerService } from '../../services';
 
 const ReviewsView = () => {
   const [reviews, setReviews] = useState([]);
@@ -14,7 +14,7 @@ const ReviewsView = () => {
     setLoading(true);
     try {
       // Get current user's provider ID
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await authService.getCurrentUser();
       if (!user) {
         console.error('No authenticated user');
         setLoading(false);
@@ -22,66 +22,24 @@ const ReviewsView = () => {
       }
 
       // Find provider by auth user ID
-      const { data: proveedor, error: proveedorError } = await supabase
-        .from('proveedores')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (proveedorError || !proveedor) {
-        console.error('No provider found for user:', proveedorError);
+      const proveedor = await installerService.getInstallerByUserId(user.id);
+      if (!proveedor) {
+        console.error('No provider found for user');
         setLoading(false);
         return;
       }
 
-      // Get contracts for this provider first
-      const { data: contratos, error: contratosError } = await supabase
-        .from('contratos')
-        .select(`
-          id,
-          numero_contrato,
-          precio_total_sistema,
-          fecha_completado,
-          usuarios:usuarios_id (
-            nombre
-          ),
-          cotizaciones_final:cotizaciones_final_id (
-            proyectos:proyectos_id (
-              titulo,
-              descripcion
-            )
-          )
-        `)
-        .eq('proveedores_id', proveedor.id);
+      // Get reviews for this installer using installerService
+      const resenas = await installerService.getInstallerReviews(proveedor.id);
 
-      if (contratosError) {
-        console.error('Error loading contracts:', contratosError);
-        setLoading(false);
-        return;
-      }
-
-      if (!contratos || contratos.length === 0) {
+      if (!resenas || resenas.length === 0) {
         setReviews([]);
         setLoading(false);
         return;
       }
 
-      // Get reviews for these contracts
-      const contratoIds = contratos.map(c => c.id);
-      const { data: resenas, error } = await supabase
-        .from('resenas')
-        .select('*')
-        .in('contratos_id', contratoIds)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading reviews:', error);
-        setLoading(false);
-        return;
-      }
-
       const formattedReviews = resenas?.map((resena, index) => {
-        const contrato = contratos.find(c => c.id === resena.contratos_id);
+        const contrato = resena.contrato;
         const usuario = contrato?.usuarios;
         const proyecto = contrato?.cotizaciones_final?.proyectos;
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
 import { useDashboardData } from '../../../context/DashboardDataContext';
+import { authService, projectService, clientService } from '../../../services';
 
 const SolicitarCotizacionesModal = ({ isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -10,85 +10,49 @@ const SolicitarCotizacionesModal = ({ isOpen, onClose, onSuccess }) => {
     setLoading(true);
     try {
       // Obtener usuario actual
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await authService.getCurrentUser();
       if (!user) {
         alert('Usuario no autenticado');
         return;
       }
 
       // Buscar o crear cotización inicial del usuario
-      let { data: cotizacionInicial, error: cotizacionError } = await supabase
-        .from('cotizaciones_inicial')
-        .select('id')
-        .eq('usuarios_id', user.id)
-        .single();
+      let cotizacionInicial;
+      try {
+        cotizacionInicial = await clientService.getInitialQuote(user.id);
 
-      // Si no existe, crear una nueva con los datos actuales
-      if (cotizacionError || !cotizacionInicial) {
-        console.log('Creating new cotizacion_inicial with current data');
-
-
-        const { data: newCotizacion, error: newCotizacionError } = await supabase
-          .from('cotizaciones_inicial')
-          .insert([{
-            usuarios_id: user.id,
-            recibo_cfe: reciboData || {},
-            consumo_kwh_historico: consumoData || [],
-            resumen_energetico: resumenEnergetico || {},
-            sizing_results: sistemaData?.results || {}
-          }])
-          .select()
-          .single();
-
-        if (newCotizacionError) {
-          console.error('Error creating cotizacion_inicial:', newCotizacionError);
-          alert('Error al crear la cotización inicial. Inténtalo de nuevo.');
-          return;
-        }
-
-        cotizacionInicial = newCotizacion;
-      } else {
         // Si existe, actualizar con los datos actuales
         console.log('Updating existing cotizacion_inicial with current data');
-
-        const { error: updateError } = await supabase
-          .from('cotizaciones_inicial')
-          .update({
-            recibo_cfe: reciboData || {},
-            consumo_kwh_historico: consumoData || [],
-            resumen_energetico: resumenEnergetico || {},
-            sizing_results: sistemaData?.results || {}
-          })
-          .eq('id', cotizacionInicial.id);
-
-        if (updateError) {
-          console.error('Error updating cotizacion_inicial:', updateError);
-          // No es crítico, continuar con la creación del proyecto
-        }
+        await clientService.updateInitialQuote(cotizacionInicial.id, {
+          recibo_cfe: reciboData || {},
+          consumo_kwh_historico: consumoData || [],
+          resumen_energetico: resumenEnergetico || {},
+          sizing_results: sistemaData?.results || {}
+        });
+      } catch (error) {
+        // Si no existe, crear una nueva con los datos actuales
+        console.log('Creating new cotizacion_inicial with current data');
+        cotizacionInicial = await clientService.createInitialQuote({
+          usuarios_id: user.id,
+          recibo_cfe: reciboData || {},
+          consumo_kwh_historico: consumoData || [],
+          resumen_energetico: resumenEnergetico || {},
+          sizing_results: sistemaData?.results || {}
+        });
       }
 
       // Crear proyecto
       const projectTitle = `Proyecto Solar - ${reciboData?.nombre || 'Cliente'}`;
       const projectDescription = `Sistema solar de ${sistemaData?.results?.kWp_needed || 'N/A'} kWp para ${reciboData?.direccion || 'ubicación no especificada'}. Consumo promedio: ${resumenEnergetico?.consumo_promedio || 'N/A'} kWh/mes.`;
 
-      const { data: proyecto, error: proyectoError } = await supabase
-        .from('proyectos')
-        .insert([{
-          titulo: projectTitle,
-          descripcion: projectDescription,
-          estado: 'abierto',
-          usuarios_id: user.id,
-          cotizaciones_inicial_id: cotizacionInicial.id,
-          fecha_limite: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 días desde hoy
-        }])
-        .select()
-        .single();
-
-      if (proyectoError) {
-        console.error('Error creando proyecto:', proyectoError);
-        alert('Error al crear el proyecto. Inténtalo de nuevo.');
-        return;
-      }
+      const proyecto = await projectService.createProject({
+        titulo: projectTitle,
+        descripcion: projectDescription,
+        estado: 'abierto',
+        usuarios_id: user.id,
+        cotizaciones_inicial_id: cotizacionInicial.id,
+        fecha_limite: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 días desde hoy
+      });
 
       // Éxito
       if (onSuccess) {

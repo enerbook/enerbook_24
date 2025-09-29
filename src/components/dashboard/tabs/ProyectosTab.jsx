@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabaseClient';
 import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizaciones';
 import SolicitarCotizacionesModal from '../modals/SolicitarCotizacionesModal';
 import NuevoProyectoModal from '../modals/NuevoProyectoModal';
+import { authService, projectService, quotationService, contractService } from '../../../services';
 
 const ProyectosTab = () => {
   const [proyectos, setProyectos] = useState([]);
@@ -19,69 +20,43 @@ const ProyectosTab = () => {
   const loadUserData = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await authService.getCurrentUser();
       if (!user) {
         console.error('No authenticated user');
         setLoading(false);
         return;
       }
 
-      // Load user projects
-      const { data: proyectosData, error: proyectosError } = await supabase
-        .from('proyectos')
-        .select('*')
-        .eq('usuarios_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (proyectosError) {
-        console.error('Error loading projects:', proyectosError);
-      } else {
+      // Load user projects using projectService
+      try {
+        const proyectosData = await projectService.getClientProjects(user.id);
         setProyectos(proyectosData || []);
-      }
 
-      // Load quotations for user projects
-      if (proyectosData && proyectosData.length > 0) {
-        const proyectoIds = proyectosData.map(p => p.id);
-        const { data: cotizacionesData, error: cotizacionesError } = await supabase
-          .from('cotizaciones_final')
-          .select(`
-            *,
-            proveedores:proveedores_id (
-              nombre_empresa,
-              calificacion_promedio
-            )
-          `)
-          .in('proyectos_id', proyectoIds)
-          .order('created_at', { ascending: false });
-
-        if (cotizacionesError) {
-          console.error('Error loading quotations:', cotizacionesError);
-        } else {
-          setCotizaciones(cotizacionesData || []);
+        // Load quotations for user projects
+        if (proyectosData && proyectosData.length > 0) {
+          const allQuotations = [];
+          for (const proyecto of proyectosData) {
+            try {
+              const quotations = await quotationService.getProjectQuotations(proyecto.id);
+              allQuotations.push(...quotations);
+            } catch (error) {
+              console.error(`Error loading quotations for project ${proyecto.id}:`, error);
+            }
+          }
+          setCotizaciones(allQuotations);
         }
+      } catch (error) {
+        console.error('Error loading projects:', error);
+        setProyectos([]);
       }
 
-      // Load contracts for user
-      const { data: contratosData, error: contratosError } = await supabase
-        .from('contratos')
-        .select(`
-          *,
-          proveedores:proveedores_id (
-            nombre_empresa
-          ),
-          cotizaciones_final:cotizaciones_final_id (
-            proyectos:proyectos_id (
-              titulo
-            )
-          )
-        `)
-        .eq('usuarios_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (contratosError) {
-        console.error('Error loading contracts:', contratosError);
-      } else {
+      // Load contracts for user using contractService
+      try {
+        const contratosData = await contractService.getClientContracts(user.id);
         setContratos(contratosData || []);
+      } catch (error) {
+        console.error('Error loading contracts:', error);
+        setContratos([]);
       }
 
     } catch (error) {

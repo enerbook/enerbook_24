@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient'; // Importa el cliente de Supabase
+import { authService, leadService, clientService, userService } from '../services';
 
 const AuthContext = createContext();
 
@@ -23,38 +24,7 @@ export const AuthProvider = ({ children }) => {
     if (!userId) return null;
 
     try {
-      // Check if user is an admin first
-      const { data: adminData, error: adminError } = await supabase
-        .from('administradores')
-        .select('id, activo')
-        .eq('usuario_id', userId)
-        .eq('activo', true);
-
-      if (adminData && adminData.length > 0) {
-        return 'admin';
-      }
-
-      // Check if user is an installer
-      const { data: proveedorData, error: proveedorError } = await supabase
-        .from('proveedores')
-        .select('id')
-        .eq('auth_user_id', userId);
-
-      if (proveedorData && proveedorData.length > 0) {
-        return 'instalador';
-      }
-
-      // Check if user is a client
-      const { data: clienteData, error: clienteError } = await supabase
-        .from('usuarios')
-        .select('id')
-        .eq('id', userId);
-
-      if (clienteData && clienteData.length > 0) {
-        return 'cliente';
-      }
-
-      return null;
+      return await userService.getUserRole(userId);
     } catch (error) {
       console.error('Error in fetchUserRole:', error);
       return null;
@@ -70,54 +40,46 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('cotizaciones_leads_temp')
-        .select('*')
-        .eq('temp_lead_id', requestedLeadId)
-        .single();
-
-      if (error || !data) {
-        // Datos de fallback para testing
-        return {
-          temp_lead_id: requestedLeadId,
-          recibo_cfe: {
-            no_servicio: "1234567890123",
-            nombre: "Juan Pérez García",
-            direccion: "CALLE INSURGENTES 456, COL. ROMA NORTE, CDMX, C.P. 06700",
-            direccion_formatted: "Calle Insurgentes 456, Col. Roma Norte, CP 06700 Ciudad de México, Ciudad de México, México",
-            kwh_total: "385",
-            total_pagar_mxn: "1245.80"
-          },
-          consumo_kwh_historico: [
-            { periodo: "Ene25", kwh: 385 },
-            { periodo: "Dic24", kwh: 420 },
-            { periodo: "Nov24", kwh: 358 },
-            { periodo: "Oct24", kwh: 394 },
-            { periodo: "Sep24", kwh: 405 }
-          ],
-          resumen_energetico: {
-            consumo_max: 420
-          },
-          sizing_results: {
-            inputs: {
-              irr_avg_day: 5.89,
-              irr_min: 4.2,
-              irr_max: 7.1
-            },
-            results: {
-              kWp_needed: 3.49,
-              n_panels: 7,
-              yearly_prod: 6000
-            }
-          }
-        };
-      }
-
+      const data = await leadService.getLeadData(requestedLeadId);
       console.log('Lead data fetched from DB:', data);
       return data;
     } catch (error) {
       console.error('Error in fetchLeadData:', error);
-      return null;
+
+      // Datos de fallback para testing
+      return {
+        temp_lead_id: requestedLeadId,
+        recibo_cfe: {
+          no_servicio: "1234567890123",
+          nombre: "Juan Pérez García",
+          direccion: "CALLE INSURGENTES 456, COL. ROMA NORTE, CDMX, C.P. 06700",
+          direccion_formatted: "Calle Insurgentes 456, Col. Roma Norte, CP 06700 Ciudad de México, Ciudad de México, México",
+          kwh_total: "385",
+          total_pagar_mxn: "1245.80"
+        },
+        consumo_kwh_historico: [
+          { periodo: "Ene25", kwh: 385 },
+          { periodo: "Dic24", kwh: 420 },
+          { periodo: "Nov24", kwh: 358 },
+          { periodo: "Oct24", kwh: 394 },
+          { periodo: "Sep24", kwh: 405 }
+        ],
+        resumen_energetico: {
+          consumo_max: 420
+        },
+        sizing_results: {
+          inputs: {
+            irr_avg_day: 5.89,
+            irr_min: 4.2,
+            irr_max: 7.1
+          },
+          results: {
+            kWp_needed: 3.49,
+            n_panels: 7,
+            yearly_prod: 6000
+          }
+        }
+      };
     }
   }, [leadData]); // Include leadData to check for existing data
 
@@ -144,40 +106,9 @@ export const AuthProvider = ({ children }) => {
     if (!userId) return null;
 
     try {
-      // Obtener datos del usuario
-      const { data: userData, error: userError } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (userError) {
-        console.error('Error fetching user data:', userError);
-        return null;
-      }
-
-      // Obtener cotización inicial del usuario
-      const { data: cotizacionData, error: cotizacionError } = await supabase
-        .from('cotizaciones_inicial')
-        .select('*')
-        .eq('usuarios_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (cotizacionError) {
-        console.log('No initial quote found for user:', userId);
-        return {
-          user: userData,
-          cotizacion: null
-        };
-      }
-
-      console.log('Client data fetched successfully:', { userData, cotizacionData });
-      return {
-        user: userData,
-        cotizacion: cotizacionData
-      };
+      const data = await clientService.getClientWithQuote(userId);
+      console.log('Client data fetched successfully:', data);
+      return data;
     } catch (error) {
       console.error('Error in fetchClientData:', error);
       return null;
@@ -243,83 +174,55 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const installerLogin = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const data = await authService.signIn(email, password);
 
-    if (error) return { error };
+      if (data.user) {
+        const verification = await userService.verifyInstallerActive(data.user.id);
 
-    if (data.user) {
-      const { data: proveedorData, error: proveedorError } = await supabase
-        .from('proveedores')
-        .select('activo')
-        .eq('auth_user_id', data.user.id);
-
-      if (proveedorError || !proveedorData || proveedorData.length === 0) {
-        await supabase.auth.signOut();
-        return { error: { message: "No se encontró un perfil de proveedor asociado." } };
+        if (!verification.isActive) {
+          await authService.signOut();
+          return { error: { message: verification.error } };
+        }
+        // No establecer userType aquí, lo hará el useEffect automáticamente
       }
 
-      if (proveedorData[0]?.activo !== true) {
-        await supabase.auth.signOut();
-        return { error: { message: "Tu cuenta de proveedor no está activa." } };
-      }
-      // No establecer userType aquí, lo hará el useEffect automáticamente
+      return { data, error: null };
+    } catch (error) {
+      return { error };
     }
-    
-    return { data, error };
   };
 
   const clientSignup = async (email, password, metadata = {}) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          user_type: 'cliente',
-          nombre: metadata.name || '',
-          telefono: metadata.phone || ''
-        }
+    try {
+      const data = await authService.signUp(email, password, 'cliente');
+
+      // Si el signup fue exitoso pero necesita confirmación de email
+      if (data.user && !data.session) {
+        return {
+          data,
+          error: null,
+          needsEmailConfirmation: true,
+          message: "Registro exitoso. Por favor revisa tu correo electrónico para confirmar tu cuenta."
+        };
       }
-    });
 
-    if (error) return { error };
-
-    // Si el signup fue exitoso pero necesita confirmación de email
-    if (data.user && !data.session) {
-      // El usuario fue creado pero necesita confirmar su email
-      return {
-        data,
-        error: null,
-        needsEmailConfirmation: true,
-        message: "Registro exitoso. Por favor revisa tu correo electrónico para confirmar tu cuenta."
-      };
-    }
-
-    // Si el usuario fue creado, crear el registro en la tabla usuarios
-    if (data.user) {
-      console.log('Creating user profile in usuarios table for:', data.user.id);
-      const { error: usuarioError } = await supabase
-        .from('usuarios')
-        .upsert({
-          id: data.user.id,
+      // Si el usuario fue creado, crear el registro en la tabla usuarios
+      if (data.user) {
+        console.log('Creating user profile in usuarios table for:', data.user.id);
+        await clientService.upsertClient(data.user.id, {
           nombre: metadata.name || '',
           correo_electronico: email,
           telefono: metadata.phone || ''
-        }, {
-          onConflict: 'id'
         });
-
-      if (usuarioError) {
-        console.error('Error creando perfil de usuario:', usuarioError);
-        return { error: usuarioError };
-      } else {
         console.log('User profile created successfully in usuarios table');
       }
-    }
 
-    return { data, error };
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error in clientSignup:', error);
+      return { error };
+    }
   };
 
   const migrateLeadToClient = useCallback(async (email, password, metadata = {}) => {
@@ -348,23 +251,10 @@ export const AuthProvider = ({ children }) => {
       }
 
       // 2. Migrar datos de cotizaciones_leads_temp a cotizaciones_inicial
-      const { data: insertResult, error: insertError } = await supabase
-        .from('cotizaciones_inicial')
-        .insert({
-          usuarios_id: signupResult.data.user.id,
-          recibo_cfe: leadData.recibo_cfe,
-          consumo_kwh_historico: leadData.consumo_kwh_historico,
-          resumen_energetico: leadData.resumen_energetico,
-          sizing_results: leadData.sizing_results,
-          irradiacion_cache_id: leadData.irradiacion_cache_id
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('Error migrating lead data:', insertError);
-        throw new Error('Error al migrar datos del lead');
-      }
+      const insertResult = await clientService.migrateLeadToClient(
+        signupResult.data.user.id,
+        leadData
+      );
 
       console.log('Lead data migrated successfully:', insertResult);
 
@@ -388,27 +278,23 @@ export const AuthProvider = ({ children }) => {
   }, [tempLeadId, leadData, clientSignup]);
 
   const clientLogin = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const data = await authService.signIn(email, password);
 
-    if (error) return { error };
+      if (data.user) {
+        const verification = await userService.verifyClientExists(data.user.id);
 
-    if (data.user) {
-      const { data: clienteData, error: clienteError } = await supabase
-        .from('usuarios')
-        .select('id')
-        .eq('id', data.user.id);
-
-      if (clienteError || !clienteData || clienteData.length === 0) {
-        await supabase.auth.signOut();
-        return { error: { message: "No se encontró un perfil de cliente asociado." } };
+        if (!verification.exists) {
+          await authService.signOut();
+          return { error: { message: verification.error } };
+        }
+        // No establecer userType aquí, lo hará el useEffect automáticamente
       }
-      // No establecer userType aquí, lo hará el useEffect automáticamente
-    }
 
-    return { data, error };
+      return { data, error: null };
+    } catch (error) {
+      return { error };
+    }
   };
 
   const logout = async (router) => {
@@ -416,15 +302,15 @@ export const AuthProvider = ({ children }) => {
     const currentType = userType;
     console.log('Current user type:', currentType);
     console.log('Current user email:', user?.email);
-    
+
     try {
-      await supabase.auth.signOut();
+      await authService.signOut();
       console.log('Supabase signOut completed');
-      
+
       setUser(null);
       setToken(null);
       setUserType(null);
-      
+
       if (router) {
         console.log('Router available, redirecting...');
         if (currentType === 'instalador') {
