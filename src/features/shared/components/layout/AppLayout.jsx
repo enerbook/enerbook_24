@@ -1,10 +1,27 @@
 import React, { useState } from 'react';
-import UnifiedSidebar from './UnifiedSidebar';
+import ClientSidebar from '../../../cliente/components/ClientSidebar';
+import InstallerSidebar from '../../../instalador/components/InstallerSidebar';
+import LeadSidebar from '../../../lead/components/LeadSidebar';
 import UnifiedHeader from './Header';
 import { FiMenu, FiX } from 'react-icons/fi';
+import { useAuth } from '../../../../context/AuthContext';
 
 const AppLayout = ({ activeTab, setActiveTab, children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { userType } = useAuth();
+
+  // Seleccionar el sidebar apropiado según el tipo de usuario
+  let SidebarComponent;
+  if (userType === 'cliente') {
+    SidebarComponent = ClientSidebar;
+  } else if (userType === 'instalador') {
+    SidebarComponent = InstallerSidebar;
+  } else if (userType === 'lead') {
+    SidebarComponent = LeadSidebar;
+  } else {
+    // Fallback: usar ClientSidebar por defecto
+    SidebarComponent = ClientSidebar;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex relative">
@@ -22,7 +39,7 @@ const AppLayout = ({ activeTab, setActiveTab, children }) => {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 transition-transform duration-300 ease-in-out
       `}>
-        <UnifiedSidebar
+        <SidebarComponent
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onClose={() => setSidebarOpen(false)}
