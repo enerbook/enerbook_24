@@ -6,26 +6,16 @@ const DashboardDataContext = createContext();
 export const DashboardDataProvider = ({ children }) => {
   const { leadData, userType, clientData } = useAuth();
 
-  // Procesar todos los datos una sola vez cuando cambien los datos
   const dashboardData = useMemo(() => {
-    // Determinar fuente de datos según tipo de usuario
     let sourceData = null;
 
     if (userType === 'lead' && leadData) {
       sourceData = leadData;
     } else if (userType === 'cliente' && clientData?.cotizacion) {
       sourceData = clientData.cotizacion;
-      console.log('📊 DashboardDataContext - Cliente data loaded:', {
-        hasClientData: !!clientData,
-        hasCotizacion: !!clientData?.cotizacion,
-        cotizacionKeys: clientData?.cotizacion ? Object.keys(clientData.cotizacion) : [],
-        hasConsumo: !!clientData?.cotizacion?.consumo_kwh_historico,
-        hasSizing: !!clientData?.cotizacion?.sizing_results
-      });
     }
 
     if (!sourceData) {
-      console.log('⚠️ DashboardDataContext - No source data', { userType, hasClientData: !!clientData });
       return {
         consumoData: [],
         irradiacionData: [],
@@ -39,19 +29,14 @@ export const DashboardDataProvider = ({ children }) => {
       };
     }
 
-    // Procesar datos de consumo histórico
-    // Los datos ya vienen procesados desde la DB con los campos: value, consumo, periodo, color, etc.
     const consumoData = sourceData.consumo_kwh_historico ?
       sourceData.consumo_kwh_historico
         .filter(item => item?.value !== undefined && item?.periodo !== undefined)
         .sort((a, b) => b.periodo.localeCompare(a.periodo))
       : [];
 
-    // Procesar datos de irradiación
-    // Prioridad: 1) irradiacion_cache, 2) sizing_results.inputs, 3) valores por defecto
     const irradiacionData = sourceData.irradiacion_cache || sourceData.sizing_results ?
       (() => {
-        // Usar datos del cache de irradiación si están disponibles
         const cacheData = sourceData.irradiacion_cache;
         const sizingInputs = sourceData.sizing_results?.inputs;
 
@@ -88,7 +73,6 @@ export const DashboardDataProvider = ({ children }) => {
             irradiacion,
             ranking: `#${index + 1}`,
             valor: parseFloat(irradiacion),
-            // Para las gráficas
             value: parseFloat(irradiacion),
             label: mes.mes.substring(0, 3),
             fullLabel: mes.mes
@@ -99,21 +83,6 @@ export const DashboardDataProvider = ({ children }) => {
         }));
       })()
       : [];
-
-    // Calcular métricas
-    console.log('🔍 DashboardDataContext - Processing metrics:', {
-      hasConsumo: !!sourceData.consumo_kwh_historico,
-      consumoSample: sourceData.consumo_kwh_historico?.[0],
-      hasSizing: !!sourceData.sizing_results,
-      sizingStructure: {
-        hasInputs: !!sourceData.sizing_results?.inputs,
-        hasResults: !!sourceData.sizing_results?.results,
-        irr_avg_day: sourceData.sizing_results?.inputs?.irr_avg_day,
-        kWp_needed: sourceData.sizing_results?.results?.kWp_needed
-      },
-      fullSizingResults: sourceData.sizing_results,
-      consumoArray: sourceData.consumo_kwh_historico
-    });
 
     // Calcular irradiación promedio
     // Prioridad: 1) irradiacion_cache, 2) sizing_results.inputs, 3) promedio de irradiacionData

@@ -1,15 +1,8 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabaseClient'; // Importa el cliente de Supabase
+import { supabase } from '../lib/supabaseClient';
 import { authService, leadService, clientService, userService } from '../services';
 
 const AuthContext = createContext();
-
-// Debug function - only logs in development
-const debugLog = (message, ...args) => {
-  if (__DEV__) {
-    console.log('[AuthContext]', message, ...args);
-  }
-};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -41,7 +34,6 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const data = await leadService.getLeadData(requestedLeadId);
-      console.log('Lead data fetched from DB:', data);
       return data;
     } catch (error) {
       console.error('Error in fetchLeadData:', error);
@@ -81,14 +73,10 @@ export const AuthProvider = ({ children }) => {
         }
       };
     }
-  }, [leadData]); // Include leadData to check for existing data
+  }, [leadData]);
 
   const setLeadMode = useCallback(async (newTempLeadId) => {
-    console.log('Setting lead mode with tempLeadId:', newTempLeadId);
-
-    // Si ya estamos en modo lead con el mismo ID, no hacer nada
     if (userType === 'lead' && tempLeadId === newTempLeadId) {
-      console.log('Already in lead mode with same ID:', newTempLeadId);
       return;
     }
 
@@ -98,7 +86,7 @@ export const AuthProvider = ({ children }) => {
     const data = await fetchLeadData(newTempLeadId);
     setLeadData(data);
     setLoading(false);
-  }, [userType, tempLeadId, fetchLeadData]); // Include necessary dependencies
+  }, [userType, tempLeadId, fetchLeadData]);
 
 
   const fetchClientData = useCallback(async (userId) => {
@@ -113,6 +101,22 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const loadUserData = useCallback(async (user) => {
+    if (!user) {
+      setUserType(null);
+      setClientData(null);
+      return;
+    }
+
+    const role = await fetchUserRole(user.id);
+    setUserType(role);
+
+    if (role === 'cliente') {
+      const data = await fetchClientData(user.id);
+      setClientData(data);
+    }
+  }, [fetchClientData]);
+
   useEffect(() => {
     setLoading(true);
 
@@ -121,21 +125,7 @@ export const AuthProvider = ({ children }) => {
       const user = session?.user ?? null;
       setUser(user);
       setToken(session?.access_token ?? null);
-
-      if (user) {
-        const role = await fetchUserRole(user.id);
-        setUserType(role);
-
-        // Si es cliente, cargar sus datos
-        if (role === 'cliente') {
-          const data = await fetchClientData(user.id);
-          setClientData(data);
-        }
-      } else {
-        console.log('No user, setting userType to null');
-        setUserType(null);
-        setClientData(null);
-      }
+      await loadUserData(user);
       setLoading(false);
     };
 
@@ -146,20 +136,7 @@ export const AuthProvider = ({ children }) => {
         const user = session?.user ?? null;
         setUser(user);
         setToken(session?.access_token ?? null);
-        
-        if (user) {
-          const role = await fetchUserRole(user.id);
-          setUserType(role);
-
-          // Si es cliente, cargar sus datos
-          if (role === 'cliente') {
-            const data = await fetchClientData(user.id);
-            setClientData(data);
-          }
-        } else {
-          setUserType(null);
-          setClientData(null);
-        }
+        await loadUserData(user);
         setLoading(false);
       }
     );
@@ -167,7 +144,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [loadUserData]);
 
   const installerLogin = async (email, password) => {
     try {
@@ -203,15 +180,12 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
-      // Si el usuario fue creado, crear el registro en la tabla usuarios
       if (data.user) {
-        console.log('Creating user profile in usuarios table for:', data.user.id);
         await clientService.upsertClient(data.user.id, {
           nombre: metadata.name || '',
           correo_electronico: email,
           telefono: metadata.phone || ''
         });
-        console.log('User profile created successfully in usuarios table');
       }
 
       return { data, error: null };
@@ -222,8 +196,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const migrateLeadToClient = useCallback(async (email, password, metadata = {}) => {
-    console.log('Starting lead to client migration for tempLeadId:', tempLeadId);
-
     if (!tempLeadId || !leadData) {
       throw new Error('No hay datos de lead para migrar');
     }
@@ -231,7 +203,6 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      // 1. Crear usuario cliente
       const signupResult = await clientSignup(email, password, {
         name: metadata.name || leadData.recibo_cfe?.nombre || '',
         phone: metadata.phone || ''
@@ -241,29 +212,22 @@ export const AuthProvider = ({ children }) => {
         throw signupResult.error;
       }
 
-      // Si necesita confirmación de email, retornar sin migrar datos
       if (signupResult.needsEmailConfirmation) {
         return signupResult;
       }
 
-      // 2. Migrar datos de cotizaciones_leads_temp a cotizaciones_inicial
-      const insertResult = await clientService.migrateLeadToClient(
+      await clientService.migrateLeadToClient(
         signupResult.data.user.id,
         leadData
       );
 
-      console.log('Lead data migrated successfully:', insertResult);
-
-      // 3. Limpiar estado de lead y establecer como cliente
       setLeadData(null);
       setTempLeadId(null);
 
-      // Cargar datos del cliente recién creado
       const clientDataResult = await fetchClientData(signupResult.data.user.id);
       setClientData(clientDataResult);
       setUserType('cliente');
 
-      console.log('Migration completed successfully');
       return { ...signupResult, migrated: true };
 
     } catch (error) {
@@ -271,7 +235,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       throw error;
     }
-  }, [tempLeadId, leadData, clientSignup]);
+  }, [tempLeadId, leadData, clientSignup, fetchClientData]);
 
   const clientLogin = async (email, password) => {
     try {
@@ -294,33 +258,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async (router) => {
-    console.log('Logout function called with router:', router);
     const currentType = userType;
-    console.log('Current user type:', currentType);
-    console.log('Current user email:', user?.email);
 
     try {
       await authService.signOut();
-      console.log('Supabase signOut completed');
 
       setUser(null);
       setToken(null);
       setUserType(null);
 
       if (router) {
-        console.log('Router available, redirecting...');
         if (currentType === 'instalador') {
-          console.log('Redirecting to installer login');
           router.push('/installer-login');
         } else {
-          console.log('Redirecting to client login');
           router.push('/login');
         }
-      } else {
-        console.log('No router provided to logout function');
       }
     } catch (error) {
-      console.error('Error during logout process:', error);
+      console.error('Error during logout:', error);
     }
   };
 
