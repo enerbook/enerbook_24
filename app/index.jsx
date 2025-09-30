@@ -19,7 +19,7 @@ export default function Home() {
 
   const navigateToDashboard = (page) => {
     if (page === 'dashboard') {
-      router.push('/leads-users-dashboard');
+      router.push('/leads-dashboard');
     } else if (page === 'signup') {
       router.push('/signup');
     }

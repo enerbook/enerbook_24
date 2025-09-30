@@ -1,5 +1,7 @@
 import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
+import { useAuth } from '../../../../../context/AuthContext';
+import { useRouter } from 'expo-router';
 import { useDashboardData } from '../../../../../context/DashboardDataContext';
 import { useSolicitarCotizaciones } from '../../../../cliente/hooks/useSolicitarCotizaciones';
 import SolicitarCotizacionesModal from '../../../../cliente/components/modals/SolicitarCotizacionesModal';
@@ -7,6 +9,16 @@ import SolicitarCotizacionesModal from '../../../../cliente/components/modals/So
 const ConsumoTab = () => {
   const { consumoData, hasData } = useDashboardData();
   const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
+  const { userType } = useAuth();
+  const router = useRouter();
+
+  const handleSolicitarCotizaciones = () => {
+    if (userType === 'lead') {
+      router.push('/signup');
+      return;
+    }
+    openModal();
+  };
 
   return (
     <main className="flex-1 px-2 lg:px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
@@ -24,7 +36,7 @@ const ConsumoTab = () => {
             </div>
             <div className="w-full lg:w-auto lg:ml-8">
               <button
-                onClick={openModal}
+                onClick={handleSolicitarCotizaciones}
                 className="bg-gray-900 hover:bg-black text-white rounded-2xl px-5 py-3 transition-all group w-full lg:w-auto"
               >
                 <div className="text-center">

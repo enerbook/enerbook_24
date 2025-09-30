@@ -102,12 +102,10 @@ export const AuthProvider = ({ children }) => {
 
 
   const fetchClientData = useCallback(async (userId) => {
-    console.log('fetchClientData called with userId:', userId);
     if (!userId) return null;
 
     try {
       const data = await clientService.getClientWithQuote(userId);
-      console.log('Client data fetched successfully:', data);
       return data;
     } catch (error) {
       console.error('Error in fetchClientData:', error);
@@ -125,9 +123,7 @@ export const AuthProvider = ({ children }) => {
       setToken(session?.access_token ?? null);
 
       if (user) {
-        console.log('Getting user role for:', user.email);
         const role = await fetchUserRole(user.id);
-        console.log('Setting userType to:', role);
         setUserType(role);
 
         // Si es cliente, cargar sus datos

@@ -73,7 +73,7 @@ export default function SignUp({ onNavigate }) {
 
         // Redirección inmediata al dashboard
         setTimeout(() => {
-          router.replace('/leads-users-dashboard');
+          router.replace('/clientes-dashboard');
         }, 100);
       }
     } catch (error) {

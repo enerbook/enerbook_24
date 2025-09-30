@@ -45,11 +45,7 @@ const UnifiedSidebar = ({ activeTab, setActiveTab, onClose }) => {
   const { user, userType, logout } = useAuth();
   const router = useRouter();
 
-  // Debug log
-  console.log('UnifiedSidebar - user:', user?.email, 'userType:', userType);
-
   const handleLogout = async () => {
-    console.log('Logout button clicked, router:', router);
     try {
       await logout(router);
     } catch (error) {
@@ -102,8 +98,6 @@ const UnifiedSidebar = ({ activeTab, setActiveTab, onClose }) => {
     // Si no hay userType definido, mostrar items básicos
     sidebarItems = [];
   }
-
-  console.log('Sidebar items to show:', sidebarItems.map(item => item.label));
 
   return (
     <div className="flex w-64 lg:w-48 bg-white lg:bg-gray-50 flex-col h-full lg:max-h-screen shadow-xl lg:shadow-none">

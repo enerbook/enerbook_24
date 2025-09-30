@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useDashboardData } from '../../../../context/DashboardDataContext';
+import { useClienteDashboardData } from '../../context/ClienteDashboardDataContext';
 import { authService, projectService, clientService } from '../../../../services';
 
 const SolicitarCotizacionesModal = ({ isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
-  const { reciboData, sistemaData, hasData, consumoData, resumenEnergetico } = useDashboardData();
+  const { reciboData, sistemaData, hasData, consumoData, resumenEnergetico } = useClienteDashboardData();
 
   const handleSolicitarCotizaciones = async () => {
     setLoading(true);
@@ -22,7 +22,6 @@ const SolicitarCotizacionesModal = ({ isOpen, onClose, onSuccess }) => {
         cotizacionInicial = await clientService.getInitialQuote(user.id);
 
         // Si existe, actualizar con los datos actuales
-        console.log('Updating existing cotizacion_inicial with current data');
         await clientService.updateInitialQuote(cotizacionInicial.id, {
           recibo_cfe: reciboData || {},
           consumo_kwh_historico: consumoData || [],
@@ -31,7 +30,6 @@ const SolicitarCotizacionesModal = ({ isOpen, onClose, onSuccess }) => {
         });
       } catch (error) {
         // Si no existe, crear una nueva con los datos actuales
-        console.log('Creating new cotizacion_inicial with current data');
         cotizacionInicial = await clientService.createInitialQuote({
           usuarios_id: user.id,
           recibo_cfe: reciboData || {},

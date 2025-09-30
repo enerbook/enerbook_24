@@ -1,23 +1,9 @@
 import React from 'react';
-import { useAuth } from '../../../../../context/AuthContext';
-import { useRouter } from 'expo-router';
-import { useSolicitarCotizaciones } from '../../../../cliente/hooks/useSolicitarCotizaciones';
-import SolicitarCotizacionesModal from '../../../../cliente/components/modals/SolicitarCotizacionesModal';
+import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizaciones';
+import SolicitarCotizacionesModal from '../../modals/SolicitarCotizacionesModal';
 
 const QuotesCTA = () => {
   const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
-  const { userType } = useAuth();
-  const router = useRouter();
-
-  const handleSolicitarCotizaciones = () => {
-    // Si es lead, redirigir a registro
-    if (userType === 'lead') {
-      router.push('/signup');
-      return;
-    }
-    // Si es cliente autenticado, abrir modal
-    openModal();
-  };
 
   return (
     <div className="w-full lg:flex-1">
@@ -36,7 +22,7 @@ const QuotesCTA = () => {
 
         <div className="flex-shrink-0 w-full lg:w-auto">
           <button
-            onClick={handleSolicitarCotizaciones}
+            onClick={openModal}
             className="rounded-2xl w-full lg:w-[280px] h-[120px] lg:h-[160px] grid place-items-center hover:opacity-90 transition-opacity"
             style={{ backgroundColor: "#0b0f17" }}
           >

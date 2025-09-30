@@ -12,7 +12,6 @@ export const useSolicitarCotizaciones = () => {
   };
 
   const handleSuccess = (proyecto) => {
-    console.log('Proyecto creado exitosamente:', proyecto);
     // Aquí podrías agregar más lógica como actualizar el estado global, etc.
   };
 

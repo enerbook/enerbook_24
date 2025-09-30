@@ -5,15 +5,13 @@ import { useAuth } from '../src/context/AuthContext';
 import { DashboardDataProvider } from '../src/context/DashboardDataContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
-// Import tab components
+// Import tab components for leads
 import DashboardTab from '../src/features/lead/components/dashboard/tabs/DashboardTab';
 import ConsumoTab from '../src/features/lead/components/dashboard/tabs/ConsumoTab';
 import IrradiacionTab from '../src/features/lead/components/dashboard/tabs/IrradiacionTab';
-import ProyectosTab from '../src/features/cliente/components/dashboard/ProyectosTab';
 import DetallesTab from '../src/features/lead/components/dashboard/tabs/DetallesTab';
-import PerfilTab from '../src/features/cliente/components/dashboard/PerfilTab';
 
-export default function DashboardScreen() {
+export default function LeadsDashboardScreen() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const { user, userType, loading, setLeadMode, tempLeadId } = useAuth();
   const router = useRouter();
@@ -21,16 +19,19 @@ export default function DashboardScreen() {
 
   // Detectar temp_lead_id en la URL
   useEffect(() => {
-    // Solo establecer modo lead si:
-    // 1. Hay temp_lead_id en la URL
-    // 2. No hay usuario autenticado
-    // 3. No estamos ya en modo lead
-    // 4. El temp_lead_id es diferente al actual
     if (temp_lead_id && !user && userType !== 'lead' && temp_lead_id !== tempLeadId) {
-      console.log('Dashboard: temp_lead_id detected, setting lead mode:', temp_lead_id);
+      console.log('Leads Dashboard: temp_lead_id detected, setting lead mode:', temp_lead_id);
       setLeadMode(temp_lead_id);
     }
   }, [temp_lead_id, user, userType, tempLeadId, setLeadMode]);
+
+  // Redirigir si es un usuario autenticado
+  useEffect(() => {
+    if (!loading && user && userType !== 'lead') {
+      console.log('Authenticated user detected, redirecting to clientes-dashboard');
+      router.replace('/clientes-dashboard');
+    }
+  }, [user, userType, loading, router]);
 
   // Mostrar loading mientras se resuelve el estado
   if (loading) {
@@ -54,14 +55,8 @@ export default function DashboardScreen() {
         return <ConsumoTab />;
       case 'irradiacion':
         return <IrradiacionTab />;
-      case 'proyectos':
-        // Solo mostrar proyectos si es usuario autenticado, no para leads
-        return userType === 'lead' ? <DashboardTab /> : <ProyectosTab />;
       case 'detalles':
         return <DetallesTab />;
-      case 'perfil':
-        // Solo mostrar perfil si es usuario autenticado, no para leads
-        return userType === 'lead' ? <DashboardTab /> : <PerfilTab />;
       default:
         return <DashboardTab />;
     }

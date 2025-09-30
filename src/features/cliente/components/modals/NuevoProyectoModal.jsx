@@ -6,6 +6,9 @@ const NuevoProyectoModal = ({ isOpen, onClose, onSuccess }) => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
+  // N8N Webhook URL - hardcoded for testing
+  const N8N_WEBHOOK_URL = 'https://services.enerbook.mx/webhook-test/ocr-nuevo-proyecto';
+
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
 
@@ -57,11 +60,6 @@ const NuevoProyectoModal = ({ isOpen, onClose, onSuccess }) => {
         throw new Error('Usuario no autenticado');
       }
 
-      // Check if N8N webhook URL is configured
-      if (!process.env.EXPO_PUBLIC_N8N_WEBHOOK_URL) {
-        throw new Error('URL del webhook N8N no configurada. Contacta al administrador.');
-      }
-
       // Create FormData for normal file upload
       const formData = new FormData();
 
@@ -79,47 +77,32 @@ const NuevoProyectoModal = ({ isOpen, onClose, onSuccess }) => {
       formData.append('usuario_id', user.id);
       formData.append('file_count', files.length.toString());
 
-      // Debug FormData contents
-      console.log('=== DEBUG FORMDATA ===');
-      console.log('User from Supabase:', user);
-      console.log('User ID being sent:', user.id);
-      console.log('File count:', files.length);
-
-      // Log all FormData entries
-      for (let [key, value] of formData.entries()) {
-        console.log(`FormData - ${key}:`, value instanceof File ? `File(${value.name})` : value);
-      }
-
       // Send to N8N webhook - also add user_id as query parameter
-      const webhookUrl = `${process.env.EXPO_PUBLIC_N8N_WEBHOOK_URL}/ocr-nuevo-proyecto?user_id=${encodeURIComponent(user.id)}`;
-      console.log('Sending to webhook URL:', webhookUrl);
+      const webhookUrl = `${N8N_WEBHOOK_URL}?user_id=${encodeURIComponent(user.id)}`;
 
       const response = await fetch(webhookUrl, {
         method: 'POST',
         body: formData,
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.log('Error response body:', errorText);
         throw new Error(`Error del servidor (${response.status}): ${response.statusText}`);
       }
 
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const responseText = await response.text();
-        console.log('Non-JSON response:', responseText);
         throw new Error('El servidor no devolvió una respuesta JSON válida. Verifica la configuración del webhook N8N.');
       }
 
       const result = await response.json();
-      console.log('N8N response:', result);
 
       if (result.success) {
+        alert('¡Proyecto creado exitosamente! El sistema está procesando tu recibo de CFE.');
+        setFiles([]);
         onSuccess();
+        onClose();
       } else {
         throw new Error(result.error || 'Error desconocido en el procesamiento');
       }

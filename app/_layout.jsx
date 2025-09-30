@@ -13,25 +13,22 @@ const RootLayoutNav = () => {
   useEffect(() => {
     if (loading) return;
 
-    const inProtectedRoute = segments[0] === 'installer-dashboard' || segments[0] === 'leads-users-dashboard' || segments[0] === 'admin';
+    const inProtectedRoute = segments[0] === 'installer-dashboard' || segments[0] === 'leads-dashboard' || segments[0] === 'clientes-dashboard' || segments[0] === 'admin';
     const inAuthRoute = segments[0] === 'installer-login' || segments[0] === 'login' || segments[0] === 'installer-signup' || segments[0] === 'signup';
 
     // Obtener la URL completa actual
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
     const hasLeadIdInUrl = currentUrl.includes('temp_lead_id=');
 
-    console.log('_layout - user:', user?.email, 'userType:', userType, 'segments:', segments, 'URL has lead ID:', hasLeadIdInUrl);
-
-    // Si el userType es 'lead' o hay temp_lead_id en la URL, permitir acceso al dashboard
-    if ((userType === 'lead' || hasLeadIdInUrl) && segments[0] === 'leads-users-dashboard') {
-      console.log('Lead mode detected or temp_lead_id in URL, allowing dashboard access');
+    // Si el userType es 'lead' o hay temp_lead_id en la URL, permitir acceso al leads-dashboard
+    if ((userType === 'lead' || hasLeadIdInUrl) && segments[0] === 'leads-dashboard') {
       return;
     }
 
     // Si no hay usuario y está en ruta protegida, verificar si es modo lead
     if (!user && inProtectedRoute) {
-      // Para dashboard, verificar si hay temp_lead_id en la URL
-      if (segments[0] === 'leads-users-dashboard') {
+      // Para leads-dashboard, verificar si hay temp_lead_id en la URL
+      if (segments[0] === 'leads-dashboard') {
         if (hasLeadIdInUrl) {
           console.log('Dashboard access with temp_lead_id in URL - allowing lead mode');
           return; // Permitir acceso sin redireccionar
@@ -39,6 +36,9 @@ const RootLayoutNav = () => {
           console.log('Dashboard access without temp_lead_id - redirecting to login');
           router.replace('/login');
         }
+      } else if (segments[0] === 'clientes-dashboard') {
+        console.log('Clientes dashboard access without user - redirecting to login');
+        router.replace('/login');
       } else if (segments[0] === 'installer-dashboard') {
         console.log('Redirecting to installer-login');
         router.replace('/installer-login');
@@ -58,7 +58,7 @@ const RootLayoutNav = () => {
       } else if (userType === 'instalador') {
         router.replace('/installer-dashboard');
       } else if (userType === 'cliente') {
-        router.replace('/leads-users-dashboard');
+        router.replace('/clientes-dashboard');
       }
     }
     // Si hay usuario pero no userType, esperar

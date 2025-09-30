@@ -1,15 +1,15 @@
 import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
-import { useAuth } from '../../../../../context/AuthContext';
+import { useClienteAuth } from '../../../context/ClienteAuthContext';
 import { useRouter } from 'expo-router';
-import { useDashboardData } from '../../../../../context/DashboardDataContext';
-import { useSolicitarCotizaciones } from '../../../../cliente/hooks/useSolicitarCotizaciones';
-import SolicitarCotizacionesModal from '../../../../cliente/components/modals/SolicitarCotizacionesModal';
+import { useClienteDashboardData } from '../../../context/ClienteDashboardDataContext';
+import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizaciones';
+import SolicitarCotizacionesModal from '../../modals/SolicitarCotizacionesModal';
 
 const IrradiacionTab = () => {
-  const { irradiacionData, hasData } = useDashboardData();
+  const { irradiacionData, hasData } = useClienteDashboardData();
   const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
-  const { userType } = useAuth();
+  const { userType } = useClienteAuth();
   const router = useRouter();
 
   const handleSolicitarCotizaciones = () => {

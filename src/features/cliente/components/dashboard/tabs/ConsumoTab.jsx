@@ -1,15 +1,15 @@
 import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
-import { useAuth } from '../../../../../context/AuthContext';
+import { useClienteAuth } from '../../../context/ClienteAuthContext';
 import { useRouter } from 'expo-router';
-import { useDashboardData } from '../../../../../context/DashboardDataContext';
-import { useSolicitarCotizaciones } from '../../../../cliente/hooks/useSolicitarCotizaciones';
-import SolicitarCotizacionesModal from '../../../../cliente/components/modals/SolicitarCotizacionesModal';
+import { useClienteDashboardData } from '../../../context/ClienteDashboardDataContext';
+import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizaciones';
+import SolicitarCotizacionesModal from '../../modals/SolicitarCotizacionesModal';
 
-const IrradiacionTab = () => {
-  const { irradiacionData, hasData } = useDashboardData();
+const ConsumoTab = () => {
+  const { consumoData, hasData } = useClienteDashboardData();
   const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
-  const { userType } = useAuth();
+  const { userType } = useClienteAuth();
   const router = useRouter();
 
   const handleSolicitarCotizaciones = () => {
@@ -51,32 +51,45 @@ const IrradiacionTab = () => {
           </div>
         </div>
 
-        {/* Datos Detallados sobre Histórico de Irradiación */}
+        {/* Historial de Consumo */}
         <div className="w-full lg:w-1/2">
           <div className="p-4 lg:p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
-            <h2 className="text-sm font-bold text-gray-900 mb-4 lg:mb-6">Datos Detallados sobre Histórico de Irradiación</h2>
+            <h2 className="text-sm font-bold text-gray-900 mb-4 lg:mb-6">Historial de Consumo</h2>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[320px]">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-600 text-xs lg:text-sm">Mes</th>
-                    <th className="text-left py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-600 text-xs lg:text-sm whitespace-nowrap">Irradiación</th>
-                    <th className="text-left py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-600 text-xs lg:text-sm">Ranking</th>
+                    <th className="text-left py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-600 text-xs lg:text-sm">Período</th>
+                    <th className="text-left py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-600 text-xs lg:text-sm">Consumo</th>
+                    <th className="text-left py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-600 text-xs lg:text-sm whitespace-nowrap">% Prom</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {irradiacionData.length > 0 ? (
-                    irradiacionData.map((item, index) => (
+                  {consumoData.length > 0 ? (
+                    consumoData.map((item, index) => (
                       <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-900 text-xs lg:text-sm">{item.mes}</td>
-                        <td className="py-2 lg:py-3 px-2 lg:px-4 text-gray-900 text-xs lg:text-sm">{item.irradiacion}</td>
-                        <td className="py-2 lg:py-3 px-2 lg:px-4 text-gray-600 text-xs lg:text-sm">{item.ranking}</td>
+                        <td className="py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-900 text-xs lg:text-sm">{item.periodo}</td>
+                        <td className="py-2 lg:py-3 px-2 lg:px-4 text-gray-900 text-xs lg:text-sm">{item.consumo}</td>
+                        <td className="py-2 lg:py-3 px-2 lg:px-4">
+                          <span
+                            className="inline-block px-2 lg:px-3 py-0.5 lg:py-1 rounded-full text-white text-xs lg:text-sm font-medium"
+                            style={{
+                              background: item.color === 'gradient'
+                                ? 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'
+                                : item.color === 'red'
+                                  ? '#DC2626'
+                                  : '#16A34A'
+                            }}
+                          >
+                            {item.porcentaje}
+                          </span>
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
                       <td colSpan="3" className="py-6 lg:py-8 px-2 lg:px-4 text-center text-gray-500 text-xs lg:text-sm">
-                        {hasData ? 'Cargando datos de irradiación...' : 'No hay datos de irradiación disponibles'}
+                        {hasData ? 'Cargando datos de consumo...' : 'No hay datos de consumo disponibles'}
                       </td>
                     </tr>
                   )}
@@ -96,4 +109,4 @@ const IrradiacionTab = () => {
   );
 };
 
-export default IrradiacionTab;
+export default ConsumoTab;

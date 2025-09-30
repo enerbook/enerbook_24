@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FiChevronRight, FiUser, FiCheck, FiX } from 'react-icons/fi';
-import { useDashboardData } from '../../../../context/DashboardDataContext';
-import { useAuth } from '../../../../context/AuthContext';
-import { supabase } from '../../../../lib/supabaseClient';
+import { useClienteDashboardData } from '../../../context/ClienteDashboardDataContext';
+import { useClienteAuth } from '../../../context/ClienteAuthContext';
 
 const PerfilTab = () => {
-  const { userData, reciboData } = useDashboardData();
-  const { userType, user, fetchClientData, setClientData } = useAuth();
+  const { userData, reciboData } = useClienteDashboardData();
+  const { userType, user, updateClientProfile, refreshClientData } = useClienteAuth();
 
   // Estados para modo edición
   const [isEditing, setIsEditing] = useState(false);
@@ -59,12 +58,8 @@ const PerfilTab = () => {
     }));
   };
 
-  // Guardar cambios en Supabase
+  // Guardar cambios usando el contexto de cliente
   const handleSave = async () => {
-    console.log('handleSave - Starting save process');
-    console.log('handleSave - user:', user);
-    console.log('handleSave - formData:', formData);
-
     if (!user?.id) {
       setError('No se puede guardar: usuario no identificado');
       return;
@@ -74,8 +69,6 @@ const PerfilTab = () => {
     setError('');
 
     try {
-      console.log('handleSave - Updating Supabase for user ID:', user.id);
-
       const updateData = {
         nombre: formData.nombre,
         rfc: formData.rfc,
@@ -85,38 +78,16 @@ const PerfilTab = () => {
         fecha_nacimiento: formData.fecha_nacimiento || null
       };
 
-      console.log('handleSave - Update data:', updateData);
-
-      // Actualizar en Supabase
-      const { data: updateResult, error: updateError } = await supabase
-        .from('usuarios')
-        .update(updateData)
-        .eq('id', user.id);
-
-      console.log('handleSave - Supabase update result:', updateResult);
-      console.log('handleSave - Supabase update error:', updateError);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      console.log('handleSave - Update successful, fetching client data');
-
-      // Actualizar datos en el contexto
-      const updatedClientData = await fetchClientData(user.id);
-      console.log('handleSave - Updated client data:', updatedClientData);
-
-      setClientData(updatedClientData);
+      // Actualizar perfil usando el contexto de cliente
+      await updateClientProfile(updateData);
 
       // Salir del modo edición
       setIsEditing(false);
-      console.log('Profile updated successfully');
 
     } catch (error) {
       console.error('Error updating profile:', error);
       setError('Error al guardar los cambios: ' + error.message);
     } finally {
-      console.log('handleSave - Setting loading to false');
       setIsLoading(false);
     }
   };

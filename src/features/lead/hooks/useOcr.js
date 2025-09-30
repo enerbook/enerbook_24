@@ -9,9 +9,9 @@ export function useOcr() {
     if (ocrData) {
       // Si ya tenemos datos OCR y temp_lead_id, redirigir con el ID
       if (ocrData.temp_lead_id) {
-        router.push(`/leads-users-dashboard?temp_lead_id=${ocrData.temp_lead_id}`);
+        router.push(`/leads-dashboard?temp_lead_id=${ocrData.temp_lead_id}`);
       } else {
-        router.push('/leads-users-dashboard');
+        router.push('/leads-dashboard');
       }
       return;
     }
@@ -52,7 +52,7 @@ export function useOcr() {
             // Si el OCR devuelve temp_lead_id, redirigir inmediatamente al dashboard de lead
             if (result.temp_lead_id) {
               console.log('Redirecting to lead dashboard with ID:', result.temp_lead_id);
-              router.push(`/leads-users-dashboard?temp_lead_id=${result.temp_lead_id}`);
+              router.push(`/leads-dashboard?temp_lead_id=${result.temp_lead_id}`);
             }
           } else {
             console.error('Empty response from webhook');

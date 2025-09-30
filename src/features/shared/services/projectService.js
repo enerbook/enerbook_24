@@ -11,8 +11,8 @@ export const projectService = {
     const { data, error } = await supabase
       .from('proyectos')
       .select('*')
-      .eq('id_cliente', clientId)
-      .order('fecha_creacion', { ascending: false });
+      .eq('usuarios_id', clientId)
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data;
@@ -23,7 +23,7 @@ export const projectService = {
     const { data, error } = await supabase
       .from('proyectos')
       .select('*')
-      .eq('id_proyecto', projectId)
+      .eq('id', projectId)
       .single();
 
     if (error) throw error;
@@ -47,7 +47,7 @@ export const projectService = {
     const { data, error } = await supabase
       .from('proyectos')
       .update(updates)
-      .eq('id_proyecto', projectId)
+      .eq('id', projectId)
       .select()
       .single();
 
@@ -60,7 +60,7 @@ export const projectService = {
     const { error } = await supabase
       .from('proyectos')
       .delete()
-      .eq('id_proyecto', projectId);
+      .eq('id', projectId);
 
     if (error) throw error;
   }

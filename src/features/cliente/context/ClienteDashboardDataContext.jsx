@@ -1,31 +1,20 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 
-const DashboardDataContext = createContext();
+const ClienteDashboardDataContext = createContext();
 
-export const DashboardDataProvider = ({ children }) => {
-  const { leadData, userType, clientData } = useAuth();
+export const ClienteDashboardDataProvider = ({ children }) => {
+  const { clientData, userType } = useAuth();
 
-  // Procesar todos los datos una sola vez cuando cambien los datos
+  // Procesar todos los datos del cliente una sola vez cuando cambien
   const dashboardData = useMemo(() => {
-    // Determinar fuente de datos según tipo de usuario
-    let sourceData = null;
-
-    if (userType === 'lead' && leadData) {
-      sourceData = leadData;
-    } else if (userType === 'cliente' && clientData?.cotizacion) {
-      sourceData = clientData.cotizacion;
-      console.log('📊 DashboardDataContext - Cliente data loaded:', {
+    // Solo procesar si es cliente y tiene datos de cotización
+    if (userType !== 'cliente' || !clientData?.cotizacion) {
+      console.log('⚠️ ClienteDashboardDataContext - No client data', {
+        userType,
         hasClientData: !!clientData,
-        hasCotizacion: !!clientData?.cotizacion,
-        cotizacionKeys: clientData?.cotizacion ? Object.keys(clientData.cotizacion) : [],
-        hasConsumo: !!clientData?.cotizacion?.consumo_kwh_historico,
-        hasSizing: !!clientData?.cotizacion?.sizing_results
+        hasCotizacion: !!clientData?.cotizacion
       });
-    }
-
-    if (!sourceData) {
-      console.log('⚠️ DashboardDataContext - No source data', { userType, hasClientData: !!clientData });
       return {
         consumoData: [],
         irradiacionData: [],
@@ -33,11 +22,22 @@ export const DashboardDataProvider = ({ children }) => {
         reciboData: null,
         resumenEnergetico: null,
         sistemaData: null,
-        userData: userType === 'cliente' ? clientData?.user : null,
+        userData: clientData?.user || null,
         isLoading: false,
         hasData: false
       };
     }
+
+    const sourceData = clientData.cotizacion;
+
+    console.log('📊 ClienteDashboardDataContext - Cliente data loaded:', {
+      hasClientData: !!clientData,
+      hasCotizacion: !!clientData?.cotizacion,
+      cotizacionKeys: Object.keys(sourceData),
+      hasConsumo: !!sourceData.consumo_kwh_historico,
+      hasSizing: !!sourceData.sizing_results,
+      hasIrradiacionCache: !!sourceData.irradiacion_cache
+    });
 
     // Procesar datos de consumo histórico
     // Los datos ya vienen procesados desde la DB con los campos: value, consumo, periodo, color, etc.
@@ -101,7 +101,7 @@ export const DashboardDataProvider = ({ children }) => {
       : [];
 
     // Calcular métricas
-    console.log('🔍 DashboardDataContext - Processing metrics:', {
+    console.log('🔍 ClienteDashboardDataContext - Processing metrics:', {
       hasConsumo: !!sourceData.consumo_kwh_historico,
       consumoSample: sourceData.consumo_kwh_historico?.[0],
       hasSizing: !!sourceData.sizing_results,
@@ -109,10 +109,9 @@ export const DashboardDataProvider = ({ children }) => {
         hasInputs: !!sourceData.sizing_results?.inputs,
         hasResults: !!sourceData.sizing_results?.results,
         irr_avg_day: sourceData.sizing_results?.inputs?.irr_avg_day,
-        kWp_needed: sourceData.sizing_results?.results?.kWp_needed
+        kWp_needed: sourceData.sizing_results?.kWp_needed
       },
-      fullSizingResults: sourceData.sizing_results,
-      consumoArray: sourceData.consumo_kwh_historico
+      fullSizingResults: sourceData.sizing_results
     });
 
     // Calcular irradiación promedio
@@ -143,25 +142,25 @@ export const DashboardDataProvider = ({ children }) => {
       reciboData: sourceData.recibo_cfe,
       resumenEnergetico: sourceData.resumen_energetico,
       sistemaData: sourceData.sizing_results,
-      userData: userType === 'cliente' ? clientData?.user : null,
+      userData: clientData?.user || null,
       isLoading: false,
       hasData: true
     };
-  }, [leadData, userType, clientData]);
+  }, [clientData, userType]);
 
   return (
-    <DashboardDataContext.Provider value={dashboardData}>
+    <ClienteDashboardDataContext.Provider value={dashboardData}>
       {children}
-    </DashboardDataContext.Provider>
+    </ClienteDashboardDataContext.Provider>
   );
 };
 
-export const useDashboardData = () => {
-  const context = useContext(DashboardDataContext);
+export const useClienteDashboardData = () => {
+  const context = useContext(ClienteDashboardDataContext);
   if (!context) {
-    throw new Error('useDashboardData must be used within a DashboardDataProvider');
+    throw new Error('useClienteDashboardData must be used within a ClienteDashboardDataProvider');
   }
   return context;
 };
 
-export default DashboardDataContext;
+export default ClienteDashboardDataContext;

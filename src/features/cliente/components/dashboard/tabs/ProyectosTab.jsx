@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../../../lib/supabaseClient';
-import { useSolicitarCotizaciones } from '../../hooks/useSolicitarCotizaciones';
-import SolicitarCotizacionesModal from '../modals/SolicitarCotizacionesModal';
-import NuevoProyectoModal from '../modals/NuevoProyectoModal';
-import { authService, projectService, quotationService, contractService } from '../../../../services';
+import { supabase } from '../../../../../lib/supabaseClient';
+import { useClienteAuth } from '../../../context/ClienteAuthContext';
+import { useRouter } from 'expo-router';
+import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizaciones';
+import SolicitarCotizacionesModal from '../../modals/SolicitarCotizacionesModal';
+import ReceiptUploadModal from '../../modals/ReceiptUploadModal';
+import DetallesProyectoSolar from '../DetallesProyectoSolar';
+import { authService, projectService, quotationService, contractService } from '../../../../../services';
 
 const ProyectosTab = () => {
   const [proyectos, setProyectos] = useState([]);
@@ -12,6 +15,11 @@ const ProyectosTab = () => {
   const [loading, setLoading] = useState(true);
   const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
   const [showNuevoProyectoModal, setShowNuevoProyectoModal] = useState(false);
+  const [selectedProyectoId, setSelectedProyectoId] = useState(null);
+  const [ocrData, setOcrData] = useState(null);
+  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
+  const { userType } = useClienteAuth();
+  const router = useRouter();
 
   useEffect(() => {
     loadUserData();
@@ -71,6 +79,84 @@ const ProyectosTab = () => {
     loadUserData(); // Reload data to show new project
   };
 
+  const handleSolicitarCotizaciones = () => {
+    // Si es lead, redirigir a registro
+    if (userType === 'lead') {
+      router.push('/signup');
+      return;
+    }
+    // Si es cliente autenticado, abrir modal
+    openModal();
+  };
+
+  const handleReceiptSubmit = async (files) => {
+    setIsUploadingReceipt(true);
+    try {
+      const formData = new FormData();
+
+      // Obtener usuario actual
+      const user = await authService.getCurrentUser();
+      if (!user) {
+        throw new Error('Usuario no autenticado');
+      }
+
+      // Agregar user_id (el webhook lo busca en múltiples formatos)
+      formData.append('user_id', user.id);
+
+      // Agregar información del proyecto
+      formData.append('project_title', 'Proyecto Solar');
+      formData.append('project_description', 'Proyecto creado desde dashboard de cliente');
+
+      // Agregar archivos con nombres específicos que espera el webhook
+      if (files.length === 1) {
+        // Si solo hay un archivo, enviarlo como data-frontal
+        formData.append('data-frontal', files[0]);
+      } else if (files.length >= 2) {
+        // Si hay dos archivos, enviar como frontal y posterior
+        formData.append('data-frontal', files[0]);
+        formData.append('data-posterior', files[1]);
+      }
+
+      // Enviar al webhook de N8N
+      const response = await fetch('https://services.enerbook.mx/webhook/ocr-nuevo-proyecto', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al procesar el recibo');
+      }
+
+      const result = await response.json();
+      setOcrData(result);
+
+      // Recargar proyectos después de un momento
+      setTimeout(() => {
+        setShowNuevoProyectoModal(false);
+        setIsUploadingReceipt(false);
+        setOcrData(null);
+        loadUserData();
+      }, 3000);
+    } catch (error) {
+      console.error('Error uploading receipt:', error);
+      alert('Error al procesar el recibo. Por favor intenta de nuevo.');
+      setIsUploadingReceipt(false);
+    }
+  };
+
+  // Si hay un proyecto seleccionado, mostrar la vista de detalles
+  if (selectedProyectoId) {
+    return (
+      <DetallesProyectoSolar
+        proyectoId={selectedProyectoId}
+        onClose={() => {
+          setSelectedProyectoId(null);
+          loadUserData(); // Recargar datos al volver
+        }}
+      />
+    );
+  }
+
   return (
     <main className="flex-1 px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
       <div className="space-y-8">
@@ -106,7 +192,7 @@ const ProyectosTab = () => {
                 <h3 className="text-sm font-medium text-gray-900 mb-2">No Tienes Solicitudes Activas</h3>
                 <p className="text-sm text-gray-500 mb-6">Solicita cotizaciones de instaladores para tu sistema solar</p>
                 <button
-                  onClick={openModal}
+                  onClick={handleSolicitarCotizaciones}
                   className="px-4 py-2 rounded-lg text-white text-sm font-medium"
                   style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
                 >
@@ -121,7 +207,11 @@ const ProyectosTab = () => {
                   const diasRestantes = Math.ceil((new Date(proyecto.fecha_limite) - new Date()) / (1000 * 60 * 60 * 24));
 
                   return (
-                    <div key={proyecto.id} className="bg-white rounded-lg p-4 border border-gray-200">
+                    <div
+                      key={proyecto.id}
+                      onClick={() => setSelectedProyectoId(proyecto.id)}
+                      className="bg-white rounded-lg p-4 border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer"
+                    >
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-semibold text-gray-900">{proyecto.titulo}</h3>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -236,13 +326,13 @@ const ProyectosTab = () => {
         onSuccess={handleSuccessWithReload}
       />
 
-      <NuevoProyectoModal
+      <ReceiptUploadModal
         isOpen={showNuevoProyectoModal}
         onClose={() => setShowNuevoProyectoModal(false)}
-        onSuccess={() => {
-          setShowNuevoProyectoModal(false);
-          loadUserData(); // Reload data to show new project
-        }}
+        onSubmit={handleReceiptSubmit}
+        ocrData={ocrData}
+        setOcrData={setOcrData}
+        isLoading={isUploadingReceipt}
       />
     </main>
   );
