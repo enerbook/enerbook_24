@@ -1,6 +1,6 @@
 import React from 'react';
 import { useClienteDashboardData } from '../../../context/ClienteDashboardDataContext';
-import ChartCard from '../../../../shared/components/dashboard/ChartCard';
+import ChartCard from './ChartCard';
 
 const AnalysisCharts = () => {
   const { consumoData, irradiacionData, hasData } = useClienteDashboardData();

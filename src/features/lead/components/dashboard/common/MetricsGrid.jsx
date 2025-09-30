@@ -1,5 +1,5 @@
 import React from 'react';
-import MetricTile from '../../../../shared/components/dashboard/MetricTile';
+import MetricTile from './MetricTile';
 import { useDashboardData } from '../../../../../context/DashboardDataContext';
 
 const MetricsGrid = () => {
