@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { router } from "expo-router";
-import LoginNavbar from "../src/features/cliente/components/auth/LoginNavbar";
-import { useAuth } from "../src/context/AuthContext"; // Importado
+import LoginNavbar from '../src/cliente/components/auth/LoginNavbar';
+import { useAuth } from '../src/context/AuthContext'; // Importado
 
 export default function Login({ onNavigate }) {
   const { clientLogin } = useAuth(); // Obtenemos la función de login

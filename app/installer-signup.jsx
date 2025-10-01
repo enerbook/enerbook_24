@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { router } from 'expo-router';
-import InstallerNavbar from '../src/features/instalador/components/auth/InstallerNavbar';
+import InstallerNavbar from '../src/instalador/components/auth/InstallerNavbar';
 
 const InstallerSignup = () => {
   const [formData, setFormData] = useState({
@@ -43,11 +43,11 @@ const InstallerSignup = () => {
       // if (error) throw error;
       // 
       // // Redirigir al dashboard después del registro exitoso
-      // router.push('/installer-dashboard');
+      // router.push('/instalador-panel');
       
       // Simulación temporal
       setTimeout(() => {
-        router.push('/installer-dashboard');
+        router.push('/instalador-panel');
         setIsLoading(false);
       }, 1000);
     } catch (error) {

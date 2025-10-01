@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { router } from 'expo-router';
-import LoginNavbar from "../src/features/cliente/components/auth/LoginNavbar";
-import { useAuth } from "../src/context/AuthContext";
+import LoginNavbar from '../src/cliente/components/auth/LoginNavbar';
+import { useAuth } from '../src/context/AuthContext';
 
 export default function SignUp({ onNavigate }) {
   const { clientSignup, migrateLeadToClient, userType, leadData } = useAuth();
@@ -73,7 +73,7 @@ export default function SignUp({ onNavigate }) {
 
         // Redirección inmediata al dashboard
         setTimeout(() => {
-          router.replace('/clientes-dashboard');
+          router.replace('/cliente-panel');
         }, 100);
       }
     } catch (error) {

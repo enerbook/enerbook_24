@@ -3,9 +3,9 @@ import { supabase } from '../lib/supabaseClient';
 
 // Security: Direct imports from each feature (Principle of Least Privilege)
 // Each role's services are isolated and explicitly imported
-import { authService as clienteAuthService } from '../features/cliente/services/authService';
-import { clientService } from '../features/cliente/services/clientService';
-import { leadService } from '../features/lead/services/leadService';
+import { authService as clienteAuthService } from '../cliente/services/authService';
+import { clientService } from '../cliente/services/clientService';
+import { leadService } from '../lead/services/leadService';
 
 // Unified auth service wrapper for common operations
 // Note: Cliente and Instalador auth services are functionally identical (both use Supabase)

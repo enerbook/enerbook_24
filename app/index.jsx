@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { router } from "expo-router";
-import Navbar from "../src/features/landing/components/Navbar";
-import Hero from "../src/features/landing/components/Hero";
-import Stats from "../src/features/landing/components/Stats";
-import Partners from "../src/features/landing/components/Partners";
-import Reviews from "../src/features/landing/components/Reviews";
-import HowItWorks from "../src/features/landing/components/HowItWorks";
-import Experts from "../src/features/landing/components/Experts";
-import Footer from "../src/features/landing/components/Footer";
-import InstallersCTA from "../src/features/landing/components/InstallersCTA";
-import ReceiptUploadModal from "../src/features/lead/components/camera/ReceiptUploadModal";
-import { useOcr } from "../src/features/lead/hooks/useOcr";
+import Navbar from '../src/landing/components/Navbar';
+import Hero from '../src/landing/components/Hero';
+import Stats from '../src/landing/components/Stats';
+import Partners from '../src/landing/components/Partners';
+import Reviews from '../src/landing/components/Reviews';
+import HowItWorks from '../src/landing/components/HowItWorks';
+import Experts from '../src/landing/components/Experts';
+import Footer from '../src/landing/components/Footer';
+import InstallersCTA from '../src/landing/components/InstallersCTA';
+import ReceiptUploadModal from '../src/lead/components/camera/ReceiptUploadModal';
+import { useOcr } from '../src/lead/hooks/useOcr';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,7 +19,7 @@ export default function Home() {
 
   const navigateToDashboard = (page) => {
     if (page === 'dashboard') {
-      router.push('/leads-dashboard');
+      router.push('/lead-panel');
     } else if (page === 'signup') {
       router.push('/signup');
     }

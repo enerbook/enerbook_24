@@ -6,9 +6,9 @@ import { supabase } from '../lib/supabaseClient';
  * Utilidad compartida entre todos los roles
  *
  * NOTA: Para funcionalidad específica por rol, usar:
- * - src/features/cliente/hooks/useClientRealtime.js
- * - src/features/instalador/hooks/useInstallerRealtime.js
- * - src/features/admin/hooks/useAdminRealtime.js
+ * - src/cliente/hooks/useClientRealtime.js
+ * - src/instalador/hooks/useInstallerRealtime.js
+ * - src/admin/hooks/useAdminRealtime.js
  *
  * @param {string} table - Nombre de la tabla de Supabase
  * @param {object} filter - Filtros a aplicar (ej: { user_id: '123' })

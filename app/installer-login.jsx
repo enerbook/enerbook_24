@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { router } from 'expo-router';
-import InstallerNavbar from '../src/features/instalador/components/auth/InstallerNavbar';
+import InstallerNavbar from '../src/instalador/components/auth/InstallerNavbar';
 import { useAuth } from '../src/context/AuthContext';
 
 const InstallerLogin = () => {
