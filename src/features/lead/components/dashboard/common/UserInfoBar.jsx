@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAuth } from '../../../../../context/AuthContext';
-import { useDashboardData } from '../../../../../context/DashboardDataContext';
+import { useLeadDashboardData } from '../../../context/LeadDashboardDataContext';
 
 const UserInfoBar = () => {
   const { userType } = useAuth();
-  const { reciboData, userData, hasData } = useDashboardData();
+  const { reciboData, userData, hasData } = useLeadDashboardData();
 
   // Determinar datos según tipo de usuario
   let userName = 'Usuario';

@@ -1,9 +1,9 @@
 import React from 'react';
-import { useDashboardData } from '../../../../../context/DashboardDataContext';
+import { useLeadDashboardData } from '../../../context/LeadDashboardDataContext';
 import ChartCard from './ChartCard';
 
 const AnalysisCharts = () => {
-  const { consumoData, irradiacionData, hasData } = useDashboardData();
+  const { consumoData, irradiacionData, hasData } = useLeadDashboardData();
 
   // Preparar datos para las gráficas (solo los campos necesarios)
   const consumoChartData = consumoData.map(item => ({

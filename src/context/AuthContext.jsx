@@ -1,6 +1,93 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { authService, leadService, clientService, userService } from '../services';
+
+// Security: Direct imports from each feature (Principle of Least Privilege)
+// Each role's services are isolated and explicitly imported
+import { authService as clienteAuthService } from '../features/cliente/services/authService';
+import { clientService } from '../features/cliente/services/clientService';
+import { leadService } from '../features/lead/services/leadService';
+
+// Unified auth service wrapper for common operations
+// Note: Cliente and Instalador auth services are functionally identical (both use Supabase)
+// but kept separate in their features for maintainability and potential future divergence
+const authService = {
+  signIn: clienteAuthService.signIn,
+  signUp: clienteAuthService.signUp,
+  signOut: clienteAuthService.signOut,
+  getSession: clienteAuthService.getSession,
+  getCurrentUser: clienteAuthService.getCurrentUser
+};
+
+// User service operations (role detection and verification)
+// Implemented directly here to avoid circular dependencies
+const userService = {
+  getUserRole: async (userId) => {
+    if (!userId) return null;
+
+    // Check if user is an admin
+    const { data: adminData } = await supabase
+      .from('administradores')
+      .select('id, activo')
+      .eq('usuario_id', userId)
+      .eq('activo', true);
+
+    if (adminData && adminData.length > 0) {
+      return 'admin';
+    }
+
+    // Check if user is an installer
+    const { data: proveedorData } = await supabase
+      .from('proveedores')
+      .select('id')
+      .eq('auth_user_id', userId);
+
+    if (proveedorData && proveedorData.length > 0) {
+      return 'instalador';
+    }
+
+    // Check if user is a client
+    const { data: clienteData } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('id', userId);
+
+    if (clienteData && clienteData.length > 0) {
+      return 'cliente';
+    }
+
+    return null;
+  },
+
+  verifyInstallerActive: async (userId) => {
+    const { data, error } = await supabase
+      .from('proveedores')
+      .select('activo')
+      .eq('auth_user_id', userId);
+
+    if (error || !data || data.length === 0) {
+      return { isActive: false, error: 'No se encontró un perfil de proveedor asociado.' };
+    }
+
+    if (data[0]?.activo !== true) {
+      return { isActive: false, error: 'Tu cuenta de proveedor no está activa.' };
+    }
+
+    return { isActive: true, error: null };
+  },
+
+  verifyClientExists: async (userId) => {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('id', userId);
+
+    if (error || !data || data.length === 0) {
+      return { exists: false, error: 'No se encontró un perfil de cliente asociado.' };
+    }
+
+    return { exists: true, error: null };
+  }
+};
 
 const AuthContext = createContext();
 
@@ -25,7 +112,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const fetchLeadData = useCallback(async (requestedLeadId) => {
-    if (!requestedLeadId) return null;
+    if (!requestedLeadId) {
+      throw new Error('ID de lead requerido');
+    }
 
     // Si ya tenemos datos para este lead, no hacer otra petición
     if (leadData && leadData.temp_lead_id === requestedLeadId) {
@@ -34,58 +123,52 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const data = await leadService.getLeadData(requestedLeadId);
+
+      if (!data) {
+        throw new Error('No se encontraron datos para este lead');
+      }
+
       return data;
     } catch (error) {
-      console.error('Error in fetchLeadData:', error);
+      console.error('Error al cargar datos del lead:', error);
 
-      // Datos de fallback para testing
-      return {
-        temp_lead_id: requestedLeadId,
-        recibo_cfe: {
-          no_servicio: "1234567890123",
-          nombre: "Juan Pérez García",
-          direccion: "CALLE INSURGENTES 456, COL. ROMA NORTE, CDMX, C.P. 06700",
-          direccion_formatted: "Calle Insurgentes 456, Col. Roma Norte, CP 06700 Ciudad de México, Ciudad de México, México",
-          kwh_total: "385",
-          total_pagar_mxn: "1245.80"
-        },
-        consumo_kwh_historico: [
-          { periodo: "Ene25", kwh: 385 },
-          { periodo: "Dic24", kwh: 420 },
-          { periodo: "Nov24", kwh: 358 },
-          { periodo: "Oct24", kwh: 394 },
-          { periodo: "Sep24", kwh: 405 }
-        ],
-        resumen_energetico: {
-          consumo_max: 420
-        },
-        sizing_results: {
-          inputs: {
-            irr_avg_day: 5.89,
-            irr_min: 4.2,
-            irr_max: 7.1
-          },
-          results: {
-            kWp_needed: 3.49,
-            n_panels: 7,
-            yearly_prod: 6000
-          }
-        }
-      };
+      // Re-throw error para que sea manejado por el componente
+      // No retornamos datos falsos que puedan confundir al usuario
+      throw new Error(
+        error.message || 'No se pudieron cargar los datos. Por favor intenta nuevamente.'
+      );
     }
   }, [leadData]);
 
   const setLeadMode = useCallback(async (newTempLeadId) => {
     if (userType === 'lead' && tempLeadId === newTempLeadId) {
-      return;
+      return { success: true };
     }
 
-    setTempLeadId(newTempLeadId);
-    setUserType('lead');
+    try {
+      setLoading(true);
+      setTempLeadId(newTempLeadId);
+      setUserType('lead');
 
-    const data = await fetchLeadData(newTempLeadId);
-    setLeadData(data);
-    setLoading(false);
+      const data = await fetchLeadData(newTempLeadId);
+      setLeadData(data);
+      setLoading(false);
+
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error al activar modo lead:', error);
+
+      // Limpiar estado en caso de error
+      setTempLeadId(null);
+      setUserType(null);
+      setLeadData(null);
+      setLoading(false);
+
+      return {
+        success: false,
+        error: error.message || 'No se pudo cargar el análisis de tu recibo'
+      };
+    }
   }, [userType, tempLeadId, fetchLeadData]);
 
 

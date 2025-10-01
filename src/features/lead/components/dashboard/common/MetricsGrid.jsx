@@ -1,9 +1,9 @@
 import React from 'react';
 import MetricTile from './MetricTile';
-import { useDashboardData } from '../../../../../context/DashboardDataContext';
+import { useLeadDashboardData } from '../../../context/LeadDashboardDataContext';
 
 const MetricsGrid = () => {
-  const { metricsData, reciboData, sistemaData, hasData } = useDashboardData();
+  const { metricsData, reciboData, sistemaData, hasData } = useLeadDashboardData();
 
   // Datos por defecto o calculados
   const consumoPromedio = hasData && metricsData ? `${metricsData.consumoPromedio} kWh` : '272 kWh';

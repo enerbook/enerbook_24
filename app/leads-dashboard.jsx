@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View } from "react-native";
 import LeadAppLayout from '../src/features/lead/components/layout/LeadAppLayout';
 import { useAuth } from '../src/context/AuthContext';
-import { DashboardDataProvider } from '../src/context/DashboardDataContext';
+import { LeadDashboardDataProvider } from '../src/features/lead/context/LeadDashboardDataContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 // Import tab components for leads
@@ -13,17 +13,30 @@ import DetallesTab from '../src/features/lead/components/dashboard/tabs/Detalles
 
 export default function LeadsDashboardScreen() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [error, setError] = useState(null);
   const { user, userType, loading, setLeadMode, tempLeadId } = useAuth();
   const router = useRouter();
   const { temp_lead_id } = useLocalSearchParams();
 
   // Detectar temp_lead_id en la URL
   useEffect(() => {
-    if (temp_lead_id && !user && userType !== 'lead' && temp_lead_id !== tempLeadId) {
-      console.log('Leads Dashboard: temp_lead_id detected, setting lead mode:', temp_lead_id);
-      setLeadMode(temp_lead_id);
-    }
-  }, [temp_lead_id, user, userType, tempLeadId, setLeadMode]);
+    const loadLeadData = async () => {
+      if (temp_lead_id && !user && userType !== 'lead' && temp_lead_id !== tempLeadId) {
+        console.log('Leads Dashboard: temp_lead_id detected, setting lead mode:', temp_lead_id);
+
+        const result = await setLeadMode(temp_lead_id);
+
+        if (!result.success) {
+          console.error('Error loading lead data:', result.error);
+          setError(result.error);
+          // Redirigir a la landing después de 3 segundos
+          setTimeout(() => router.replace('/'), 3000);
+        }
+      }
+    };
+
+    loadLeadData();
+  }, [temp_lead_id, user, userType, tempLeadId, setLeadMode, router]);
 
   // Redirigir si es un usuario autenticado
   useEffect(() => {
@@ -32,6 +45,25 @@ export default function LeadsDashboardScreen() {
       router.replace('/clientes-dashboard');
     }
   }, [user, userType, loading, router]);
+
+  // Mostrar error si hubo problema cargando datos
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <div className="max-w-md text-center">
+          <div className="text-red-600 text-lg font-semibold mb-4">
+            ⚠️ Error al Cargar Datos
+          </div>
+          <div className="text-gray-700 mb-4">
+            {error}
+          </div>
+          <div className="text-gray-500 text-sm">
+            Serás redirigido a la página principal en unos segundos...
+          </div>
+        </div>
+      </View>
+    );
+  }
 
   // Mostrar loading mientras se resuelve el estado
   if (loading) {
@@ -64,14 +96,14 @@ export default function LeadsDashboardScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <DashboardDataProvider>
+      <LeadDashboardDataProvider>
         <LeadAppLayout
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         >
           {renderContent()}
         </LeadAppLayout>
-      </DashboardDataProvider>
+      </LeadDashboardDataProvider>
     </View>
   );
 }

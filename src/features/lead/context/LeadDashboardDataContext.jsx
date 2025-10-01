@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 
-const DashboardDataContext = createContext();
+const LeadDashboardDataContext = createContext();
 
-export const DashboardDataProvider = ({ children }) => {
+export const LeadDashboardDataProvider = ({ children }) => {
   const { leadData, userType, clientData } = useAuth();
 
   const dashboardData = useMemo(() => {
@@ -119,18 +119,18 @@ export const DashboardDataProvider = ({ children }) => {
   }, [leadData, userType, clientData]);
 
   return (
-    <DashboardDataContext.Provider value={dashboardData}>
+    <LeadDashboardDataContext.Provider value={dashboardData}>
       {children}
-    </DashboardDataContext.Provider>
+    </LeadDashboardDataContext.Provider>
   );
 };
 
-export const useDashboardData = () => {
-  const context = useContext(DashboardDataContext);
+export const useLeadDashboardData = () => {
+  const context = useContext(LeadDashboardDataContext);
   if (!context) {
-    throw new Error('useDashboardData must be used within a DashboardDataProvider');
+    throw new Error('useLeadDashboardData must be used within a LeadDashboardDataProvider');
   }
   return context;
 };
 
-export default DashboardDataContext;
+export default LeadDashboardDataContext;

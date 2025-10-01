@@ -1,10 +1,10 @@
 import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
 import { useRouter } from 'expo-router';
-import { useDashboardData } from '../../../../../context/DashboardDataContext';
+import { useLeadDashboardData } from '../../../context/LeadDashboardDataContext';
 
 const DetallesTab = () => {
-  const { reciboData, resumenEnergetico, sistemaData, consumoData, hasData } = useDashboardData();
+  const { reciboData, resumenEnergetico, sistemaData, consumoData, hasData } = useLeadDashboardData();
   const router = useRouter();
 
   const handleSolicitarCotizaciones = () => {
