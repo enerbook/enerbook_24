@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import AdvancedCameraOverlay from './AdvancedCameraOverlay';
-import { useAdvancedReceiptScanner } from '../../../hooks/useAdvancedReceiptScanner';
+import { useAdvancedReceiptScanner } from '../../hooks/useAdvancedReceiptScanner';
 
 export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
   const [hasPermission, setHasPermission] = useState(null);
