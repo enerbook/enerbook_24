@@ -1,23 +1,15 @@
 import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
-import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'expo-router';
 import { useDashboardData } from '../../../../../context/DashboardDataContext';
-import { useSolicitarCotizaciones } from '../../../../cliente/hooks/useSolicitarCotizaciones';
-import SolicitarCotizacionesModal from '../../../../cliente/components/modals/SolicitarCotizacionesModal';
 
 const DetallesTab = () => {
   const { reciboData, resumenEnergetico, sistemaData, consumoData, hasData } = useDashboardData();
-  const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
-  const { userType } = useAuth();
   const router = useRouter();
 
   const handleSolicitarCotizaciones = () => {
-    if (userType === 'lead') {
-      router.push('/signup');
-      return;
-    }
-    openModal();
+    // Leads siempre redirigen a signup
+    router.push('/signup');
   };
 
   return (
@@ -163,12 +155,6 @@ const DetallesTab = () => {
           </div>
         </div>
       </div>
-
-      <SolicitarCotizacionesModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onSuccess={handleSuccess}
-      />
     </main>
   );
 };

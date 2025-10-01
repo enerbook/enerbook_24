@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { Platform } from 'react-native';
 
-// Usar SimpleWebCamera para todas las plataformas
-const CameraComponent = lazy(() => import('../camera/SimpleWebCamera'));
+// Usar SimpleWebCamera desde shared
+const CameraComponent = lazy(() => import('../../../shared/components/camera/SimpleWebCamera'));
 
 const Spinner = () => (
   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>

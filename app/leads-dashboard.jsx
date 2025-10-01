@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View } from "react-native";
-import AppLayout from '../src/features/shared/components/layout/AppLayout';
+import LeadAppLayout from '../src/features/lead/components/layout/LeadAppLayout';
 import { useAuth } from '../src/context/AuthContext';
 import { DashboardDataProvider } from '../src/context/DashboardDataContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -65,12 +65,12 @@ export default function LeadsDashboardScreen() {
   return (
     <View style={{ flex: 1 }}>
       <DashboardDataProvider>
-        <AppLayout
+        <LeadAppLayout
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         >
           {renderContent()}
-        </AppLayout>
+        </LeadAppLayout>
       </DashboardDataProvider>
     </View>
   );

@@ -1,8 +1,8 @@
 import { supabase } from '../../../lib/supabaseClient';
 
 /**
- * Project Service
- * Handles all project-related API calls
+ * Cliente Project Service
+ * Handles project-related operations for cliente role
  */
 
 export const projectService = {

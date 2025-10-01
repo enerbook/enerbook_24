@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { authService } from '../../../../services';
+import { authService } from '../../services/authService';
 
 const NuevoProyectoModal = ({ isOpen, onClose, onSuccess }) => {
   const [files, setFiles] = useState([]);

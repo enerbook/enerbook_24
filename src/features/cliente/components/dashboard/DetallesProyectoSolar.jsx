@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../../../lib/supabaseClient';
-import { authService, quotationService } from '../../../../services';
+import { authService } from '../../services/authService';
+import { quotationService } from '../../services/quotationService';
 import AcceptQuotationModal from '../modals/AcceptQuotationModal';
 
 const DetallesProyectoSolar = ({ proyectoId, onClose }) => {

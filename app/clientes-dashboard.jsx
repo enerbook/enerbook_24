@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View } from "react-native";
-import AppLayout from '../src/features/shared/components/layout/AppLayout';
+import ClienteAppLayout from '../src/features/cliente/components/layout/ClienteAppLayout';
 import { ClienteAuthProvider } from '../src/features/cliente/context/ClienteAuthContext';
 import { ClienteDashboardDataProvider } from '../src/features/cliente/context/ClienteDashboardDataContext';
 import { useAuth } from '../src/context/AuthContext';
@@ -64,12 +64,12 @@ export default function ClientesDashboardScreen() {
     <View style={{ flex: 1 }}>
       <ClienteAuthProvider>
         <ClienteDashboardDataProvider>
-          <AppLayout
+          <ClienteAppLayout
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           >
             {renderContent()}
-          </AppLayout>
+          </ClienteAppLayout>
         </ClienteDashboardDataProvider>
       </ClienteAuthProvider>
     </View>

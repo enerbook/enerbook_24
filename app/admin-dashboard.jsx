@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../src/context/AuthContext';
 import { supabase } from '../src/lib/supabaseClient';
-import AppLayout from '../src/features/shared/components/layout/AppLayout';
+import AdminAppLayout from '../src/features/admin/components/layout/AdminAppLayout';
 import ResumenTab from '../src/features/admin/components/tabs/ResumenTab';
 import FinanzasTab from '../src/features/admin/components/tabs/FinanzasTabSimple';
 import ProveedoresTab from '../src/features/admin/components/tabs/ProveedoresTab';
@@ -91,16 +90,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleLogout = async () => {
-    console.log('Admin dashboard logout button clicked');
-    try {
-      await logout(router);
-    } catch (error) {
-      console.error('Error during admin logout:', error);
-    }
-  };
-
-  // Configurar pestañas para AppLayout
+  // Configurar pestañas para AdminAppLayout
   const adminTabs = [
     { id: 'resumen', label: 'Resumen General', icon: 'analytics-outline' },
     { id: 'finanzas', label: 'Finanzas', icon: 'cash-outline' },
@@ -144,66 +134,13 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex relative">
-      {/* Main content */}
-      <div className="flex-1 flex flex-col max-h-screen w-full">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-100">
-          <div className="px-6 py-4 flex justify-between items-center">
-            <div className="flex items-center">
-              <img
-                src="/img/FulllogoColor.svg"
-                alt="Enerbook"
-                className="h-20 w-auto mr-6"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Dashboard Administrador</h1>
-                <p className="text-sm text-gray-600 mt-1">Panel de Control y Métricas del Sistema</p>
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center px-2 py-1.5 text-left rounded-md transition-colors text-gray-400 hover:bg-white hover:text-gray-700"
-            >
-              <div className="w-5 h-5 rounded-md flex items-center justify-center mr-2 bg-transparent">
-                <FiLogOut
-                  className="w-2.5 h-2.5"
-                  style={{ color: '#F59E0B' }}
-                />
-              </div>
-              <span className="text-sm font-medium">Cerrar Sesión</span>
-            </button>
-          </div>
-
-          {/* Tabs */}
-          <div className="border-t border-gray-100">
-            <div className="px-6">
-              <div className="flex overflow-x-auto">
-                {adminTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                      activeTab === tab.id
-                        ? 'border-amber-500 text-amber-600'
-                        : 'border-transparent text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <i className={`ion-${tab.icon} mr-2 text-base`}></i>
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Content area */}
-        <main className="flex-1 px-6 py-6 bg-gray-50 overflow-y-auto">
-          {renderTabContent()}
-        </main>
-      </div>
-    </div>
+    <AdminAppLayout
+      adminTabs={adminTabs}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+    >
+      {renderTabContent()}
+    </AdminAppLayout>
   );
 };
 

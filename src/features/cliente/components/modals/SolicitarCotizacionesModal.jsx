@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useClienteDashboardData } from '../../context/ClienteDashboardDataContext';
-import { authService, projectService, clientService } from '../../../../services';
+import { authService } from '../../services/authService';
+import { projectService } from '../../services/projectService';
+import { clientService } from '../../services/clientService';
 
 const SolicitarCotizacionesModal = ({ isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);

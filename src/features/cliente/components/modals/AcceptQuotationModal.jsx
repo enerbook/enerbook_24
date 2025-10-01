@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { contractService } from '../../../../services';
+import { contractService } from '../../services/contractService';
 
 const AcceptQuotationModal = ({ quotation, onClose, onSuccess, userId }) => {
   const [selectedPaymentType, setSelectedPaymentType] = useState(null);

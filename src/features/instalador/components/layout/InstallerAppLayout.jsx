@@ -1,27 +1,10 @@
 import React, { useState } from 'react';
-import ClientSidebar from '../../../cliente/components/ClientSidebar';
-import InstallerSidebar from '../../../instalador/components/InstallerSidebar';
-import LeadSidebar from '../../../lead/components/LeadSidebar';
-import UnifiedHeader from './Header';
-import { FiMenu, FiX } from 'react-icons/fi';
-import { useAuth } from '../../../../context/AuthContext';
+import InstallerSidebar from '../InstallerSidebar';
+import InstallerHeader from './InstallerHeader';
+import { FiMenu } from 'react-icons/fi';
 
-const AppLayout = ({ activeTab, setActiveTab, children }) => {
+const InstallerAppLayout = ({ activeTab, setActiveTab, children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { userType } = useAuth();
-
-  // Seleccionar el sidebar apropiado según el tipo de usuario
-  let SidebarComponent;
-  if (userType === 'cliente') {
-    SidebarComponent = ClientSidebar;
-  } else if (userType === 'instalador') {
-    SidebarComponent = InstallerSidebar;
-  } else if (userType === 'lead') {
-    SidebarComponent = LeadSidebar;
-  } else {
-    // Fallback: usar ClientSidebar por defecto
-    SidebarComponent = ClientSidebar;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex relative">
@@ -39,7 +22,7 @@ const AppLayout = ({ activeTab, setActiveTab, children }) => {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 transition-transform duration-300 ease-in-out
       `}>
-        <SidebarComponent
+        <InstallerSidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onClose={() => setSidebarOpen(false)}
@@ -68,7 +51,7 @@ const AppLayout = ({ activeTab, setActiveTab, children }) => {
 
         {/* Desktop header */}
         <div className="hidden lg:block">
-          <UnifiedHeader />
+          <InstallerHeader />
         </div>
 
         {/* Content area con padding para header móvil */}
@@ -80,4 +63,4 @@ const AppLayout = ({ activeTab, setActiveTab, children }) => {
   );
 };
 
-export default AppLayout;
+export default InstallerAppLayout;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
-import AppLayout from '../src/features/shared/components/layout/AppLayout';
+import InstallerAppLayout from '../src/features/instalador/components/layout/InstallerAppLayout';
 import { useAuth } from '../src/context/AuthContext';
 import ProfileTab from '../src/features/instalador/components/dashboard/ProfileTab';
 import DocumentsTab from '../src/features/instalador/components/dashboard/DocumentsTab';
@@ -103,7 +103,7 @@ const InstallerDashboard = () => {
   }
 
   return (
-    <AppLayout
+    <InstallerAppLayout
       activeTab={activeTab}
       setActiveTab={setActiveTab}
     >
@@ -128,7 +128,7 @@ const InstallerDashboard = () => {
           handleCertificationUpload={handleCertificationUpload}
         />
       )}
-    </AppLayout>
+    </InstallerAppLayout>
   );
 };
 

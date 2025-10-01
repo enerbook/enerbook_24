@@ -1,22 +1,12 @@
 import React from 'react';
-import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'expo-router';
-import { useSolicitarCotizaciones } from '../../../../cliente/hooks/useSolicitarCotizaciones';
-import SolicitarCotizacionesModal from '../../../../cliente/components/modals/SolicitarCotizacionesModal';
 
 const QuotesCTA = () => {
-  const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
-  const { userType } = useAuth();
   const router = useRouter();
 
   const handleSolicitarCotizaciones = () => {
-    // Si es lead, redirigir a registro
-    if (userType === 'lead') {
-      router.push('/signup');
-      return;
-    }
-    // Si es cliente autenticado, abrir modal
-    openModal();
+    // Leads siempre redirigen a signup
+    router.push('/signup');
   };
 
   return (
@@ -52,12 +42,6 @@ const QuotesCTA = () => {
           </button>
         </div>
       </div>
-
-      <SolicitarCotizacionesModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onSuccess={handleSuccess}
-      />
     </div>
   );
 };

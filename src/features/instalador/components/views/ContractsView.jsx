@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import ContractCard from '../cards/ContractCard';
 import ContractDetailsModal from '../modals/ContractDetailsModal';
 import UpdateStatusModal from '../modals/UpdateStatusModal';
-import { authService, installerService, contractService } from '../../../../services';
+import { authService } from '../../services/authService';
+import { installerService } from '../../services/installerService';
+import { contractService } from '../../services/contractService';
 
 const ContractsView = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);

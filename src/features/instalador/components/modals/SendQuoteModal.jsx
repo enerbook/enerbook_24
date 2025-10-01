@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FiX } from 'react-icons/fi';
-import { quotationService } from '../../../../services';
+import { quotationService } from '../../services/quotationService';
 
 const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
   const [loading, setLoading] = useState(false);

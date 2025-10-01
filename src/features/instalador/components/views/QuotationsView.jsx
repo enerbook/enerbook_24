@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import QuotationCard from '../cards/QuotationCard';
 import QuotationDetailsModal from '../modals/QuotationDetailsModal';
-import { authService, installerService, quotationService } from '../../../../services';
+import { authService } from '../../services/authService';
+import { installerService } from '../../services/installerService';
+import { quotationService } from '../../services/quotationService';
 
 const QuotationsView = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);

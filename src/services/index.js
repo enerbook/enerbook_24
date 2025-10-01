@@ -1,21 +1,41 @@
 /**
- * Services Index
- * Central export point for all service modules
+ * Services Index - DEPRECATED
  *
- * This file acts as a barrel export for all services across the application.
- * Services are organized in features/ by their specificity:
- * - Shared services (used by 2+ roles): features/shared/services/
- * - Role-specific services: features/[role]/services/
+ * ⚠️ DO NOT USE THIS FILE ⚠️
+ *
+ * This centralized export approach has been deprecated in favor of role-specific services.
+ * Each role now has its own independent service implementations to ensure complete
+ * independence between roles.
+ *
+ * MIGRATION GUIDE:
+ * Instead of: import { authService } from '../../../services';
+ * Use:        import { authService } from '../services/authService';
+ *
+ * Service locations by role:
+ *
+ * - Cliente: src/features/cliente/services/
+ *   - authService.js
+ *   - projectService.js
+ *   - quotationService.js
+ *   - contractService.js
+ *   - clientService.js
+ *
+ * - Instalador: src/features/instalador/services/
+ *   - authService.js
+ *   - quotationService.js
+ *   - contractService.js
+ *   - installerService.js
+ *
+ * - Lead: src/features/lead/services/
+ *   - leadService.js
+ *
+ * - Admin: src/features/admin/services/
+ *   - auth.js
+ *   - queries.js
+ *
+ * NOTE: The shared services directory has been removed. Each role has its own
+ * independent service implementations.
  */
 
-// Shared services (used by multiple roles)
-export { authService } from '../features/shared/services/authService';
-export { projectService } from '../features/shared/services/projectService';
-export { quotationService } from '../features/shared/services/quotationService';
-export { contractService } from '../features/shared/services/contractService';
-export { userService } from '../features/shared/services/userService';
-
-// Role-specific services
-export { installerService } from '../features/instalador/services/installerService';
-export { leadService } from '../features/lead/services/leadService';
-export { clientService } from '../features/cliente/services/clientService';
+// This file should be deleted once all legacy code is updated
+console.warn('DEPRECATED: Do not import from src/services/index.js - use role-specific services instead');

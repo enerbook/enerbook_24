@@ -1,12 +1,12 @@
 import { supabase } from '../../../lib/supabaseClient';
 
 /**
- * Authentication Service
- * Handles all authentication-related API calls
+ * Cliente Authentication Service
+ * Handles authentication for cliente role
  */
 
 export const authService = {
-  // Sign up new user
+  // Sign up new client
   signUp: async (email, password, userType = 'cliente') => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -21,7 +21,7 @@ export const authService = {
     return data;
   },
 
-  // Sign in user
+  // Sign in client
   signIn: async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -31,7 +31,7 @@ export const authService = {
     return data;
   },
 
-  // Sign out user
+  // Sign out client
   signOut: async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;

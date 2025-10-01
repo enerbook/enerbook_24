@@ -6,7 +6,10 @@ import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizacione
 import SolicitarCotizacionesModal from '../../modals/SolicitarCotizacionesModal';
 import ReceiptUploadModal from '../../modals/ReceiptUploadModal';
 import DetallesProyectoSolar from '../DetallesProyectoSolar';
-import { authService, projectService, quotationService, contractService } from '../../../../../services';
+import { authService } from '../../../services/authService';
+import { projectService } from '../../../services/projectService';
+import { quotationService } from '../../../services/quotationService';
+import { contractService } from '../../../services/contractService';
 
 const ProyectosTab = () => {
   const [proyectos, setProyectos] = useState([]);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReviewCard from '../cards/ReviewCard';
-import { authService, installerService } from '../../../../services';
+import { authService } from '../../services/authService';
+import { installerService } from '../../services/installerService';
 
 const ReviewsView = () => {
   const [reviews, setReviews] = useState([]);
