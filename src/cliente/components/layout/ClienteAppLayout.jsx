@@ -3,7 +3,7 @@ import ClientSidebar from '../ClientSidebar';
 import ClienteHeader from './ClienteHeader';
 import { FiMenu } from 'react-icons/fi';
 
-const ClienteAppLayout = ({ activeTab, setActiveTab, children }) => {
+const ClienteAppLayout = ({ activeTab, children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -24,7 +24,6 @@ const ClienteAppLayout = ({ activeTab, setActiveTab, children }) => {
       `}>
         <ClientSidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
           onClose={() => setSidebarOpen(false)}
         />
       </div>

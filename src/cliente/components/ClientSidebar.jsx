@@ -1,10 +1,10 @@
 import React from 'react';
 import { FiUser, FiLogOut, FiFolder, FiSettings } from 'react-icons/fi';
-import { useAuth } from '../../context/AuthContext';
+import { useClienteAuth } from '../context/ClienteAuthContext';
 import { useRouter } from 'expo-router';
 
 // Navigation button component
-const NavButton = ({ item, activeTab, setActiveTab, onClose }) => {
+const NavButton = ({ item, activeTab, onClose, router }) => {
   const Icon = item.icon;
   const isActive = activeTab === item.id;
 
@@ -12,7 +12,7 @@ const NavButton = ({ item, activeTab, setActiveTab, onClose }) => {
     if (item.action) {
       item.action();
     } else {
-      setActiveTab(item.id);
+      router.push(`/cliente-panel/${item.id}`);
       if (onClose) onClose();
     }
   };
@@ -39,8 +39,8 @@ const NavButton = ({ item, activeTab, setActiveTab, onClose }) => {
   );
 };
 
-const ClientSidebar = ({ activeTab, setActiveTab, onClose }) => {
-  const { user, logout } = useAuth();
+const ClientSidebar = ({ activeTab, onClose }) => {
+  const { user, logout } = useClienteAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -69,7 +69,7 @@ const ClientSidebar = ({ activeTab, setActiveTab, onClose }) => {
       <nav className="flex-1 px-2 -mt-6 overflow-y-auto">
         <div className="space-y-1">
           {sidebarItems.map((item) => (
-            <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} onClose={onClose} />
+            <NavButton key={item.id} item={item} activeTab={activeTab} onClose={onClose} router={router} />
           ))}
         </div>
       </nav>
