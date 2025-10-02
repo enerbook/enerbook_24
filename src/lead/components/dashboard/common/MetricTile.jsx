@@ -1,5 +1,6 @@
 // components/dashboard/MetricTile.jsx
 import React from "react";
+import PropTypes from 'prop-types';
 
 const MetricTile = ({ title, value, subtitle }) => {
   return (
@@ -26,4 +27,11 @@ const MetricTile = ({ title, value, subtitle }) => {
   );
 };
 
-export default MetricTile;
+MetricTile.propTypes = {
+  title: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  subtitle: PropTypes.string.isRequired
+};
+
+// Memoizar componente para evitar re-renders innecesarios
+export default React.memo(MetricTile);

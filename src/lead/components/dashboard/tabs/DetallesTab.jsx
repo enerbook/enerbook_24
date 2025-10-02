@@ -96,22 +96,22 @@ const DetallesTab = () => {
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
             <h3 className="text-sm font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent mb-3">Resumen Energético</h3>
             <div className="space-y-3">
-              {hasData ? (
+              {hasData && consumoData.length > 0 ? (
                 <>
                   <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{resumenEnergetico?.consumo_max || Math.max(...(consumoData.map(item => parseInt(item.consumo)) || [0]))}</span>
+                    <span className="text-sm">{resumenEnergetico?.consumo_max || Math.max(...consumoData.map(item => item.value))}</span>
                     <span className="text-sm">Consumo Máximo (kWh)</span>
                   </div>
                   <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{resumenEnergetico?.consumo_promedio || Math.round((consumoData.reduce((sum, item) => sum + parseInt(item.consumo), 0) || 0) / (consumoData.length || 1))}</span>
+                    <span className="text-sm">{resumenEnergetico?.consumo_promedio || Math.round(consumoData.reduce((sum, item) => sum + item.value, 0) / consumoData.length)}</span>
                     <span className="text-sm">Consumo Promedio (kWh)</span>
                   </div>
                   <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{resumenEnergetico?.periodos_analizados || consumoData.length || '0'}</span>
+                    <span className="text-sm">{resumenEnergetico?.periodos_analizados || consumoData.length}</span>
                     <span className="text-sm">Períodos Analizados</span>
                   </div>
                   <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{((resumenEnergetico?.consumo_max || Math.max(...(consumoData.map(item => parseInt(item.consumo)) || [0]))) * 12).toLocaleString()}</span>
+                    <span className="text-sm">{((resumenEnergetico?.consumo_max || Math.max(...consumoData.map(item => item.value))) * 12).toLocaleString()}</span>
                     <span className="text-sm">Consumo Anual Máx (kWh)</span>
                   </div>
                 </>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
+import { logger, analyticsLogger } from '../utils/logger';
 
 export function useOcr() {
   const [ocrData, setOcrData] = useState(null);
@@ -47,28 +48,34 @@ export function useOcr() {
           if (text) {
             const result = JSON.parse(text);
             setOcrData(result);
-            console.log('OCR data received:', result);
+            logger.log('OCR data received:', result);
+            analyticsLogger.trackEvent('OCR_SUCCESS', { hasLeadId: !!result.temp_lead_id });
 
             // Si el OCR devuelve temp_lead_id, redirigir inmediatamente al dashboard de lead
             if (result.temp_lead_id) {
-              console.log('Redirecting to lead dashboard with ID:', result.temp_lead_id);
+              logger.log('Redirecting to lead dashboard with ID:', result.temp_lead_id);
+              analyticsLogger.trackLeadConversion(result.temp_lead_id, 'receipt_uploaded');
               router.push(`/lead-panel?temp_lead_id=${result.temp_lead_id}`);
             }
           } else {
-            console.error('Empty response from webhook');
+            logger.error('Empty response from webhook');
+            analyticsLogger.trackEvent('OCR_ERROR', { type: 'empty_response' });
             alert('El servidor devolvió una respuesta vacía. Por favor, inténtalo de nuevo.');
           }
         } else {
-          console.error('Response is not JSON:', contentType);
+          logger.error('Response is not JSON:', contentType);
+          analyticsLogger.trackEvent('OCR_ERROR', { type: 'invalid_content_type', contentType });
           alert('Error en el formato de respuesta del servidor. Por favor, contacta al administrador.');
         }
       } else {
         const errorText = await response.text();
-        console.error('Failed to process files:', errorText);
+        logger.error('Failed to process files:', errorText);
+        analyticsLogger.trackEvent('OCR_ERROR', { type: 'server_error', status: response.status });
         alert('Error al procesar el recibo. Por favor, inténtalo de nuevo.');
       }
     } catch (error) {
-      console.error('Error uploading files:', error);
+      logger.error('Error uploading files:', error);
+      analyticsLogger.trackError(error, { context: 'OCR upload' });
       alert('Ocurrió un error de red. Por favor, verifica tu conexión.');
     } finally {
       setIsLoading(false);

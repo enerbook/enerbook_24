@@ -6,6 +6,7 @@ import {
   validateReciboCFE,
   checkRateLimit
 } from '../../utils/security';
+import { logger } from '../utils/logger';
 
 /**
  * Lead Service
@@ -103,7 +104,7 @@ export const leadService = {
       .single();
 
     if (error) {
-      console.error('Error creating lead:', error.message);
+      logger.error('Error creating lead:', error.message);
       throw new Error('No se pudo crear el análisis. Por favor intenta nuevamente.');
     }
 

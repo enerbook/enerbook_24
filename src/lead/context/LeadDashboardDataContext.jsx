@@ -3,6 +3,28 @@ import { useAuth } from '../../context/AuthContext';
 
 const LeadDashboardDataContext = createContext();
 
+// Constantes fuera del componente para evitar re-creación
+const PERIODO_MAP = {
+  'ENE': 'Ene', 'FEB': 'Feb', 'MAR': 'Mar', 'ABR': 'Abr',
+  'MAY': 'May', 'JUN': 'Jun', 'JUL': 'Jul', 'AGO': 'Ago',
+  'SEP': 'Sep', 'OCT': 'Oct', 'NOV': 'Nov', 'DIC': 'Dic'
+};
+
+const MESES_DATA = [
+  { mes: 'Enero', orden: 1 },
+  { mes: 'Febrero', orden: 2 },
+  { mes: 'Marzo', orden: 3 },
+  { mes: 'Abril', orden: 4 },
+  { mes: 'Mayo', orden: 5 },
+  { mes: 'Junio', orden: 6 },
+  { mes: 'Julio', orden: 7 },
+  { mes: 'Agosto', orden: 8 },
+  { mes: 'Septiembre', orden: 9 },
+  { mes: 'Octubre', orden: 10 },
+  { mes: 'Noviembre', orden: 11 },
+  { mes: 'Diciembre', orden: 12 }
+];
+
 export const LeadDashboardDataProvider = ({ children }) => {
   const { leadData, userType, clientData } = useAuth();
 
@@ -29,10 +51,51 @@ export const LeadDashboardDataProvider = ({ children }) => {
       };
     }
 
+    // Normalizar consumo_kwh_historico desde formato DB al formato esperado por componentes
     const consumoData = sourceData.consumo_kwh_historico ?
-      sourceData.consumo_kwh_historico
-        .filter(item => item?.value !== undefined && item?.periodo !== undefined)
-        .sort((a, b) => b.periodo.localeCompare(a.periodo))
+      (() => {
+        const rawData = sourceData.consumo_kwh_historico
+          .filter(item => (item?.kwh !== undefined || item?.value !== undefined) && item?.periodo !== undefined);
+
+        // Calcular promedio para los porcentajes
+        const valores = rawData.map(item => item.kwh !== undefined ? item.kwh : item.value);
+        const promedio = valores.reduce((sum, val) => sum + val, 0) / valores.length;
+
+        return rawData.map(item => {
+          // Normalizar: DB usa "kwh", componentes esperan "value" y "consumo"
+          const valorKwh = item.kwh !== undefined ? item.kwh : item.value;
+
+          // Convertir periodo "ENE25" a formato legible usando constante global
+          const mesAbrev = item.periodo.substring(0, 3).toUpperCase();
+          const año = item.periodo.substring(3);
+          const label = PERIODO_MAP[mesAbrev] || mesAbrev;
+          const fullLabel = `${PERIODO_MAP[mesAbrev] || mesAbrev} ${año}`;
+
+          // Calcular porcentaje respecto al promedio
+          const porcentajeValor = Math.round((valorKwh / promedio) * 100);
+          const porcentaje = `${porcentajeValor}%`;
+
+          // Determinar color según el porcentaje
+          let color = 'green'; // Por debajo del promedio
+          if (porcentajeValor >= 110) {
+            color = 'red'; // 10% o más arriba del promedio
+          } else if (porcentajeValor >= 90) {
+            color = 'gradient'; // Cerca del promedio
+          }
+
+          return {
+            periodo: item.periodo,
+            value: valorKwh,
+            consumo: valorKwh,
+            kwh: valorKwh,
+            label: label,
+            fullLabel: fullLabel,
+            porcentaje: porcentaje,
+            porcentajeValor: porcentajeValor,
+            color: color
+          };
+        }).sort((a, b) => b.periodo.localeCompare(a.periodo));
+      })()
       : [];
 
     const irradiacionData = sourceData.irradiacion_cache || sourceData.sizing_results ?
@@ -49,22 +112,7 @@ export const LeadDashboardDataProvider = ({ children }) => {
             ? ((sizingInputs.irr_max || 6.5) - (sizingInputs.irr_min || 4.5)) / 2
             : 1;
 
-        const mesesData = [
-          { mes: 'Enero', orden: 1 },
-          { mes: 'Febrero', orden: 2 },
-          { mes: 'Marzo', orden: 3 },
-          { mes: 'Abril', orden: 4 },
-          { mes: 'Mayo', orden: 5 },
-          { mes: 'Junio', orden: 6 },
-          { mes: 'Julio', orden: 7 },
-          { mes: 'Agosto', orden: 8 },
-          { mes: 'Septiembre', orden: 9 },
-          { mes: 'Octubre', orden: 10 },
-          { mes: 'Noviembre', orden: 11 },
-          { mes: 'Diciembre', orden: 12 }
-        ];
-
-        return mesesData.map((mes, index) => {
+        return MESES_DATA.map((mes, index) => {
           const factor = 0.5 + 0.5 * Math.cos((mes.orden - 5) * Math.PI / 6);
           const irradiacion = (promedioAnual + variacion * (factor - 0.5)).toFixed(2);
 
@@ -93,14 +141,12 @@ export const LeadDashboardDataProvider = ({ children }) => {
           ? (irradiacionData.reduce((sum, item) => sum + item.value, 0) / irradiacionData.length).toFixed(2)
           : 0);
 
-    const metricsData = sourceData.consumo_kwh_historico ? {
+    // Calcular métricas usando datos normalizados
+    const metricsData = consumoData.length > 0 ? {
       consumoPromedio: Math.round(
-        sourceData.consumo_kwh_historico
-          .filter(i => i?.value !== undefined)
-          .reduce((sum, item) => sum + item.value, 0) /
-        sourceData.consumo_kwh_historico.filter(i => i?.value !== undefined).length
+        consumoData.reduce((sum, item) => sum + item.value, 0) / consumoData.length
       ),
-      consumoMaximo: Math.max(...sourceData.consumo_kwh_historico.filter(i => i?.value !== undefined).map(item => item.value)),
+      consumoMaximo: Math.max(...consumoData.map(item => item.value)),
       irradiacionPromedio: parseFloat(irradiacionPromedio),
       sistemaRequerido: sourceData.sizing_results?.kWp_needed || sourceData.sizing_results?.results?.kWp_needed || 0
     } : null;

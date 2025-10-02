@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { FiGrid, FiPieChart, FiFileText, FiSun } from 'react-icons/fi';
 import { useRouter } from 'expo-router';
 
@@ -12,11 +13,23 @@ const NavButton = ({ item, activeTab, setActiveTab, onClose }) => {
     if (onClose) onClose();
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
   return (
     <button
       key={item.id}
       onClick={handleClick}
-      className={`w-full flex items-center px-2 py-1.5 text-left rounded-md transition-colors ${
+      onKeyDown={handleKeyDown}
+      aria-label={`Navegar a ${item.label}`}
+      aria-current={isActive ? 'page' : undefined}
+      role="tab"
+      tabIndex={0}
+      className={`w-full flex items-center px-2 py-1.5 text-left rounded-md transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-300 ${
         isActive
           ? 'bg-white text-gray-900 shadow-sm'
           : 'text-gray-400 hover:bg-white hover:text-gray-700'
@@ -52,9 +65,9 @@ const LeadSidebar = ({ activeTab, setActiveTab, onClose }) => {
         </div>
       </div>
 
-      <nav className="flex-1 px-2 -mt-6 overflow-y-auto">
+      <nav className="flex-1 px-2 -mt-6 overflow-y-auto" aria-label="Navegación principal">
         {/* Main Navigation */}
-        <div className="space-y-1">
+        <div className="space-y-1" role="tablist" aria-label="Pestañas de navegación">
           {sidebarItems.map((item) => (
             <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} onClose={onClose} />
           ))}
@@ -62,12 +75,13 @@ const LeadSidebar = ({ activeTab, setActiveTab, onClose }) => {
 
         {/* Lead CTA */}
         <div className="mt-6 px-2">
-          <div className="bg-gradient-to-r from-orange-400 to-yellow-400 rounded-lg p-3 text-center">
+          <div className="bg-gradient-to-r from-orange-400 to-yellow-400 rounded-lg p-3 text-center" role="region" aria-label="Llamado a la acción">
             <h3 className="text-sm font-bold text-white mb-1">¡Regístrate!</h3>
             <p className="text-sm text-white mb-2 leading-tight">Guarda tu análisis y recibe cotizaciones</p>
             <button
               onClick={() => router.push('/signup')}
-              className="w-full bg-white font-semibold py-1.5 px-2 rounded text-sm hover:bg-gray-100 transition-colors"
+              aria-label="Crear cuenta de usuario en Enerbook"
+              className="w-full bg-white font-semibold py-1.5 px-2 rounded text-sm hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-400"
               style={{ color: '#090e1a' }}
             >
               Crear Cuenta
@@ -77,6 +91,23 @@ const LeadSidebar = ({ activeTab, setActiveTab, onClose }) => {
       </nav>
     </div>
   );
+};
+
+NavButton.propTypes = {
+  item: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    label: PropTypes.string.isRequired,
+    icon: PropTypes.elementType.isRequired
+  }).isRequired,
+  activeTab: PropTypes.string.isRequired,
+  setActiveTab: PropTypes.func.isRequired,
+  onClose: PropTypes.func
+};
+
+LeadSidebar.propTypes = {
+  activeTab: PropTypes.string.isRequired,
+  setActiveTab: PropTypes.func.isRequired,
+  onClose: PropTypes.func
 };
 
 export default LeadSidebar;
