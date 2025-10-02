@@ -16,17 +16,23 @@ END $$;
 
 -- PASO 2: Crear política temporal permisiva
 -- ============================================================================
-DROP POLICY IF EXISTS "temp_admins_can_read" ON administradores;
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "temp_admins_can_read" ON administradores;
 
-CREATE POLICY "temp_admins_can_read" ON administradores
-    FOR SELECT
-    USING (auth.role() = 'authenticated');
+    CREATE POLICY "temp_admins_can_read" ON administradores
+        FOR SELECT
+        USING (auth.role() = 'authenticated');
 
-RAISE NOTICE '✅ Política temporal creada';
+    RAISE NOTICE '✅ Política temporal creada';
+END $$;
 
 -- PASO 3: Mostrar tus usuarios disponibles
 -- ============================================================================
-RAISE NOTICE '📋 Usuarios disponibles en auth.users:';
+DO $$
+BEGIN
+    RAISE NOTICE '📋 Usuarios disponibles en auth.users (ve la tabla de abajo):';
+END $$;
 
 SELECT
     id as user_id,
