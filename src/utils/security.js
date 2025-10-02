@@ -17,6 +17,8 @@ export const isValidUUID = (uuid) => {
 
 /**
  * Valida que temp_lead_id tenga formato correcto y no sea enumerable
+ * Formato esperado: "lead_timestamp_randomstring"
+ * Ejemplo: "lead_1759432944463_4ohw3cmg8"
  * @param {string} tempLeadId - ID temporal del lead
  * @returns {boolean}
  */
@@ -25,17 +27,20 @@ export const validateTempLeadId = (tempLeadId) => {
     return false;
   }
 
-  // Debe ser UUID válido
-  if (!isValidUUID(tempLeadId)) {
-    return false;
+  // Formato 1: UUID v4 estándar (para compatibilidad futura)
+  if (isValidUUID(tempLeadId)) {
+    return true;
   }
 
-  // Longitud mínima de seguridad (UUID = 36 caracteres)
-  if (tempLeadId.length < 36) {
-    return false;
+  // Formato 2: lead_timestamp_randomstring (formato actual de N8N)
+  // Ejemplo: lead_1759432944463_4ohw3cmg8
+  const leadIdRegex = /^lead_\d{13}_[a-z0-9]{8,12}$/i;
+  if (leadIdRegex.test(tempLeadId)) {
+    return true;
   }
 
-  return true;
+  // Rechazar cualquier otro formato
+  return false;
 };
 
 /**
@@ -48,8 +53,9 @@ export const sanitizeTempLeadId = (tempLeadId) => {
     return null;
   }
 
-  // Remover cualquier carácter no permitido (solo alphanumeric + guiones)
-  return tempLeadId.replace(/[^a-zA-Z0-9-]/g, '');
+  // Remover cualquier carácter no permitido
+  // Permitir: alphanumeric, guiones y guiones bajos
+  return tempLeadId.replace(/[^a-zA-Z0-9\-_]/g, '');
 };
 
 /**
