@@ -51,10 +51,10 @@ CREATE POLICY "Authenticated anon users can insert temp quotes" ON cotizaciones_
 -- ============================================================================
 
 -- Índice compuesto para búsqueda eficiente por temp_lead_id + fecha
--- Esto previene queries lentas que podrían usarse para enumerar leads
+-- Nota: Removemos el WHERE con NOW() porque no es IMMUTABLE
+-- En su lugar, creamos índice simple que PostgreSQL puede usar eficientemente
 CREATE INDEX IF NOT EXISTS idx_temp_quotes_secure_lookup
-ON cotizaciones_leads_temp(temp_lead_id, created_at DESC)
-WHERE created_at > NOW() - INTERVAL '7 days';
+ON cotizaciones_leads_temp(temp_lead_id, created_at DESC);
 
 -- ============================================================================
 -- FUNCIÓN DE LIMPIEZA AUTOMÁTICA (Opcional - Ejecutar con pg_cron)
