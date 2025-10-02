@@ -1,28 +1,49 @@
 import React from "react";
 import { FiArrowRight } from "react-icons/fi";
 import Reveal from "./Reveal";
+import { useStats } from "../hooks/useStats";
+import { formatEnergy } from "../services/statsService";
 
 export default function Stats() {
+  const { stats, isLoading, error } = useStats();
+
+  // Mostrar error si falla la conexión a Supabase
+  if (error && !isLoading) {
+    console.error('Error cargando estadísticas:', error);
+  }
+
+  // Valores seguros para mostrar (evita crashes si stats es null)
+  const safeStats = stats || {
+    proyectos_realizados: 0,
+    reduccion_promedio_recibos: 0,
+    energia_producida_anual: 0,
+    estados_cobertura: 0,
+  };
+
   return (
     <section id="stats" className="relative overflow-hidden bg-white min-h-screen flex items-center py-8 sm:py-12 md:py-16 lg:py-20">
       {/* Decorative background circle */}
       <div className="absolute left-1/4 sm:left-1/3 lg:left-1/4 top-2 sm:top-4 -translate-x-1/2 -translate-y-1/4 w-[250px] sm:w-[350px] md:w-[400px] lg:w-[450px] h-[250px] sm:h-[350px] md:h-[400px] lg:h-[450px] bg-gray-100 rounded-full opacity-40 sm:opacity-50" />
-      
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-6xl mx-auto">
           {/* Fila Superior */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 mb-8 sm:mb-10 md:mb-12">
-            {/* 1+ */}
+            {/* Proyectos realizados - DINÁMICO */}
             <Reveal className="text-center sm:text-left">
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">1+</div>
+              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">
+                {isLoading ? '...' : `${safeStats.proyectos_realizados}+`}
+              </div>
               <div className="text-xs sm:text-xs font-bold text-gray-600 uppercase tracking-wide leading-tight">
                 PROYECTOS SOLARES REALIZADOS
               </div>
             </Reveal>
 
-            {/* 85% */}
+            {/* Reducción promedio - DINÁMICO */}
             <Reveal delay={0.1} className="text-center sm:text-left">
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">85%</div>
+              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">
+                {isLoading ? '...' : `${Math.round(safeStats.reduccion_promedio_recibos)}%`}
+              </div>
               <div className="text-xs sm:text-xs font-bold text-gray-600 uppercase tracking-wide leading-tight">
                 REDUCCIÓN PROMEDIO EN RECIBOS
               </div>
@@ -36,8 +57,8 @@ export default function Stats() {
               <p className="text-gray-600 leading-relaxed mb-4 sm:mb-6 text-base sm:text-lg xl:text-xl max-w-xs sm:max-w-sm mx-auto sm:mx-0">
                 Estos son los valores que impulsan nuestro avance tecnológico, conectando energía, innovación y confianza en una sola plataforma.
               </p>
-              <a 
-                href="#partners" 
+              <a
+                href="#partners"
                 className="inline-flex items-center text-orange-500 font-semibold hover:text-orange-600 transition-colors text-base sm:text-lg xl:text-xl"
               >
                 Leer más
@@ -48,17 +69,21 @@ export default function Stats() {
 
           {/* Fila Inferior */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
-            {/* 311,334 kWh */}
+            {/* Energía producida - DINÁMICO */}
             <Reveal delay={0.3} className="text-center sm:text-left">
-              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">311,334 kWh</div>
+              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">
+                {isLoading ? '...' : formatEnergy(safeStats.energia_producida_anual)}
+              </div>
               <div className="text-xs sm:text-xs font-bold text-gray-600 uppercase tracking-wide leading-tight">
                 ENERGÍA PRODUCIDA AL AÑO
               </div>
             </Reveal>
 
-            {/* 2+ */}
+            {/* Estados con cobertura - DINÁMICO */}
             <Reveal delay={0.4} className="text-center sm:text-left">
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">2+</div>
+              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">
+                {isLoading ? '...' : `${safeStats.estados_cobertura}+`}
+              </div>
               <div className="text-xs sm:text-xs font-bold text-gray-600 uppercase tracking-wide leading-tight">
                 ESTADOS CON COBERTURA NACIONAL
               </div>
