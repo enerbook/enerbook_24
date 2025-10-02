@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiGrid, FiPieChart, FiFileText, FiSun, FiUser, FiLogOut, FiFolder } from 'react-icons/fi';
+import { FiUser, FiLogOut, FiFolder, FiSettings } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
 
@@ -52,15 +52,9 @@ const ClientSidebar = ({ activeTab, setActiveTab, onClose }) => {
   };
 
   const sidebarItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: FiGrid },
-    { id: 'consumo', label: 'Consumo', icon: FiPieChart },
-    { id: 'irradiacion', label: 'Irradiación', icon: FiSun },
-    { id: 'detalles', label: 'Detalles', icon: FiFileText },
     { id: 'proyectos', label: 'Proyectos', icon: FiFolder },
-  ];
-
-  const accountItems = [
     { id: 'perfil', label: 'Perfil', icon: FiUser },
+    { id: 'configuracion', label: 'Configuración', icon: FiSettings },
     { id: 'cerrar-sesion', label: 'Cerrar Sesión', icon: FiLogOut, action: handleLogout },
   ];
 
@@ -73,23 +67,10 @@ const ClientSidebar = ({ activeTab, setActiveTab, onClose }) => {
       </div>
 
       <nav className="flex-1 px-2 -mt-6 overflow-y-auto">
-        {/* Main Navigation */}
         <div className="space-y-1">
           {sidebarItems.map((item) => (
             <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} onClose={onClose} />
           ))}
-        </div>
-
-        {/* Account Navigation */}
-        <div className="mt-8">
-          <h3 className="text-sm font-semibold text-gray-400 mb-1 px-2">
-            Cuenta
-          </h3>
-          <div className="space-y-1">
-            {accountItems.map((item) => (
-              <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} onClose={onClose} />
-            ))}
-          </div>
         </div>
       </nav>
     </div>

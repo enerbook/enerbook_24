@@ -63,6 +63,7 @@ export default function Login({ onNavigate }) {
                 placeholder="Tu correo"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
                 required
+                autoComplete="email"
                 value={email} // Conectado al estado
                 onChange={(e) => setEmail(e.target.value)} // Conectado al estado
               />
@@ -78,6 +79,7 @@ export default function Login({ onNavigate }) {
                 placeholder="Tu contraseña"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
                 required
+                autoComplete="current-password"
                 value={password} // Conectado al estado
                 onChange={(e) => setPassword(e.target.value)} // Conectado al estado
               />
