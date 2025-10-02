@@ -1,11 +1,15 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import logger, { createServiceLogger } from '../utils/logger';
 
 // Security: Direct imports from each feature (Principle of Least Privilege)
 // Each role's services are isolated and explicitly imported
 import { authService as clienteAuthService } from '../cliente/services/authService';
 import { clientService } from '../cliente/services/clientService';
 import { leadService } from '../lead/services/leadService';
+
+// Create service-specific logger
+const authLogger = createServiceLogger('AuthContext');
 
 // Unified auth service wrapper for common operations
 // Note: Cliente and Instalador auth services are functionally identical (both use Supabase)
@@ -106,7 +110,7 @@ export const AuthProvider = ({ children }) => {
     try {
       return await userService.getUserRole(userId);
     } catch (error) {
-      console.error('Error in fetchUserRole:', error);
+      authLogger.error('Error fetching user role', { userId, error: error.message });
       return null;
     }
   };
@@ -128,9 +132,13 @@ export const AuthProvider = ({ children }) => {
         throw new Error('No se encontraron datos para este lead');
       }
 
+      authLogger.debug('Lead data loaded successfully', { leadId: requestedLeadId });
       return data;
     } catch (error) {
-      console.error('Error al cargar datos del lead:', error);
+      authLogger.error('Error loading lead data', {
+        leadId: requestedLeadId,
+        error: error.message
+      });
 
       // Re-throw error para que sea manejado por el componente
       // No retornamos datos falsos que puedan confundir al usuario
@@ -154,9 +162,13 @@ export const AuthProvider = ({ children }) => {
       setLeadData(data);
       setLoading(false);
 
+      authLogger.success('Lead mode activated', { leadId: newTempLeadId });
       return { success: true, data };
     } catch (error) {
-      console.error('Error al activar modo lead:', error);
+      authLogger.error('Error activating lead mode', {
+        leadId: newTempLeadId,
+        error: error.message
+      });
 
       // Limpiar estado en caso de error
       setTempLeadId(null);
@@ -177,9 +189,10 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const data = await clientService.getClientWithQuote(userId);
+      authLogger.debug('Client data loaded', { userId });
       return data;
     } catch (error) {
-      console.error('Error in fetchClientData:', error);
+      authLogger.error('Error fetching client data', { userId, error: error.message });
       return null;
     }
   }, []);
@@ -255,6 +268,7 @@ export const AuthProvider = ({ children }) => {
 
       // Si el signup fue exitoso pero necesita confirmación de email
       if (data.user && !data.session) {
+        authLogger.info('Client signup requires email confirmation', { userId: data.user.id });
         return {
           data,
           error: null,
@@ -269,11 +283,12 @@ export const AuthProvider = ({ children }) => {
           correo_electronico: email,
           telefono: metadata.phone || ''
         });
+        authLogger.success('Client signup successful', { userId: data.user.id });
       }
 
       return { data, error: null };
     } catch (error) {
-      console.error('Error in clientSignup:', error);
+      authLogger.error('Error in client signup', { email, error: error.message });
       return { error };
     }
   };
@@ -311,10 +326,11 @@ export const AuthProvider = ({ children }) => {
       setClientData(clientDataResult);
       setUserType('cliente');
 
+      authLogger.success('Lead migrated to client successfully', { userId: signupResult.data.user.id });
       return { ...signupResult, migrated: true };
 
     } catch (error) {
-      console.error('Error in migrateLeadToClient:', error);
+      authLogger.error('Error migrating lead to client', { error: error.message });
       setLoading(false);
       throw error;
     }
@@ -358,7 +374,7 @@ export const AuthProvider = ({ children }) => {
         }
       }
     } catch (error) {
-      console.error('Error during logout:', error);
+      authLogger.error('Error during logout', { userType: currentType, error: error.message });
     }
   };
 

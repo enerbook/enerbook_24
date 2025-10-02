@@ -1,17 +1,50 @@
 import { supabase } from '../../lib/supabaseClient';
 import { clienteProjectService } from './api/clienteProjectService';
+import {
+  sanitizeForLogging,
+  sanitizeString,
+  isValidEmail,
+  isValidMexicanPhone
+} from '../../utils/security';
 
 /**
  * Client Service
  * Handles all client-related API calls (usuarios table)
+ * Security: Uses explicit column selection instead of SELECT *
  */
+
+// Define columnas permitidas para usuarios
+const USUARIO_COLUMNS = `
+  id,
+  created_at,
+  updated_at,
+  nombre,
+  correo_electronico,
+  telefono,
+  fecha_nacimiento,
+  rfc,
+  genero
+`;
+
+// Define columnas permitidas para cotizaciones_inicial
+const COTIZACION_INICIAL_COLUMNS = `
+  id,
+  created_at,
+  updated_at,
+  usuarios_id,
+  recibo_cfe,
+  consumo_kwh_historico,
+  resumen_energetico,
+  sizing_results,
+  irradiacion_cache_id
+`;
 
 export const clientService = {
   // Get client by user ID
   getClientByUserId: async (userId) => {
     const { data, error } = await supabase
       .from('usuarios')
-      .select('*')
+      .select(USUARIO_COLUMNS)
       .eq('id', userId)
       .single();
 
@@ -23,26 +56,32 @@ export const clientService = {
   // Note: cotizaciones_inicial contains the CFE receipt analysis (consumo_kwh_historico, sizing_results, etc.)
   // This is different from 'proyectos' table which is for managing quote requests to installers
   getClientWithQuote: async (userId) => {
-    console.log('🔍 clientService.getClientWithQuote - userId:', userId);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🔍 clientService.getClientWithQuote - userId:', userId);
+    }
 
     // Get user data
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
-      .select('*')
+      .select(USUARIO_COLUMNS)
       .eq('id', userId)
       .single();
 
     if (userError) {
-      console.error('❌ Error fetching user data:', userError);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('❌ Error fetching user data:', sanitizeForLogging(userError));
+      }
       throw userError;
     }
-    console.log('✅ User data fetched:', { userId: userData?.id, nombre: userData?.nombre });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('✅ User data fetched:', { userId: userData?.id, nombre: userData?.nombre });
+    }
 
     // Get initial quote/analysis with irradiation data
     const { data: cotizacionData, error: cotizacionError } = await supabase
       .from('cotizaciones_inicial')
       .select(`
-        *,
+        ${COTIZACION_INICIAL_COLUMNS},
         irradiacion_cache:irradiacion_cache_id (
           irradiacion_promedio_anual,
           irradiacion_promedio_min,
@@ -56,14 +95,18 @@ export const clientService = {
       .single();
 
     if (cotizacionError) {
-      console.warn('⚠️ No cotizacion_inicial found:', cotizacionError.message, cotizacionError.code);
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('⚠️ No cotizacion_inicial found:', cotizacionError.message, cotizacionError.code);
+      }
     } else {
-      console.log('✅ Cotizacion inicial found:', {
-        id: cotizacionData?.id,
-        hasConsumo: !!cotizacionData?.consumo_kwh_historico,
-        hasSizing: !!cotizacionData?.sizing_results,
-        hasRecibo: !!cotizacionData?.recibo_cfe
-      });
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('✅ Cotizacion inicial found:', {
+          id: cotizacionData?.id,
+          hasConsumo: !!cotizacionData?.consumo_kwh_historico,
+          hasSizing: !!cotizacionData?.sizing_results,
+          hasRecibo: !!cotizacionData?.recibo_cfe
+        });
+      }
     }
 
     // Return user data even if no quote exists
@@ -72,25 +115,67 @@ export const clientService = {
       cotizacion: cotizacionError ? null : cotizacionData
     };
 
-    console.log('📤 clientService returning:', {
-      hasUser: !!result.user,
-      hasCotizacion: !!result.cotizacion
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('📤 clientService returning:', {
+        hasUser: !!result.user,
+        hasCotizacion: !!result.cotizacion
+      });
+    }
 
     return result;
   },
 
   // Create or update client profile
   upsertClient: async (userId, clientData) => {
+    // Security: Validar y sanitizar inputs
+    const sanitizedData = {};
+
+    if (clientData.nombre) {
+      sanitizedData.nombre = sanitizeString(clientData.nombre).substring(0, 255);
+    }
+
+    if (clientData.correo_electronico) {
+      if (!isValidEmail(clientData.correo_electronico)) {
+        throw new Error('Correo electrónico inválido');
+      }
+      sanitizedData.correo_electronico = clientData.correo_electronico.toLowerCase().trim();
+    }
+
+    if (clientData.telefono) {
+      if (!isValidMexicanPhone(clientData.telefono)) {
+        throw new Error('Teléfono inválido. Debe ser un número mexicano de 10 dígitos');
+      }
+      sanitizedData.telefono = clientData.telefono.replace(/[\s\-()]/g, '');
+    }
+
+    if (clientData.rfc) {
+      sanitizedData.rfc = sanitizeString(clientData.rfc).toUpperCase().substring(0, 13);
+    }
+
+    if (clientData.genero) {
+      const generosValidos = ['masculino', 'femenino', 'otro', 'prefiero_no_decir'];
+      if (generosValidos.includes(clientData.genero)) {
+        sanitizedData.genero = clientData.genero;
+      }
+    }
+
+    if (clientData.fecha_nacimiento) {
+      const fecha = new Date(clientData.fecha_nacimiento);
+      if (isNaN(fecha.getTime()) || fecha > new Date()) {
+        throw new Error('Fecha de nacimiento inválida');
+      }
+      sanitizedData.fecha_nacimiento = clientData.fecha_nacimiento;
+    }
+
     const { data, error } = await supabase
       .from('usuarios')
       .upsert({
         id: userId,
-        ...clientData
+        ...sanitizedData
       }, {
         onConflict: 'id'
       })
-      .select()
+      .select(USUARIO_COLUMNS)
       .single();
 
     if (error) throw error;
@@ -99,11 +184,54 @@ export const clientService = {
 
   // Update client profile
   updateClient: async (userId, updates) => {
+    // Security: Validar y sanitizar inputs (reutilizar lógica de upsertClient)
+    const sanitizedData = {};
+
+    if (updates.nombre !== undefined) {
+      sanitizedData.nombre = sanitizeString(updates.nombre).substring(0, 255);
+    }
+
+    if (updates.correo_electronico !== undefined) {
+      if (!isValidEmail(updates.correo_electronico)) {
+        throw new Error('Correo electrónico inválido');
+      }
+      sanitizedData.correo_electronico = updates.correo_electronico.toLowerCase().trim();
+    }
+
+    if (updates.telefono !== undefined) {
+      if (updates.telefono && !isValidMexicanPhone(updates.telefono)) {
+        throw new Error('Teléfono inválido. Debe ser un número mexicano de 10 dígitos');
+      }
+      sanitizedData.telefono = updates.telefono ? updates.telefono.replace(/[\s\-()]/g, '') : null;
+    }
+
+    if (updates.rfc !== undefined) {
+      sanitizedData.rfc = updates.rfc ? sanitizeString(updates.rfc).toUpperCase().substring(0, 13) : null;
+    }
+
+    if (updates.genero !== undefined) {
+      const generosValidos = ['masculino', 'femenino', 'otro', 'prefiero_no_decir'];
+      if (updates.genero && !generosValidos.includes(updates.genero)) {
+        throw new Error('Género inválido');
+      }
+      sanitizedData.genero = updates.genero;
+    }
+
+    if (updates.fecha_nacimiento !== undefined) {
+      if (updates.fecha_nacimiento) {
+        const fecha = new Date(updates.fecha_nacimiento);
+        if (isNaN(fecha.getTime()) || fecha > new Date()) {
+          throw new Error('Fecha de nacimiento inválida');
+        }
+      }
+      sanitizedData.fecha_nacimiento = updates.fecha_nacimiento;
+    }
+
     const { data, error } = await supabase
       .from('usuarios')
-      .update(updates)
+      .update(sanitizedData)
       .eq('id', userId)
-      .select()
+      .select(USUARIO_COLUMNS)
       .single();
 
     if (error) throw error;
@@ -114,7 +242,7 @@ export const clientService = {
   getInitialQuote: async (userId) => {
     const { data, error } = await supabase
       .from('cotizaciones_inicial')
-      .select('*')
+      .select(COTIZACION_INICIAL_COLUMNS)
       .eq('usuarios_id', userId)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -129,7 +257,7 @@ export const clientService = {
     const { data, error } = await supabase
       .from('cotizaciones_inicial')
       .insert([quoteData])
-      .select()
+      .select(COTIZACION_INICIAL_COLUMNS)
       .single();
 
     if (error) throw error;
@@ -142,7 +270,7 @@ export const clientService = {
       .from('cotizaciones_inicial')
       .update(updates)
       .eq('id', quoteId)
-      .select()
+      .select(COTIZACION_INICIAL_COLUMNS)
       .single();
 
     if (error) throw error;
@@ -161,7 +289,7 @@ export const clientService = {
         sizing_results: leadData.sizing_results,
         irradiacion_cache_id: leadData.irradiacion_cache_id
       })
-      .select()
+      .select(COTIZACION_INICIAL_COLUMNS)
       .single();
 
     if (error) throw error;
