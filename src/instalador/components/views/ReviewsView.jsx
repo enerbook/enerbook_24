@@ -1,86 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import ReviewCard from '../cards/ReviewCard';
-import { authService } from '../../services/authService';
-import { installerService } from '../../services/installerService';
+import { useInstaller } from '../../context/InstallerContext';
+import { SkeletonGrid } from '../common/SkeletonLoader';
 
 const ReviewsView = () => {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Usar context en lugar de estado local
+  const { reviews: rawReviews, reviewsLoading } = useInstaller();
 
-  useEffect(() => {
-    loadMyReviews();
-  }, []);
+  // Formatear reseñas
+  const reviews = useMemo(() => {
+    if (!rawReviews || rawReviews.length === 0) return [];
 
-  const loadMyReviews = async () => {
-    setLoading(true);
-    try {
-      // Get current user's provider ID
-      const user = await authService.getCurrentUser();
-      if (!user) {
-        console.error('No authenticated user');
-        setLoading(false);
-        return;
-      }
+    return rawReviews.map((resena, index) => {
+      const contrato = resena.contrato;
+      const usuario = contrato?.usuarios;
+      const proyecto = contrato?.cotizaciones_final?.proyectos;
 
-      // Find provider by auth user ID
-      const proveedor = await installerService.getInstallerByUserId(user.id);
-      if (!proveedor) {
-        console.error('No provider found for user');
-        setLoading(false);
-        return;
-      }
-
-      // Get reviews for this installer using installerService
-      const resenas = await installerService.getInstallerReviews(proveedor.id);
-
-      if (!resenas || resenas.length === 0) {
-        setReviews([]);
-        setLoading(false);
-        return;
-      }
-
-      const formattedReviews = resenas?.map((resena, index) => {
-        const contrato = resena.contrato;
-        const usuario = contrato?.usuarios;
-        const proyecto = contrato?.cotizaciones_final?.proyectos;
-
-        return {
-          id: resena.id,
-          title: `Reseña ${index + 1}`,
-          projectName: proyecto?.titulo || proyecto?.descripcion || `Proyecto ${contrato?.numero_contrato?.slice(0, 8)}`,
-          clientName: usuario?.nombre || 'Cliente no especificado',
-          totalAmount: contrato?.precio_total_sistema ?
-            `$${contrato.precio_total_sistema.toLocaleString()} MXN` :
-            'Monto no disponible',
-          completionDate: contrato?.fecha_completado ?
-            new Date(contrato.fecha_completado).toLocaleDateString('es-MX') :
-            'Fecha no disponible',
-          comment: resena.comentario || 'Sin comentario',
-          rating: resena.puntuacion || 0,
-          qualityRating: resena.puntuacion_calidad,
-          timeRating: resena.puntuacion_tiempo,
-          communicationRating: resena.puntuacion_comunicacion,
-          wouldRecommend: resena.recomendaria,
-          photos: resena.fotos_instalacion,
-          rawData: resena
-        };
-      }) || [];
-
-      setReviews(formattedReviews);
-    } catch (error) {
-      console.error('Error loading reviews:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return {
+        id: resena.id,
+        title: `Reseña ${index + 1}`,
+        projectName: proyecto?.titulo || proyecto?.descripcion || `Proyecto ${contrato?.numero_contrato?.slice(0, 8)}`,
+        clientName: usuario?.nombre || 'Cliente no especificado',
+        totalAmount: contrato?.precio_total_sistema
+          ? `$${contrato.precio_total_sistema.toLocaleString()} MXN`
+          : 'Monto no disponible',
+        completionDate: contrato?.fecha_completado
+          ? new Date(contrato.fecha_completado).toLocaleDateString('es-MX')
+          : 'Fecha no disponible',
+        comment: resena.comentario || 'Sin comentario',
+        rating: resena.puntuacion || 0,
+        qualityRating: resena.puntuacion_calidad,
+        timeRating: resena.puntuacion_tiempo,
+        communicationRating: resena.puntuacion_comunicacion,
+        wouldRecommend: resena.recomendaria,
+        photos: resena.fotos_instalacion,
+        rawData: resena
+      };
+    });
+  }, [rawReviews]);
 
   return (
     <div className="w-full mx-auto">
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
-          <p className="text-sm text-gray-600 ml-4">Cargando reseñas...</p>
-        </div>
+      {reviewsLoading ? (
+        <SkeletonGrid type="review" count={4} columns={2} />
       ) : reviews.length === 0 ? (
         <div className="text-center py-12">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">

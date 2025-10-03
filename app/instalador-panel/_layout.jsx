@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
 import InstallerAppLayout from '../../src/instalador/components/layout/InstallerAppLayout';
+import { InstallerProvider } from '../../src/instalador/context/InstallerContext';
 
 const InstaladorPanelLayout = () => {
   const { user, userType, loading } = useAuth();
@@ -47,9 +48,11 @@ const InstaladorPanelLayout = () => {
   }
 
   return (
-    <InstallerAppLayout activeTab={activeTab}>
-      <Stack screenOptions={{ headerShown: false }} />
-    </InstallerAppLayout>
+    <InstallerProvider>
+      <InstallerAppLayout activeTab={activeTab}>
+        <Stack screenOptions={{ headerShown: false }} />
+      </InstallerAppLayout>
+    </InstallerProvider>
   );
 };
 

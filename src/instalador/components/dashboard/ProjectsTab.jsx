@@ -1,106 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
+import React, { useState, useMemo } from 'react';
 import QuotationsView from '../views/QuotationsView';
 import ContractsView from '../views/ContractsView';
 import ReviewsView from '../views/ReviewsView';
+import { useInstaller } from '../../context/InstallerContext';
+import { formatProjectData } from '../../utils/dataFormatters';
+import { SkeletonGrid } from '../common/SkeletonLoader';
+import SearchAndFilters from '../common/SearchAndFilters';
+import usePersistedFilters from '../../hooks/usePersistedFilters';
 
 const ProjectsTab = ({ setSelectedProject, setShowProjectModal, setShowQuoteModal }) => {
   const [activeSubTab, setActiveSubTab] = useState('disponibles');
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAvailableProjects();
-  }, []);
+  // Usar filtros persistidos
+  const { filters, updateFilters, clearFilters } = usePersistedFilters('projects');
 
-  const loadAvailableProjects = async () => {
-    setLoading(true);
-    try {
-      const { data: proyectos, error } = await supabase
-        .from('proyectos')
-        .select(`
-          *,
-          usuarios:usuarios_id (nombre, correo_electronico),
-          cotizaciones_inicial:cotizaciones_inicial_id (
-            recibo_cfe,
-            consumo_kwh_historico,
-            resumen_energetico,
-            sizing_results,
-            irradiacion_cache:irradiacion_cache_id (
-              irradiacion_promedio_anual,
-              region_nombre
-            )
-          )
-        `)
-        .eq('estado', 'abierto')
-        .order('created_at', { ascending: false });
+  // Usar context en lugar de estado local
+  const { availableProjects: rawProjects, projectsLoading, projectsError } = useInstaller();
 
-      if (error) {
-        console.error('Error loading projects:', error);
-        return;
+  // Formatear proyectos usando utilidad compartida
+  const projects = useMemo(() => {
+    return rawProjects?.map(formatProjectData) || [];
+  }, [rawProjects]);
+
+  // Aplicar filtros y búsqueda
+  const filteredProjects = useMemo(() => {
+    let result = [...projects];
+
+    // Búsqueda por texto
+    if (filters.searchText) {
+      const searchLower = filters.searchText.toLowerCase();
+      result = result.filter(p =>
+        p.name?.toLowerCase().includes(searchLower) ||
+        p.clientName?.toLowerCase().includes(searchLower) ||
+        p.location?.toLowerCase().includes(searchLower) ||
+        p.tariff?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Ordenamiento
+    result.sort((a, b) => {
+      let comparison = 0;
+
+      if (filters.sortBy === 'date') {
+        comparison = new Date(b.deadline) - new Date(a.deadline);
+      } else if (filters.sortBy === 'power') {
+        const powerA = parseFloat(a.power.replace(/[^0-9.-]+/g, '')) || 0;
+        const powerB = parseFloat(b.power.replace(/[^0-9.-]+/g, '')) || 0;
+        comparison = powerB - powerA;
       }
 
-      const formattedProjects = proyectos?.map(proyecto => {
-        const cotizacion = proyecto.cotizaciones_inicial;
-        const sizingResults = cotizacion?.sizing_results;
-        const reciboData = cotizacion?.recibo_cfe;
-        const consumoHistorico = cotizacion?.consumo_kwh_historico;
-        const resumenEnergetico = cotizacion?.resumen_energetico;
-        const irradiacionData = cotizacion?.irradiacion_cache;
+      return filters.sortOrder === 'asc' ? -comparison : comparison;
+    });
 
-
-        // Calcular datos de consumo
-        let consumoAnual = 'No disponible';
-        if (consumoHistorico && Array.isArray(consumoHistorico) && consumoHistorico.length > 0) {
-          const totalConsumo = consumoHistorico.reduce((sum, item) => sum + (item.consumo || item.kwh || 0), 0);
-          consumoAnual = `${totalConsumo.toLocaleString()} kWh`;
-        } else if (resumenEnergetico?.consumo_promedio) {
-          consumoAnual = `${(resumenEnergetico.consumo_promedio * 12).toLocaleString()} kWh`;
-        }
-
-        // Datos de potencia y dimensionamiento
-        let powerInfo = 'Información no disponible';
-        if (sizingResults?.kWp_needed) {
-          const paneles = sizingResults.n_panels || Math.ceil((sizingResults.kWp_needed * 1000) / (sizingResults.panel_wp || 550));
-          powerInfo = `${sizingResults.kWp_needed} kW (${paneles} paneles)`;
-        }
-
-        return {
-          id: proyecto.id,
-          name: proyecto.titulo || `Proyecto ${proyecto.id.slice(0, 8)}`,
-          power: powerInfo,
-          consumption: consumoAnual,
-          tariff: reciboData?.tarifa || 'No especificada',
-          location: reciboData?.codigo_postal || 'No especificado',
-          irradiation: irradiacionData?.irradiacion_promedio_anual ?
-            `${irradiacionData.irradiacion_promedio_anual.toFixed(1)} kWh/m²/día` :
-            '5.2 kWh/m²/día',
-          deadline: proyecto.fecha_limite ?
-            new Date(proyecto.fecha_limite).toLocaleDateString('es-MX', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
-            }) :
-            'Sin fecha límite',
-          capacity: sizingResults?.kWp_needed ? `${sizingResults.kWp_needed} kWp` : 'N/A',
-          production: sizingResults?.yearly_prod ?
-            `${sizingResults.yearly_prod.toLocaleString()} kWh/año` :
-            'No calculada',
-          description: proyecto.descripcion || 'Sin descripción',
-          clientName: proyecto.usuarios?.nombre || reciboData?.nombre || 'Cliente no especificado',
-          clientEmail: proyecto.usuarios?.correo_electronico,
-          region: irradiacionData?.region_nombre || 'México',
-          rawData: proyecto
-        };
-      }) || [];
-
-      setProjects(formattedProjects);
-    } catch (error) {
-      console.error('Error loading projects:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    return result;
+  }, [projects, filters]);
 
   return (
     <div className="w-full mx-auto">
@@ -155,10 +108,31 @@ const ProjectsTab = ({ setSelectedProject, setShowProjectModal, setShowQuoteModa
       {/* Content based on active subtab */}
       {activeSubTab === 'disponibles' && (
         <div>
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
-              <p className="text-sm text-gray-600 ml-4">Cargando proyectos disponibles...</p>
+          {!projectsLoading && !projectsError && projects.length > 0 && (
+            <SearchAndFilters
+              filters={filters}
+              onFiltersChange={updateFilters}
+              onClearFilters={clearFilters}
+              statusOptions={[]}
+              sortOptions={[
+                { value: 'date', label: 'Fecha límite' },
+                { value: 'power', label: 'Potencia' },
+              ]}
+              showStatusFilter={false}
+            />
+          )}
+
+          {projectsLoading ? (
+            <SkeletonGrid type="project" count={6} columns={3} />
+          ) : projectsError ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar proyectos</h3>
+              <p className="text-sm text-gray-600">{projectsError}</p>
             </div>
           ) : projects.length === 0 ? (
             <div className="text-center py-12">
@@ -170,9 +144,25 @@ const ProjectsTab = ({ setSelectedProject, setShowProjectModal, setShowQuoteModa
               <h3 className="text-lg font-medium text-gray-900 mb-2">No hay proyectos disponibles</h3>
               <p className="text-sm text-gray-600">No se encontraron proyectos abiertos para cotizar en este momento.</p>
             </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+              <p className="text-sm text-gray-600">No hay proyectos que coincidan con la búsqueda.</p>
+              <button
+                onClick={clearFilters}
+                className="mt-4 px-4 py-2 rounded-lg text-sm text-orange-600 hover:bg-orange-50 transition-colors"
+              >
+                Limpiar búsqueda
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <div key={project.id} className="p-8 rounded-2xl border border-gray-100" style={{backgroundColor: '#fcfcfc'}}>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{project.name}</h3>
                   <p className="text-sm text-gray-600 mb-2">Cliente: {project.clientName}</p>

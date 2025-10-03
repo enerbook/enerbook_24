@@ -23,19 +23,19 @@ export const useAdminMetrics = (metricType, refreshInterval = null) => {
           result = await adminQueries.getUserMetrics(user.id);
           break;
         case 'projects':
-          result = await adminQueries.getProjectMetrics();
+          result = await adminQueries.getProyectosAnalysis();
           break;
         case 'finance':
-          result = await adminQueries.getFinanceMetrics();
+          result = await adminQueries.getFinanceAnalysis();
           break;
         case 'providers':
-          result = await adminQueries.getProviderMetrics();
+          result = await adminQueries.getProveedoresConProyectos();
           break;
         case 'regional':
           result = await adminQueries.getRegionalAnalysis();
           break;
         case 'alerts':
-          result = await adminQueries.getSystemAlerts();
+          result = await adminQueries.getAlertas();
           break;
         case 'trends':
           result = await adminQueries.getTrends();

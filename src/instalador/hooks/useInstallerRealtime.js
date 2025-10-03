@@ -75,28 +75,41 @@ export const useInstallerProjects = () => {
 
 /**
  * Hook para alertas de instalador (milestones vencidos)
+ * OPTIMIZADO: Usa suscripciones realtime en lugar de polling
  */
 export const useInstallerAlerts = () => {
   const { user } = useAuth();
   const [alerts, setAlerts] = useState([]);
   const [newAlertCount, setNewAlertCount] = useState(0);
+  const [projectIds, setProjectIds] = useState([]);
 
+  // Cargar IDs de proyectos del instalador
   useEffect(() => {
     if (!user?.id) return;
 
-    const checkAlerts = async () => {
+    const loadProjectIds = async () => {
       try {
-        // Obtener proyectos del instalador
         const { data: projects } = await supabase
           .from('proyectos')
           .select('id')
           .eq('instalador_id', user.id);
 
-        if (!projects?.length) return;
+        setProjectIds(projects?.map(p => p.id) || []);
+      } catch (error) {
+        console.error('Error loading project IDs:', error);
+      }
+    };
 
-        const projectIds = projects.map(p => p.id);
+    loadProjectIds();
+  }, [user?.id]);
 
-        // Check milestones vencidos
+  // Cargar alertas iniciales y suscribirse a cambios
+  useEffect(() => {
+    if (!user?.id || !projectIds.length) return;
+
+    const loadAlerts = async () => {
+      try {
+        // Cargar milestones vencidos
         const { data: milestones } = await supabase
           .from('pagos_milestones')
           .select('*, proyecto:proyectos(*)')
@@ -104,18 +117,14 @@ export const useInstallerAlerts = () => {
           .eq('estado', 'pendiente')
           .lt('fecha_objetivo', new Date().toISOString());
 
-        const allAlerts = [];
-
-        milestones?.forEach(m => {
-          allAlerts.push({
-            id: `milestone-${m.id}`,
-            type: 'milestone',
-            severity: 'high',
-            message: `Milestone vencido: ${m.descripcion}`,
-            projectName: m.proyecto?.nombre,
-            timestamp: m.fecha_objetivo
-          });
-        });
+        const allAlerts = milestones?.map(m => ({
+          id: `milestone-${m.id}`,
+          type: 'milestone',
+          severity: 'high',
+          message: `Milestone vencido: ${m.descripcion}`,
+          projectName: m.proyecto?.nombre,
+          timestamp: m.fecha_objetivo
+        })) || [];
 
         const previousCount = alerts.length;
         setAlerts(allAlerts);
@@ -124,15 +133,34 @@ export const useInstallerAlerts = () => {
           setNewAlertCount(allAlerts.length - previousCount);
         }
       } catch (error) {
-        console.error('Error checking installer alerts:', error);
+        console.error('Error loading alerts:', error);
       }
     };
 
-    checkAlerts();
-    const interval = setInterval(checkAlerts, 60000); // Check every minute
+    loadAlerts();
 
-    return () => clearInterval(interval);
-  }, [user?.id, alerts.length]);
+    // Suscripción realtime a cambios en milestones
+    const channel = supabase
+      .channel('installer_milestones_alerts')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pagos_milestones'
+        },
+        (payload) => {
+          console.log('Milestone update:', payload);
+          // Recargar alertas cuando hay cambios
+          loadAlerts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, projectIds, alerts.length]);
 
   const clearNewAlertCount = useCallback(() => {
     setNewAlertCount(0);

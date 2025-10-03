@@ -1,23 +1,23 @@
 import React from 'react';
-import { FiLogOut } from 'react-icons/fi';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../../context/AuthContext';
+import logger from '../../utils/logger';
 
 const AdminHeader = ({ adminTabs, activeTab }) => {
   const { logout } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
-    console.log('Admin header logout button clicked');
+    logger.info('Admin logout initiated');
     try {
       await logout(router);
     } catch (error) {
-      console.error('Error during admin logout:', error);
+      logger.error('Error during admin logout:', error);
     }
   };
 
   const handleTabClick = (tabId) => {
-    // Navegación por URL
     const route = tabId === 'resumen' ? '/admin-panel' : `/admin-panel/${tabId}`;
     router.push(route);
   };
@@ -41,10 +41,7 @@ const AdminHeader = ({ adminTabs, activeTab }) => {
           className="flex items-center px-2 py-1.5 text-left rounded-md transition-colors text-gray-400 hover:bg-white hover:text-gray-700"
         >
           <div className="w-5 h-5 rounded-md flex items-center justify-center mr-2 bg-transparent">
-            <FiLogOut
-              className="w-2.5 h-2.5"
-              style={{ color: '#F59E0B' }}
-            />
+            <Ionicons name="log-out-outline" size={16} color="#F59E0B" />
           </div>
           <span className="text-sm font-medium">Cerrar Sesión</span>
         </button>

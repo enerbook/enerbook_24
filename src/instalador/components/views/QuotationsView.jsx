@@ -1,106 +1,63 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import QuotationCard from '../cards/QuotationCard';
 import QuotationDetailsModal from '../modals/QuotationDetailsModal';
-import { authService } from '../../services/authService';
-import { installerService } from '../../services/installerService';
-import { quotationService } from '../../services/quotationService';
+import { useInstaller } from '../../context/InstallerContext';
+import { formatQuotationData } from '../../utils/dataFormatters';
+import { SkeletonGrid } from '../common/SkeletonLoader';
+import SearchAndFilters from '../common/SearchAndFilters';
+import usePersistedFilters from '../../hooks/usePersistedFilters';
 
 const QuotationsView = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
-  const [quotations, setQuotations] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadMyQuotations();
-  }, []);
+  // Usar filtros persistidos
+  const { filters, updateFilters, clearFilters } = usePersistedFilters('quotations');
 
-  const loadMyQuotations = async () => {
-    setLoading(true);
-    try {
-      // Get current user's provider ID
-      const user = await authService.getCurrentUser();
-      if (!user) {
-        console.error('No authenticated user');
-        return;
+  // Usar context en lugar de estado local
+  const { quotations: rawQuotations, quotationsLoading, quotationsError } = useInstaller();
+
+  // Formatear cotizaciones usando utilidad compartida
+  const quotations = useMemo(() => {
+    return rawQuotations?.map(formatQuotationData) || [];
+  }, [rawQuotations]);
+
+  // Aplicar filtros y búsqueda
+  const filteredQuotations = useMemo(() => {
+    let result = [...quotations];
+
+    // Búsqueda por texto
+    if (filters.searchText) {
+      const searchLower = filters.searchText.toLowerCase();
+      result = result.filter(q =>
+        q.projectName?.toLowerCase().includes(searchLower) ||
+        q.quotationNumber?.toLowerCase().includes(searchLower) ||
+        q.clientName?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Filtro por estado
+    if (filters.status !== 'all') {
+      result = result.filter(q => q.status === filters.status);
+    }
+
+    // Ordenamiento
+    result.sort((a, b) => {
+      let comparison = 0;
+
+      if (filters.sortBy === 'date') {
+        comparison = new Date(b.submittedDate) - new Date(a.submittedDate);
+      } else if (filters.sortBy === 'amount') {
+        const amountA = parseFloat(a.totalAmount.replace(/[^0-9.-]+/g, '')) || 0;
+        const amountB = parseFloat(b.totalAmount.replace(/[^0-9.-]+/g, '')) || 0;
+        comparison = amountB - amountA;
       }
 
-      // Find provider by auth user ID
-      const proveedor = await installerService.getInstallerByUserId(user.id);
-      if (!proveedor) {
-        console.error('No provider found for user');
-        return;
-      }
+      return filters.sortOrder === 'asc' ? -comparison : comparison;
+    });
 
-      // Get quotations for this provider using quotationService
-      const cotizaciones = await quotationService.getInstallerQuotations(proveedor.id);
-
-      const formattedQuotations = cotizaciones?.map(cotizacion => {
-        const proyecto = cotizacion.proyectos;
-        const usuario = proyecto?.usuarios;
-        const sizingResults = proyecto?.cotizaciones_inicial?.sizing_results;
-        const precioFinal = cotizacion.precio_final;
-        const paneles = cotizacion.paneles;
-        const inversores = cotizacion.inversores;
-        const estructura = cotizacion.estructura;
-        const sistemaElectrico = cotizacion.sistema_electrico;
-        const opcionesPago = cotizacion.opciones_pago;
-
-        return {
-          id: cotizacion.id,
-          projectName: proyecto?.titulo || `Proyecto ${proyecto?.id?.slice(0, 8)}`,
-          clientName: usuario?.nombre || 'Cliente no especificado',
-          clientEmail: usuario?.correo_electronico,
-          sentDate: new Date(cotizacion.created_at).toLocaleDateString('es-MX'),
-          totalAmount: precioFinal?.total ?
-            `$${precioFinal.total.toLocaleString()} MXN` :
-            'Por definir',
-          status: getStatusLabel(cotizacion.estado),
-          rawStatus: cotizacion.estado,
-          details: {
-            capacity: sizingResults?.potencia_sistema ? `${sizingResults.potencia_sistema} kWp` : 'No especificada',
-            panels: paneles?.modelo || 'No especificado',
-            panelCount: paneles?.cantidad || 'N/A',
-            inverter: inversores?.modelo || 'No especificado',
-            production: sizingResults?.generacion_anual ?
-              `${sizingResults.generacion_anual.toLocaleString()} kWh/año` :
-              'No calculada',
-            structure: estructura?.tipo || 'No especificada',
-            panelWarranty: paneles?.garantia_anos ? `${paneles.garantia_anos} años` : 'No especificada',
-            inverterWarranty: inversores?.garantia_anos ? `${inversores.garantia_anos} años` : 'No especificada',
-            installationWarranty: sistemaElectrico?.garantia_instalacion_anos ?
-              `${sistemaElectrico.garantia_instalacion_anos} años` :
-              'No especificada',
-            installationTime: estructura?.tiempo_instalacion_dias ?
-              `${estructura.tiempo_instalacion_dias} días` :
-              'No especificado',
-            paymentOptions: opcionesPago?.tipos || ['Contado'],
-            notes: cotizacion.notas_proveedor || 'Sin notas adicionales'
-          },
-          rawData: cotizacion
-        };
-      }) || [];
-
-      setQuotations(formattedQuotations);
-    } catch (error) {
-      console.error('Error loading quotations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'pendiente':
-        return 'En revisión';
-      case 'aceptada':
-        return 'Aceptada';
-      case 'rechazada':
-        return 'Rechazada';
-      default:
-        return status || 'Sin estado';
-    }
-  };
+    return result;
+  }, [quotations, filters]);
 
   const handleViewDetails = (quotation) => {
     setSelectedQuotation(quotation);
@@ -112,12 +69,40 @@ const QuotationsView = () => {
     console.log('Cancelar cotización:', quotation.id);
   };
 
+  const statusOptions = [
+    { value: 'pending', label: 'Pendientes' },
+    { value: 'accepted', label: 'Aceptadas' },
+    { value: 'rejected', label: 'Rechazadas' },
+  ];
+
+  const sortOptions = [
+    { value: 'date', label: 'Fecha' },
+    { value: 'amount', label: 'Monto' },
+  ];
+
   return (
     <div className="w-full mx-auto">
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
-          <p className="text-sm text-gray-600 ml-4">Cargando cotizaciones...</p>
+      {!quotationsLoading && !quotationsError && quotations.length > 0 && (
+        <SearchAndFilters
+          filters={filters}
+          onFiltersChange={updateFilters}
+          onClearFilters={clearFilters}
+          statusOptions={statusOptions}
+          sortOptions={sortOptions}
+        />
+      )}
+
+      {quotationsLoading ? (
+        <SkeletonGrid type="quotation" count={6} columns={3} />
+      ) : quotationsError ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar cotizaciones</h3>
+          <p className="text-sm text-gray-600">{quotationsError}</p>
         </div>
       ) : quotations.length === 0 ? (
         <div className="text-center py-12">
@@ -129,9 +114,25 @@ const QuotationsView = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-2">No hay cotizaciones</h3>
           <p className="text-sm text-gray-600">Aún no has enviado cotizaciones a ningún proyecto.</p>
         </div>
+      ) : filteredQuotations.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+          <p className="text-sm text-gray-600">No hay cotizaciones que coincidan con los filtros aplicados.</p>
+          <button
+            onClick={clearFilters}
+            className="mt-4 px-4 py-2 rounded-lg text-sm text-orange-600 hover:bg-orange-50 transition-colors"
+          >
+            Limpiar filtros
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {quotations.map((quotation) => (
+          {filteredQuotations.map((quotation) => (
             <QuotationCard
               key={quotation.id}
               quotation={quotation}

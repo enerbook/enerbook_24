@@ -1,156 +1,70 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import ContractCard from '../cards/ContractCard';
 import ContractDetailsModal from '../modals/ContractDetailsModal';
 import UpdateStatusModal from '../modals/UpdateStatusModal';
-import { authService } from '../../services/authService';
-import { installerService } from '../../services/installerService';
-import { contractService } from '../../services/contractService';
+import { useInstaller } from '../../context/InstallerContext';
+import { formatContractData } from '../../utils/dataFormatters';
+import { SkeletonGrid } from '../common/SkeletonLoader';
+import SearchAndFilters from '../common/SearchAndFilters';
+import usePersistedFilters from '../../hooks/usePersistedFilters';
 
 const ContractsView = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedContract, setSelectedContract] = useState(null);
-  const [contracts, setContracts] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadMyContracts();
-  }, []);
+  // Usar filtros persistidos
+  const { filters, updateFilters, clearFilters } = usePersistedFilters('contracts');
 
-  const loadMyContracts = async () => {
-    setLoading(true);
-    try {
-      // Get current user's provider ID
-      const user = await authService.getCurrentUser();
-      if (!user) {
-        console.error('No authenticated user');
-        return;
+  // Usar context en lugar de estado local
+  const {
+    contracts: rawContracts,
+    contractsLoading,
+    contractsError,
+    updateContractStatus
+  } = useInstaller();
+
+  // Formatear contratos usando utilidad compartida
+  const contracts = useMemo(() => {
+    return rawContracts?.map(formatContractData) || [];
+  }, [rawContracts]);
+
+  // Aplicar filtros y búsqueda
+  const filteredContracts = useMemo(() => {
+    let result = [...contracts];
+
+    // Búsqueda por texto
+    if (filters.searchText) {
+      const searchLower = filters.searchText.toLowerCase();
+      result = result.filter(c =>
+        c.projectName?.toLowerCase().includes(searchLower) ||
+        c.contractNumber?.toLowerCase().includes(searchLower) ||
+        c.clientName?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Filtro por estado
+    if (filters.status !== 'all') {
+      result = result.filter(c => c.status === filters.status);
+    }
+
+    // Ordenamiento
+    result.sort((a, b) => {
+      let comparison = 0;
+
+      if (filters.sortBy === 'date') {
+        comparison = new Date(b.signedDate) - new Date(a.signedDate);
+      } else if (filters.sortBy === 'amount') {
+        const amountA = parseFloat(a.totalAmount.replace(/[^0-9.-]+/g, '')) || 0;
+        const amountB = parseFloat(b.totalAmount.replace(/[^0-9.-]+/g, '')) || 0;
+        comparison = amountB - amountA;
       }
 
-      // Find provider by auth user ID
-      const proveedor = await installerService.getInstallerByUserId(user.id);
-      if (!proveedor) {
-        console.error('No provider found for user');
-        return;
-      }
+      return filters.sortOrder === 'asc' ? -comparison : comparison;
+    });
 
-      // Get contracts for this provider using contractService
-      const contratos = await contractService.getInstallerContracts(proveedor.id);
-
-      const formattedContracts = contratos?.map(contrato => {
-        const usuario = contrato.usuarios;
-        const cotizacion = contrato.cotizaciones_final;
-        const proyecto = cotizacion?.proyectos;
-        const sizingResults = proyecto?.cotizaciones_inicial?.sizing_results;
-        const paneles = cotizacion?.paneles;
-        const inversores = cotizacion?.inversores;
-        const estructura = cotizacion?.estructura;
-        const sistemaElectrico = cotizacion?.sistema_electrico;
-        const resena = contrato.resenas?.length > 0 ? contrato.resenas[0] : null;
-
-        return {
-          id: contrato.id,
-          projectName: proyecto?.titulo || `Proyecto ${proyecto?.id?.slice(0, 8)}`,
-          projectDescription: proyecto?.descripcion || 'Sin descripción',
-          clientName: usuario?.nombre || 'Cliente no especificado',
-          clientEmail: usuario?.correo_electronico,
-          clientPhone: usuario?.telefono,
-          totalAmount: `$${contrato.precio_total_sistema?.toLocaleString()} MXN`,
-          status: getContractStatusLabel(contrato.estado),
-          rawStatus: contrato.estado,
-          details: {
-            projectTitle: proyecto?.titulo || 'Sin título',
-            systemCapacity: sizingResults?.potencia_sistema ? `${sizingResults.potencia_sistema} kWp` : 'No especificada',
-            panelType: paneles?.cantidad && paneles?.modelo ?
-              `${paneles.cantidad} x ${paneles.modelo}` :
-              'No especificado',
-            inverterType: inversores?.cantidad && inversores?.modelo ?
-              `${inversores.cantidad} x ${inversores.modelo}` :
-              'No especificado',
-            estimatedProduction: sizingResults?.generacion_anual ?
-              `${sizingResults.generacion_anual.toLocaleString()} kWh/año` :
-              'No calculada',
-            structureType: estructura?.tipo || 'No especificada',
-            contractNumber: contrato.numero_contrato || `#${contrato.id.slice(0, 8)}`,
-            paymentType: getPaymentTypeLabel(contrato.tipo_pago_seleccionado),
-            additionalNotes: proyecto?.descripcion || 'Sin notas adicionales',
-            signatureDate: contrato.fecha_firma ?
-              new Date(contrato.fecha_firma).toLocaleDateString('es-MX') :
-              'No especificada',
-            installationDate: contrato.fecha_inicio_instalacion ?
-              new Date(contrato.fecha_inicio_instalacion).toLocaleDateString('es-MX') :
-              null,
-            completionDate: contrato.fecha_completado ?
-              new Date(contrato.fecha_completado).toLocaleDateString('es-MX') :
-              null,
-            phone: usuario?.telefono || 'No disponible',
-            installationWarranty: sistemaElectrico?.garantia_instalacion_anos ?
-              `${sistemaElectrico.garantia_instalacion_anos} años` :
-              'No especificada',
-            inverterWarranty: inversores?.garantia_anos ?
-              `${inversores.garantia_anos} años` :
-              'No especificada',
-            panelWarranty: paneles?.garantia_anos ?
-              `${paneles.garantia_anos} años` :
-              'No especificada',
-            customerRating: resena?.puntuacion || null,
-            customerReview: resena?.comentario || null,
-            paymentStatus: getPaymentStatusLabel(contrato.estado_pago)
-          },
-          rawData: contrato
-        };
-      }) || [];
-
-      setContracts(formattedContracts);
-    } catch (error) {
-      console.error('Error loading contracts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getContractStatusLabel = (status) => {
-    switch (status) {
-      case 'activo':
-        return 'Contrato Activo';
-      case 'completado':
-        return 'Contrato Finalizado';
-      case 'cancelado':
-        return 'Contrato Cancelado';
-      default:
-        return status || 'Sin estado';
-    }
-  };
-
-  const getPaymentTypeLabel = (paymentType) => {
-    switch (paymentType) {
-      case 'upfront':
-        return 'Pago por adelantado';
-      case 'milestones':
-        return 'Pago por hitos';
-      case 'financing':
-        return 'Financiamiento';
-      default:
-        return paymentType || 'No especificado';
-    }
-  };
-
-  const getPaymentStatusLabel = (paymentStatus) => {
-    switch (paymentStatus) {
-      case 'pendiente':
-        return 'Pago Pendiente';
-      case 'processing':
-        return 'Procesando Pago';
-      case 'succeeded':
-        return 'Pago Completado';
-      case 'canceled':
-        return 'Pago Cancelado';
-      case 'requires_action':
-        return 'Acción Requerida';
-      default:
-        return paymentStatus || 'Sin estado';
-    }
-  };
+    return result;
+  }, [contracts, filters]);
 
   const handleViewDetails = (contract) => {
     setSelectedContract(contract);
@@ -162,9 +76,19 @@ const ContractsView = () => {
     setShowStatusModal(true);
   };
 
-  const handleStatusUpdate = (selectedStatuses) => {
-    // Aquí iría la lógica para guardar los estatus actualizados
-    console.log('Actualizando estatus del contrato:', selectedContract.id, selectedStatuses);
+  const handleStatusUpdate = async (selectedStatuses) => {
+    if (!selectedContract?.id) return;
+
+    // Actualizar el estado del contrato usando el context
+    const result = await updateContractStatus(selectedContract.id, selectedStatuses.contractStatus);
+
+    if (result.success) {
+      console.log('Estado del contrato actualizado exitosamente');
+      setShowStatusModal(false);
+    } else {
+      console.error('Error al actualizar estado:', result.error);
+      alert(`Error al actualizar estado: ${result.error}`);
+    }
   };
 
   const handleViewReview = (contract) => {
@@ -172,12 +96,40 @@ const ContractsView = () => {
     console.log('Ver reseña del contrato:', contract.id);
   };
 
+  const statusOptions = [
+    { value: 'active', label: 'Activos' },
+    { value: 'completed', label: 'Completados' },
+    { value: 'in_progress', label: 'En progreso' },
+  ];
+
+  const sortOptions = [
+    { value: 'date', label: 'Fecha' },
+    { value: 'amount', label: 'Monto' },
+  ];
+
   return (
     <div className="w-full mx-auto">
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
-          <p className="text-sm text-gray-600 ml-4">Cargando contratos...</p>
+      {!contractsLoading && !contractsError && contracts.length > 0 && (
+        <SearchAndFilters
+          filters={filters}
+          onFiltersChange={updateFilters}
+          onClearFilters={clearFilters}
+          statusOptions={statusOptions}
+          sortOptions={sortOptions}
+        />
+      )}
+
+      {contractsLoading ? (
+        <SkeletonGrid type="contract" count={6} columns={3} />
+      ) : contractsError ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar contratos</h3>
+          <p className="text-sm text-gray-600">{contractsError}</p>
         </div>
       ) : contracts.length === 0 ? (
         <div className="text-center py-12">
@@ -189,9 +141,25 @@ const ContractsView = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-2">No hay contratos</h3>
           <p className="text-sm text-gray-600">Aún no tienes contratos firmados con clientes.</p>
         </div>
+      ) : filteredContracts.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron resultados</h3>
+          <p className="text-sm text-gray-600">No hay contratos que coincidan con los filtros aplicados.</p>
+          <button
+            onClick={clearFilters}
+            className="mt-4 px-4 py-2 rounded-lg text-sm text-orange-600 hover:bg-orange-50 transition-colors"
+          >
+            Limpiar filtros
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {contracts.map((contract) => (
+          {filteredContracts.map((contract) => (
             <ContractCard
               key={contract.id}
               contract={contract}
