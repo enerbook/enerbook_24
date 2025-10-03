@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
 
 // Navigation button component
-const NavButton = ({ item, activeTab, setActiveTab, onClose }) => {
+const NavButton = ({ item, activeTab, onClose, router }) => {
   const Icon = item.icon;
   const isActive = activeTab === item.id;
 
@@ -12,7 +12,8 @@ const NavButton = ({ item, activeTab, setActiveTab, onClose }) => {
     if (item.action) {
       item.action();
     } else {
-      setActiveTab(item.id);
+      const route = item.id === 'proyectos' ? '/instalador-panel' : `/instalador-panel/${item.id}`;
+      router.push(route);
       if (onClose) onClose();
     }
   };
@@ -39,7 +40,7 @@ const NavButton = ({ item, activeTab, setActiveTab, onClose }) => {
   );
 };
 
-const InstallerSidebar = ({ activeTab, setActiveTab, onClose }) => {
+const InstallerSidebar = ({ activeTab, onClose }) => {
   const { logout } = useAuth();
   const router = useRouter();
 
@@ -74,7 +75,7 @@ const InstallerSidebar = ({ activeTab, setActiveTab, onClose }) => {
         {/* Main Navigation */}
         <div className="space-y-1">
           {sidebarItems.map((item) => (
-            <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} onClose={onClose} />
+            <NavButton key={item.id} item={item} activeTab={activeTab} onClose={onClose} router={router} />
           ))}
         </div>
 
@@ -85,7 +86,7 @@ const InstallerSidebar = ({ activeTab, setActiveTab, onClose }) => {
           </h3>
           <div className="space-y-1">
             {accountItems.map((item) => (
-              <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} onClose={onClose} />
+              <NavButton key={item.id} item={item} activeTab={activeTab} onClose={onClose} router={router} />
             ))}
           </div>
         </div>

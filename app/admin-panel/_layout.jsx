@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '../src/context/AuthContext';
-import { supabase } from '../src/lib/supabaseClient';
-import AdminAppLayout from '../src/admin/components/layout/AdminAppLayout';
-import ResumenTab from '../src/admin/components/tabs/ResumenTab';
-import FinanzasTab from '../src/admin/components/tabs/FinanzasTabSimple';
-import ProveedoresTab from '../src/admin/components/tabs/ProveedoresTab';
-import ProyectosTab from '../src/admin/components/tabs/ProyectosTabSimple';
-import AlertasTab from '../src/admin/components/tabs/AlertasTab';
+import { Slot, useRouter, useSegments } from 'expo-router';
+import { useAuth } from '../../src/context/AuthContext';
+import { supabase } from '../../src/lib/supabaseClient';
+import AdminAppLayout from '../../src/admin/components/layout/AdminAppLayout';
 
-const AdminDashboard = () => {
-  const { user, userType, logout } = useAuth();
+export default function AdminPanelLayout() {
+  const { user, logout } = useAuth();
   const router = useRouter();
+  const segments = useSegments();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState('resumen');
   const [metrics, setMetrics] = useState(null);
 
   useEffect(() => {
@@ -29,6 +24,7 @@ const AdminDashboard = () => {
   const checkAdminAccess = async () => {
     if (!user) {
       setLoading(false);
+      router.replace('/');
       return;
     }
 
@@ -47,6 +43,8 @@ const AdminDashboard = () => {
         console.log('User ID being checked:', user.id);
         setIsAdmin(false);
         setLoading(false);
+        // Redirigir a home si no es admin
+        router.replace('/');
         return;
       }
 
@@ -57,6 +55,7 @@ const AdminDashboard = () => {
       console.error('Error checking admin access:', error);
       setIsAdmin(false);
       setLoading(false);
+      router.replace('/');
     } finally {
       setLoading(false);
     }
@@ -90,7 +89,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Configurar pestañas para AdminAppLayout
+  // Configurar pestañas para AdminHeader
   const adminTabs = [
     { id: 'resumen', label: 'Resumen General', icon: 'analytics-outline' },
     { id: 'finanzas', label: 'Finanzas', icon: 'cash-outline' },
@@ -99,23 +98,7 @@ const AdminDashboard = () => {
     { id: 'alertas', label: 'Alertas', icon: 'notifications-outline' }
   ];
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'resumen':
-        return <ResumenTab metrics={metrics} />;
-      case 'finanzas':
-        return <FinanzasTab />;
-      case 'proveedores':
-        return <ProveedoresTab />;
-      case 'proyectos':
-        return <ProyectosTab />;
-      case 'alertas':
-        return <AlertasTab />;
-      default:
-        return <ResumenTab metrics={metrics} />;
-    }
-  };
-
+  // Mostrar loading mientras se verifica acceso
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -125,23 +108,23 @@ const AdminDashboard = () => {
     );
   }
 
-  if (!user) {
+  // Si no es admin, mostrar vista vacía (useEffect redirigirá)
+  if (!user || !isAdmin) {
     return <View />;
   }
 
-  if (!isAdmin) {
-    return <View />;
-  }
+  // Obtener el tab activo desde la URL
+  const currentSegment = segments[segments.length - 1] || 'resumen';
 
   return (
-    <AdminAppLayout
-      adminTabs={adminTabs}
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-    >
-      {renderTabContent()}
-    </AdminAppLayout>
+    <View style={{ flex: 1 }}>
+      <AdminAppLayout
+        adminTabs={adminTabs}
+        activeTab={currentSegment}
+        metrics={metrics}
+      >
+        <Slot context={{ metrics }} />
+      </AdminAppLayout>
+    </View>
   );
-};
-
-export default AdminDashboard;
+}

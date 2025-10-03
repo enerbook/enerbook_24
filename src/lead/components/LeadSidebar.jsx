@@ -4,12 +4,15 @@ import { FiGrid, FiPieChart, FiFileText, FiSun } from 'react-icons/fi';
 import { useRouter } from 'expo-router';
 
 // Navigation button component
-const NavButton = ({ item, activeTab, setActiveTab, onClose }) => {
+const NavButton = ({ item, activeTab, onClose }) => {
+  const router = useRouter();
   const Icon = item.icon;
   const isActive = activeTab === item.id;
 
   const handleClick = () => {
-    setActiveTab(item.id);
+    // Navegación por URL
+    const route = item.id === 'dashboard' ? '/lead-panel' : `/lead-panel/${item.id}`;
+    router.push(route);
     if (onClose) onClose();
   };
 
@@ -47,7 +50,7 @@ const NavButton = ({ item, activeTab, setActiveTab, onClose }) => {
   );
 };
 
-const LeadSidebar = ({ activeTab, setActiveTab, onClose }) => {
+const LeadSidebar = ({ activeTab, onClose }) => {
   const router = useRouter();
 
   const sidebarItems = [
@@ -69,7 +72,7 @@ const LeadSidebar = ({ activeTab, setActiveTab, onClose }) => {
         {/* Main Navigation */}
         <div className="space-y-1" role="tablist" aria-label="Pestañas de navegación">
           {sidebarItems.map((item) => (
-            <NavButton key={item.id} item={item} activeTab={activeTab} setActiveTab={setActiveTab} onClose={onClose} />
+            <NavButton key={item.id} item={item} activeTab={activeTab} onClose={onClose} />
           ))}
         </div>
 
@@ -100,13 +103,11 @@ NavButton.propTypes = {
     icon: PropTypes.elementType.isRequired
   }).isRequired,
   activeTab: PropTypes.string.isRequired,
-  setActiveTab: PropTypes.func.isRequired,
   onClose: PropTypes.func
 };
 
 LeadSidebar.propTypes = {
   activeTab: PropTypes.string.isRequired,
-  setActiveTab: PropTypes.func.isRequired,
   onClose: PropTypes.func
 };
 

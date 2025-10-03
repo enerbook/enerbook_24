@@ -1,7 +1,7 @@
 import React from 'react';
 import AdminHeader from './AdminHeader';
 
-const AdminAppLayout = ({ adminTabs, activeTab, setActiveTab, children }) => {
+const AdminAppLayout = ({ adminTabs, activeTab, metrics, children }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex relative">
       {/* Main content */}
@@ -10,7 +10,6 @@ const AdminAppLayout = ({ adminTabs, activeTab, setActiveTab, children }) => {
         <AdminHeader
           adminTabs={adminTabs}
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
         />
 
         {/* Content area */}

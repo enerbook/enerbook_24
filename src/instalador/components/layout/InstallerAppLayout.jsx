@@ -3,7 +3,7 @@ import InstallerSidebar from '../InstallerSidebar';
 import InstallerHeader from './InstallerHeader';
 import { FiMenu } from 'react-icons/fi';
 
-const InstallerAppLayout = ({ activeTab, setActiveTab, children }) => {
+const InstallerAppLayout = ({ activeTab, children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -24,7 +24,6 @@ const InstallerAppLayout = ({ activeTab, setActiveTab, children }) => {
       `}>
         <InstallerSidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
           onClose={() => setSidebarOpen(false)}
         />
       </div>

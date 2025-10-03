@@ -29,18 +29,18 @@ const userService = {
     if (!userId) return null;
 
     // Check if user is an admin
-    const { data: adminData } = await supabase
+    const { data: adminData, error: adminError } = await supabase
       .from('administradores')
       .select('id, activo')
-      .eq('usuario_id', userId)
-      .eq('activo', true);
+      .eq('usuario_id', userId);
 
-    if (adminData && adminData.length > 0) {
+    // Verificar si el admin está activo (filtro en frontend en lugar de query)
+    if (adminData && adminData.length > 0 && adminData[0].activo === true) {
       return 'admin';
     }
 
     // Check if user is an installer
-    const { data: proveedorData } = await supabase
+    const { data: proveedorData, error: proveedorError } = await supabase
       .from('proveedores')
       .select('id')
       .eq('auth_user_id', userId);
@@ -50,7 +50,7 @@ const userService = {
     }
 
     // Check if user is a client
-    const { data: clienteData } = await supabase
+    const { data: clienteData, error: clienteError } = await supabase
       .from('usuarios')
       .select('id')
       .eq('id', userId);

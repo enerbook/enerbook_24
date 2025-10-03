@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-// React Native components converted to web-compatible HTML
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../../lib/supabaseClient';
 import MetricCard from '../common/MetricCard';
-// Using custom SVG charts instead of Recharts for React Native compatibility
 
 const FinanzasTab = () => {
   const [loading, setLoading] = useState(true);
@@ -12,10 +10,7 @@ const FinanzasTab = () => {
     resumen: {},
     comisionesData: [],
     tiposPagoData: [],
-    milestonesData: [],
-    transaccionesFinanciamiento: [],
-    serviceFees: [],
-    tendenciasIngresos: []
+    milestonesData: []
   });
 
   useEffect(() => {
@@ -30,14 +25,12 @@ const FinanzasTab = () => {
         contratos,
         milestones,
         transacciones,
-        webhooks,
         disputes
       ] = await Promise.all([
         supabase.from('comisiones_enerbook').select('*'),
         supabase.from('contratos').select('*'),
         supabase.from('pagos_milestones').select('*'),
         supabase.from('transacciones_financiamiento').select('*'),
-        supabase.from('stripe_webhooks_log').select('*'),
         supabase.from('stripe_disputes').select('*')
       ]);
 
@@ -57,22 +50,21 @@ const FinanzasTab = () => {
         serviceFees: calculateServiceFees(comisiones.data),
         disputasActivas: disputes.data?.filter(d =>
           d.status === 'warning_needs_response' || d.status === 'needs_response'
+        ).length || 0,
+        milestonesVencidos: milestones.data?.filter(m =>
+          m.estado === 'pendiente' && new Date(m.fecha_objetivo) < new Date()
         ).length || 0
       };
 
-      const comisionesData = processComisionesData(comisiones.data);
       const tiposPagoData = processTiposPagoData(contratos.data);
+      const comisionesData = processComisionesData(comisiones.data);
       const milestonesData = processMilestonesData(milestones.data);
-      const transaccionesFinanciamiento = processTransaccionesData(transacciones.data);
-      const tendenciasIngresos = generateTendenciasIngresos(comisiones.data, contratos.data);
 
       setFinanceData({
         resumen,
         comisionesData,
         tiposPagoData,
-        milestonesData,
-        transaccionesFinanciamiento,
-        tendenciasIngresos
+        milestonesData
       });
     } catch (error) {
       console.error('Error loading finance data:', error);
@@ -106,10 +98,10 @@ const FinanzasTab = () => {
   const processTiposPagoData = (contratos) => {
     if (!contratos) return [];
     const tipos = {
-      contado: { name: 'Contado', value: 0, color: '#10B981' },
-      financiamiento: { name: 'Financiamiento', value: 0, color: '#3B82F6' },
-      tarjeta: { name: 'Tarjeta', value: 0, color: '#F59E0B' },
-      transferencia: { name: 'Transferencia', value: 0, color: '#8B5CF6' }
+      contado: { name: 'Contado', value: 0, color: '#f59e0b' },
+      financiamiento: { name: 'Financiamiento', value: 0, color: '#090e1a' },
+      tarjeta: { name: 'Tarjeta', value: 0, color: '#f59e0b' },
+      transferencia: { name: 'Transferencia', value: 0, color: '#090e1a' }
     };
 
     contratos.forEach(c => {
@@ -142,55 +134,10 @@ const FinanzasTab = () => {
     });
 
     return [
-      { name: 'Pendientes', value: estados.pendiente, color: '#F59E0B' },
-      { name: 'Pagados', value: estados.pagado, color: '#10B981' },
-      { name: 'Vencidos', value: estados.vencido, color: '#EF4444' }
+      { name: 'Pendientes', value: estados.pendiente, color: '#f59e0b' },
+      { name: 'Pagados', value: estados.pagado, color: '#f59e0b' },
+      { name: 'Vencidos', value: estados.vencido, color: '#090e1a' }
     ];
-  };
-
-  const processTransaccionesData = (transacciones) => {
-    if (!transacciones) return [];
-    const estados = {};
-    transacciones.forEach(t => {
-      const estado = t.estado || 'pendiente';
-      if (!estados[estado]) {
-        estados[estado] = 0;
-      }
-      estados[estado] += 1;
-    });
-    return Object.entries(estados).map(([estado, count]) => ({
-      estado: estado.charAt(0).toUpperCase() + estado.slice(1),
-      cantidad: count
-    }));
-  };
-
-  const generateTendenciasIngresos = (comisiones, contratos) => {
-    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
-    const currentMonth = new Date().getMonth();
-
-    return months.slice(0, currentMonth + 1).map((month, index) => {
-      const monthDate = new Date();
-      monthDate.setMonth(index);
-      const monthStart = new Date(monthDate.getFullYear(), index, 1);
-      const monthEnd = new Date(monthDate.getFullYear(), index + 1, 0);
-
-      const monthComisiones = comisiones?.filter(c => {
-        const date = new Date(c.created_at);
-        return date >= monthStart && date <= monthEnd;
-      }).reduce((sum, c) => sum + (parseFloat(c.monto_comision) || 0), 0) || 0;
-
-      const monthContratos = contratos?.filter(c => {
-        const date = new Date(c.created_at);
-        return date >= monthStart && date <= monthEnd;
-      }).reduce((sum, c) => sum + (parseFloat(c.precio_total_sistema) || 0), 0) || 0;
-
-      return {
-        mes: month,
-        comisiones: monthComisiones,
-        contratos: monthContratos,
-        serviceFees: monthComisiones * 0.029 + (monthComisiones > 0 ? 3 : 0)
-      };
-    });
   };
 
   const formatCurrency = (value) => {
@@ -209,44 +156,44 @@ const FinanzasTab = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center py-12">
-        <ActivityIndicator size="large" color="#F59E0B" />
-        <Text className="text-sm text-gray-600 mt-4">Cargando Datos Financieros...</Text>
-      </View>
+      <div className="flex-1 items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+        <p className="text-sm text-gray-600 mt-4">Cargando Datos Financieros...</p>
+      </div>
     );
   }
 
   return (
     <div>
-      <View className="pb-6">
-        <View className="flex-row justify-between items-center mb-6">
-          <Text className="text-lg font-semibold text-gray-900">
+      <div className="pb-6">
+        <div className="flex justify-between items-center mb-6">
+          <p className="text-lg font-semibold text-gray-900">
             Análisis Financiero
-          </Text>
-          <View className="flex-row">
+          </p>
+          <div className="flex">
             {periods.map(period => (
-              <Pressable
+              <button
                 key={period.id}
-                onPress={() => setSelectedPeriod(period.id)}
+                onClick={() => setSelectedPeriod(period.id)}
                 className={`px-4 py-2 rounded-lg mr-2 ${
                   selectedPeriod === period.id
-                    ? 'bg-amber-500'
+                    ? 'bg-orange-500'
                     : 'bg-gray-100'
                 }`}
               >
-                <Text className={`text-sm font-medium ${
+                <p className={`text-sm font-medium ${
                   selectedPeriod === period.id
                     ? 'text-white'
                     : 'text-gray-700'
                 }`}>
                   {period.label}
-                </Text>
-              </Pressable>
+                </p>
+              </button>
             ))}
-          </View>
-        </View>
+          </div>
+        </div>
 
-        <View className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <MetricCard
             title="Comisiones Totales"
             value={formatCurrency(financeData.resumen.totalComisiones)}
@@ -267,142 +214,91 @@ const FinanzasTab = () => {
             value={financeData.resumen.disputasActivas}
             subtitle="Requieren atención"
           />
-        </View>
+        </div>
 
-        <View className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <View className="bg-white rounded-lg p-6 border border-gray-100">
-            <Text className="text-lg font-semibold text-gray-900 mb-4">
-              Tendencias de Ingresos
-            </Text>
-            <View style={{ height: 300 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={financeData.tendenciasIngresos}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                  <XAxis dataKey="mes" stroke="#6b7280" fontSize={12} />
-                  <YAxis stroke="#6b7280" fontSize={12} />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="comisiones"
-                    stackId="1"
-                    stroke="#F59E0B"
-                    fill="#FED7AA"
-                    name="Comisiones"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="serviceFees"
-                    stackId="1"
-                    stroke="#EF4444"
-                    fill="#FCA5A5"
-                    name="Service Fees"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </View>
-          </View>
-
-          <View className="bg-white rounded-lg p-6 border border-gray-100">
-            <Text className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="bg-white rounded-lg p-6 border border-gray-100">
+            <p className="text-lg font-semibold text-gray-900 mb-4">
               Tipos de Pago
-            </Text>
-            <View style={{ height: 300 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={financeData.tiposPagoData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {financeData.tiposPagoData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-lg p-6 border border-gray-100 mb-6">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">
-            Comisiones por Tipo
-          </Text>
-          <View style={{ height: 250 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={financeData.comisionesData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                <XAxis dataKey="tipo" stroke="#6b7280" fontSize={12} />
-                <YAxis stroke="#6b7280" fontSize={12} />
-                <Tooltip formatter={(value) => formatCurrency(value)} />
-                <Bar dataKey="total" fill="#F59E0B" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </View>
-        </View>
-
-        <View className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <View className="bg-white rounded-lg p-6 border border-gray-100">
-            <Text className="text-lg font-semibold text-gray-900 mb-4">
-              Estado Milestones
-            </Text>
-            <View className="space-y-4">
-              {financeData.milestonesData.map((item) => (
-                <View key={item.name} className="flex-row items-center justify-between">
-                  <View className="flex-row items-center">
-                    <View
+            </p>
+            <div className="space-y-3">
+              {financeData.tiposPagoData.map((item) => (
+                <div key={item.name} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: item.color }}
                     />
-                    <Text className="text-sm text-gray-700 ml-3">{item.name}</Text>
-                  </View>
-                  <Text className="text-sm font-bold text-gray-900">{item.value}</Text>
-                </View>
+                    <p className="text-sm text-gray-700 ml-3">{item.name}</p>
+                  </div>
+                  <p className="text-sm font-bold text-gray-900">{item.value}</p>
+                </div>
               ))}
-            </View>
-          </View>
+            </div>
+          </div>
 
-          <View className="bg-white rounded-lg p-6 border border-gray-100">
-            <Text className="text-lg font-semibold text-gray-900 mb-4">
-              Transacciones Financiamiento
-            </Text>
-            <View className="space-y-4">
-              {financeData.transaccionesFinanciamiento.map((item) => (
-                <View key={item.estado} className="flex-row items-center justify-between">
-                  <Text className="text-sm text-gray-700">{item.estado}</Text>
-                  <Text className="text-sm font-bold text-gray-900">{item.cantidad}</Text>
-                </View>
+          <div className="bg-white rounded-lg p-6 border border-gray-100">
+            <p className="text-lg font-semibold text-gray-900 mb-4">
+              Estado Milestones
+            </p>
+            <div className="space-y-3">
+              {financeData.milestonesData.map((item) => (
+                <div key={item.name} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <p className="text-sm text-gray-700 ml-3">{item.name}</p>
+                  </div>
+                  <p className="text-sm font-bold text-gray-900">{item.value}</p>
+                </div>
               ))}
-            </View>
-          </View>
-        </View>
+            </div>
+          </div>
 
-        <View className="bg-amber-50 rounded-lg p-4 border border-amber-200">
-          <View className="flex-row items-start">
-            <Ionicons name="bulb" size={20} color="#F59E0B" />
-            <View className="ml-3 flex-1">
-              <Text className="text-sm font-medium text-amber-900">
+          <div className="bg-white rounded-lg p-6 border border-gray-100">
+            <p className="text-lg font-semibold text-gray-900 mb-4">
+              Comisiones por Tipo
+            </p>
+            <div className="space-y-3">
+              {financeData.comisionesData.map((item) => (
+                <div key={item.tipo} className="flex items-center justify-between">
+                  <p className="text-sm text-gray-700">{item.tipo}</p>
+                  <div className="items-end">
+                    <p className="text-sm font-bold text-gray-900">
+                      {formatCurrency(item.total)}
+                    </p>
+                    <p className="text-xs text-gray-500">{item.cantidad} items</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+          <div className="flex items-start">
+            <Ionicons name="bulb" size={20} color="#f59e0b" />
+            <div className="ml-3 flex-1">
+              <p className="text-sm font-medium text-gray-900">
                 Resumen Financiero
-              </Text>
-              <Text className="text-sm text-amber-700 mt-1">
+              </p>
+              <p className="text-sm text-gray-700 mt-1">
                 El sistema ha generado {formatCurrency(financeData.resumen.totalComisiones)} en comisiones,
                 con {formatCurrency(financeData.resumen.comisionesPendientes)} pendientes de cobro.
                 Los service fees de Stripe suman {formatCurrency(financeData.resumen.serviceFees)}.
                 {financeData.resumen.disputasActivas > 0 &&
                   ` Hay ${financeData.resumen.disputasActivas} disputas que requieren atención inmediata.`
                 }
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
+                {financeData.resumen.milestonesVencidos > 0 &&
+                  ` ${financeData.resumen.milestonesVencidos} milestones están vencidos.`
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

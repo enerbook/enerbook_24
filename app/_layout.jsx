@@ -30,29 +30,22 @@ const RootLayoutNav = () => {
       // Para lead panel, verificar si hay temp_lead_id en la URL
       if (segments[0] === 'lead-panel') {
         if (hasLeadIdInUrl) {
-          console.log('Dashboard access with temp_lead_id in URL - allowing lead mode');
           return; // Permitir acceso sin redireccionar
         } else {
-          console.log('Dashboard access without temp_lead_id - redirecting to login');
           router.replace('/login');
         }
       } else if (segments[0] === 'cliente-panel') {
-        console.log('Clientes dashboard access without user - redirecting to login');
         router.replace('/login');
       } else if (segments[0] === 'instalador-panel') {
-        console.log('Redirecting to installer-login');
         router.replace('/installer-login');
       } else if (segments[0] === 'admin') {
-        console.log('Admin area access without user - redirecting to login');
         router.replace('/login');
       } else {
-        console.log('Redirecting to default login');
         router.replace('/login');
       }
     }
     // Si hay usuario y userType y está en página de auth, redirigir al dashboard apropiado
     else if (user && userType && userType !== 'lead' && inAuthRoute) {
-      console.log('Redirecting to dashboard - user logged in on auth route');
       if (userType === 'admin') {
         router.replace('/admin-panel');
       } else if (userType === 'instalador') {
@@ -63,7 +56,7 @@ const RootLayoutNav = () => {
     }
     // Si hay usuario pero no userType, esperar
     else if (user && !userType && !inAuthRoute) {
-      console.log('User exists but no userType yet, waiting...');
+      // Waiting for userType to be determined
     }
   }, [user, userType, loading, segments, router]);
 

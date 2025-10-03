@@ -3,7 +3,7 @@ import { FiLogOut } from 'react-icons/fi';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../../context/AuthContext';
 
-const AdminHeader = ({ adminTabs, activeTab, setActiveTab }) => {
+const AdminHeader = ({ adminTabs, activeTab }) => {
   const { logout } = useAuth();
   const router = useRouter();
 
@@ -14,6 +14,12 @@ const AdminHeader = ({ adminTabs, activeTab, setActiveTab }) => {
     } catch (error) {
       console.error('Error during admin logout:', error);
     }
+  };
+
+  const handleTabClick = (tabId) => {
+    // Navegación por URL
+    const route = tabId === 'resumen' ? '/admin-panel' : `/admin-panel/${tabId}`;
+    router.push(route);
   };
 
   return (
@@ -51,7 +57,7 @@ const AdminHeader = ({ adminTabs, activeTab, setActiveTab }) => {
             {adminTabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabClick(tab.id)}
                 className={`flex items-center px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? 'border-amber-500 text-amber-600'

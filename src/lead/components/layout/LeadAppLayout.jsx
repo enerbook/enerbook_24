@@ -5,7 +5,7 @@ import LeadHeader from './LeadHeader';
 import ErrorBoundary from '../common/ErrorBoundary';
 import { FiMenu } from 'react-icons/fi';
 
-const LeadAppLayout = ({ activeTab, setActiveTab, children }) => {
+const LeadAppLayout = ({ activeTab, children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -26,7 +26,6 @@ const LeadAppLayout = ({ activeTab, setActiveTab, children }) => {
       `}>
         <LeadSidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
           onClose={() => setSidebarOpen(false)}
         />
       </div>
@@ -75,7 +74,6 @@ const LeadAppLayout = ({ activeTab, setActiveTab, children }) => {
 
 LeadAppLayout.propTypes = {
   activeTab: PropTypes.string.isRequired,
-  setActiveTab: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired
 };
 
