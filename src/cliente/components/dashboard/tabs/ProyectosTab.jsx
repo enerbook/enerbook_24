@@ -81,6 +81,26 @@ const ProyectosTab = () => {
     openModal();
   };
 
+  const handleToggleProjectStatus = async (proyectoId, currentStatus, e) => {
+    e.stopPropagation(); // Prevent triggering the card click
+
+    const isOpen = currentStatus === 'abierto';
+    const action = isOpen ? 'pausar' : 'publicar';
+    const newStatus = isOpen ? 'cerrado' : 'abierto';
+
+    if (!confirm(`¿Estás seguro de que deseas ${action} este proyecto?`)) {
+      return;
+    }
+
+    try {
+      await projectService.toggleProjectStatus(proyectoId, newStatus);
+      loadUserData(); // Reload projects after status change
+    } catch (error) {
+      console.error('Error toggling project status:', error);
+      alert('Error al cambiar el estado del proyecto. Por favor intenta de nuevo.');
+    }
+  };
+
   const handleReceiptSubmit = async (files) => {
     setIsUploadingReceipt(true);
     try {
@@ -200,46 +220,71 @@ const ProyectosTab = () => {
                   return (
                     <div
                       key={proyecto.id}
-                      onClick={() => setSelectedProyectoId(proyecto.id)}
-                      className="bg-white rounded-lg p-4 border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer"
+                      className="bg-white rounded-lg p-4 border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all"
                     >
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-sm font-semibold text-gray-900">{proyecto.titulo}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          proyecto.estado === 'abierto'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {proyecto.estado === 'abierto' ? 'Abierto' : proyecto.estado}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-3">{proyecto.descripcion}</p>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>Fecha límite: {fechaLimite}</span>
-                        <span className={diasRestantes > 7 ? 'text-green-600' : diasRestantes > 0 ? 'text-orange-600' : 'text-red-600'}>
-                          {diasRestantes > 0 ? `${diasRestantes} días restantes` : 'Vencido'}
-                        </span>
-                      </div>
-                      {cotizacionesProyecto.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-gray-100">
-                          <p className="text-xs font-medium text-gray-700 mb-2">
-                            {cotizacionesProyecto.length} cotización{cotizacionesProyecto.length !== 1 ? 'es' : ''} recibida{cotizacionesProyecto.length !== 1 ? 's' : ''}
-                          </p>
-                          <div className="space-y-2">
-                            {cotizacionesProyecto.slice(0, 2).map((cotizacion) => (
-                              <div key={cotizacion.id} className="flex items-center justify-between bg-gray-50 rounded p-2">
-                                <span className="text-xs text-gray-700">{cotizacion.proveedores?.nombre_empresa}</span>
-                                <span className="text-xs font-semibold text-gray-900">
-                                  ${cotizacion.precio_total?.toLocaleString()} MXN
-                                </span>
-                              </div>
-                            ))}
-                            {cotizacionesProyecto.length > 2 && (
-                              <p className="text-xs text-gray-500">y {cotizacionesProyecto.length - 2} más...</p>
-                            )}
-                          </div>
+                      <div
+                        onClick={() => setSelectedProyectoId(proyecto.id)}
+                        className="cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-sm font-semibold text-gray-900">{proyecto.titulo}</h3>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            proyecto.estado === 'abierto'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {proyecto.estado === 'abierto' ? 'Abierto' : proyecto.estado}
+                          </span>
                         </div>
-                      )}
+                        <p className="text-sm text-gray-600 mb-3">{proyecto.descripcion}</p>
+                        <div className="flex items-center justify-between text-xs text-gray-500">
+                          <span>Fecha límite: {fechaLimite}</span>
+                          <span className={diasRestantes > 7 ? 'text-green-600' : diasRestantes > 0 ? 'text-orange-600' : 'text-red-600'}>
+                            {diasRestantes > 0 ? `${diasRestantes} días restantes` : 'Vencido'}
+                          </span>
+                        </div>
+                        {cotizacionesProyecto.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-gray-100">
+                            <p className="text-xs font-medium text-gray-700 mb-2">
+                              {cotizacionesProyecto.length} cotización{cotizacionesProyecto.length !== 1 ? 'es' : ''} recibida{cotizacionesProyecto.length !== 1 ? 's' : ''}
+                            </p>
+                            <div className="space-y-2">
+                              {cotizacionesProyecto.slice(0, 2).map((cotizacion) => (
+                                <div key={cotizacion.id} className="flex items-center justify-between bg-gray-50 rounded p-2">
+                                  <span className="text-xs text-gray-700">{cotizacion.proveedores?.nombre_empresa}</span>
+                                  <span className="text-xs font-semibold text-gray-900">
+                                    ${cotizacion.precio_total?.toLocaleString()} MXN
+                                  </span>
+                                </div>
+                              ))}
+                              {cotizacionesProyecto.length > 2 && (
+                                <p className="text-xs text-gray-500">y {cotizacionesProyecto.length - 2} más...</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
+                        <button
+                          onClick={handleSolicitarCotizaciones}
+                          className="flex-1 px-3 py-2 rounded-lg text-white text-xs font-medium hover:opacity-90 transition-opacity"
+                          style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+                        >
+                          Solicitar Cotizaciones
+                        </button>
+                        <button
+                          onClick={(e) => handleToggleProjectStatus(proyecto.id, proyecto.estado, e)}
+                          className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                            proyecto.estado === 'abierto'
+                              ? 'border border-orange-300 text-orange-600 hover:bg-orange-50'
+                              : 'border border-green-300 text-green-600 hover:bg-green-50'
+                          }`}
+                        >
+                          {proyecto.estado === 'abierto' ? 'Pausar' : 'Publicar'}
+                        </button>
+                      </div>
                     </div>
                   );
                 })}

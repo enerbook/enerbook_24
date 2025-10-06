@@ -55,13 +55,26 @@ export const projectService = {
     return data;
   },
 
-  // Delete project
-  deleteProject: async (projectId) => {
-    const { error } = await supabase
+  // Toggle project status (publish/pause)
+  toggleProjectStatus: async (projectId, newStatus) => {
+    const { data, error } = await supabase
       .from('proyectos')
-      .delete()
-      .eq('id', projectId);
+      .update({ estado: newStatus })
+      .eq('id', projectId)
+      .select()
+      .single();
 
     if (error) throw error;
+    return data;
+  },
+
+  // Publish project (open for quotes)
+  publishProject: async (projectId) => {
+    return projectService.toggleProjectStatus(projectId, 'abierto');
+  },
+
+  // Pause project (close for new quotes)
+  pauseProject: async (projectId) => {
+    return projectService.toggleProjectStatus(projectId, 'cerrado');
   }
 };
