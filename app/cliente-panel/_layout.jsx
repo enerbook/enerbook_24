@@ -4,6 +4,7 @@ import { Slot, useRouter, useSegments } from 'expo-router';
 import ClienteAppLayout from '../../src/cliente/components/layout/ClienteAppLayout';
 import { ClienteAuthProvider } from '../../src/cliente/context/ClienteAuthContext';
 import { ClienteDashboardDataProvider } from '../../src/cliente/context/ClienteDashboardDataContext';
+import { ClienteProyectosProvider } from '../../src/cliente/context/ClienteProyectosContext';
 import { useAuth } from '../../src/context/AuthContext';
 import { useEffect } from 'react';
 
@@ -41,9 +42,11 @@ export default function ClientePanelLayout() {
     <View style={{ flex: 1 }}>
       <ClienteAuthProvider>
         <ClienteDashboardDataProvider>
-          <ClienteAppLayout activeTab={currentSegment}>
-            <Slot />
-          </ClienteAppLayout>
+          <ClienteProyectosProvider>
+            <ClienteAppLayout activeTab={currentSegment}>
+              <Slot />
+            </ClienteAppLayout>
+          </ClienteProyectosProvider>
         </ClienteDashboardDataProvider>
       </ClienteAuthProvider>
     </View>

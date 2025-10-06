@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../../lib/supabaseClient';
 import { useClienteAuth } from '../../../context/ClienteAuthContext';
+import { useClienteProyectos } from '../../../context/ClienteProyectosContext';
 import { useRouter } from 'expo-router';
 import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizaciones';
 import SolicitarCotizacionesModal from '../../modals/SolicitarCotizacionesModal';
@@ -8,12 +9,15 @@ import ReceiptUploadModal from '../../modals/ReceiptUploadModal';
 import DetallesProyectoSolar from '../DetallesProyectoSolar';
 import { authService } from '../../../services/authService';
 import { projectService } from '../../../services/projectService';
-import { quotationService } from '../../../services/quotationService';
 
 const ProyectosTab = () => {
-  const [proyectos, setProyectos] = useState([]);
-  const [cotizaciones, setCotizaciones] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    proyectos,
+    loading,
+    loadProyectos,
+    refreshProyectos,
+    getProjectQuotations
+  } = useClienteProyectos();
   const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
   const [showNuevoProyectoModal, setShowNuevoProyectoModal] = useState(false);
   const [selectedProyectoId, setSelectedProyectoId] = useState(null);
@@ -23,52 +27,12 @@ const ProyectosTab = () => {
   const router = useRouter();
 
   useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
-    setLoading(true);
-    try {
-      const user = await authService.getCurrentUser();
-      if (!user) {
-        console.error('No authenticated user');
-        setLoading(false);
-        return;
-      }
-
-      // Load user projects using projectService
-      try {
-        const proyectosData = await projectService.getClientProjects(user.id);
-        setProyectos(proyectosData || []);
-
-        // Load quotations for user projects
-        if (proyectosData && proyectosData.length > 0) {
-          const allQuotations = [];
-          for (const proyecto of proyectosData) {
-            try {
-              const quotations = await quotationService.getProjectQuotations(proyecto.id);
-              allQuotations.push(...quotations);
-            } catch (error) {
-              console.error(`Error loading quotations for project ${proyecto.id}:`, error);
-            }
-          }
-          setCotizaciones(allQuotations);
-        }
-      } catch (error) {
-        console.error('Error loading projects:', error);
-        setProyectos([]);
-      }
-
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadProyectos();
+  }, [loadProyectos]);
 
   const handleSuccessWithReload = (proyecto) => {
     handleSuccess(proyecto);
-    loadUserData(); // Reload data to show new project
+    refreshProyectos(); // Reload data to show new project
   };
 
   const handleSolicitarCotizaciones = () => {
@@ -94,7 +58,7 @@ const ProyectosTab = () => {
 
     try {
       await projectService.toggleProjectStatus(proyectoId, newStatus);
-      loadUserData(); // Reload projects after status change
+      refreshProyectos(); // Reload projects after status change
     } catch (error) {
       console.error('Error toggling project status:', error);
       alert('Error al cambiar el estado del proyecto. Por favor intenta de nuevo.');
@@ -147,7 +111,7 @@ const ProyectosTab = () => {
         setShowNuevoProyectoModal(false);
         setIsUploadingReceipt(false);
         setOcrData(null);
-        loadUserData();
+        refreshProyectos();
       }, 3000);
     } catch (error) {
       console.error('Error uploading receipt:', error);
@@ -163,7 +127,7 @@ const ProyectosTab = () => {
         proyectoId={selectedProyectoId}
         onClose={() => {
           setSelectedProyectoId(null);
-          loadUserData(); // Recargar datos al volver
+          refreshProyectos(); // Recargar datos al volver
         }}
       />
     );
@@ -213,7 +177,7 @@ const ProyectosTab = () => {
             ) : (
               <div className="space-y-4">
                 {proyectos.map((proyecto) => {
-                  const cotizacionesProyecto = cotizaciones.filter(c => c.proyectos_id === proyecto.id);
+                  const cotizacionesProyecto = getProjectQuotations(proyecto.id);
                   const fechaLimite = new Date(proyecto.fecha_limite).toLocaleDateString('es-MX');
                   const diasRestantes = Math.ceil((new Date(proyecto.fecha_limite) - new Date()) / (1000 * 60 * 60 * 24));
 

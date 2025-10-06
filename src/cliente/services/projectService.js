@@ -76,5 +76,46 @@ export const projectService = {
   // Pause project (close for new quotes)
   pauseProject: async (projectId) => {
     return projectService.toggleProjectStatus(projectId, 'cerrado');
+  },
+
+  // Get project with all related data in one query (optimized)
+  getProjectWithDetails: async (projectId) => {
+    const { data, error } = await supabase
+      .from('proyectos')
+      .select(`
+        *,
+        cotizaciones_inicial (*),
+        cotizaciones_final (
+          *,
+          proveedores (
+            id,
+            nombre_empresa,
+            nombre_contacto,
+            email,
+            telefono
+          )
+        )
+      `)
+      .eq('id', projectId)
+      .single();
+
+    if (error) throw error;
+
+    // Transform nested data for easier consumption
+    return {
+      proyecto: {
+        id: data.id,
+        titulo: data.titulo,
+        descripcion: data.descripcion,
+        estado: data.estado,
+        fecha_limite: data.fecha_limite,
+        usuarios_id: data.usuarios_id,
+        cotizaciones_inicial_id: data.cotizaciones_inicial_id,
+        created_at: data.created_at,
+        updated_at: data.updated_at
+      },
+      cotizacionInicial: data.cotizaciones_inicial || null,
+      cotizaciones: data.cotizaciones_final || []
+    };
   }
 };
