@@ -277,9 +277,10 @@ export const clientService = {
     return data;
   },
 
-  // Migrate lead data to client
+  // Migrate lead data to client and create initial project
   migrateLeadToClient: async (userId, leadData) => {
-    const { data, error } = await supabase
+    // Step 1: Insert cotizacion_inicial with lead data
+    const { data: cotizacionData, error: cotizacionError } = await supabase
       .from('cotizaciones_inicial')
       .insert({
         usuarios_id: userId,
@@ -292,7 +293,47 @@ export const clientService = {
       .select(COTIZACION_INICIAL_COLUMNS)
       .single();
 
-    if (error) throw error;
-    return data;
+    if (cotizacionError) throw cotizacionError;
+
+    // Step 2: Create initial project automatically
+    // Generate project details from lead data
+    const sizingResults = leadData.sizing_results || {};
+    const capacidadSistema = sizingResults.capacidad_sistema_kw || 0;
+    const ahorro = sizingResults.ahorro_promedio_mensual || 0;
+
+    const projectTitle = `Sistema Solar ${capacidadSistema > 0 ? `${capacidadSistema.toFixed(1)} kW` : 'Residencial'}`;
+    const projectDescription = `Proyecto generado automáticamente desde tu análisis de recibo CFE. ${
+      ahorro > 0 ? `Ahorro estimado: $${ahorro.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} MXN/mes.` : ''
+    } Sistema dimensionado para tu consumo energético.`.trim();
+
+    // Calculate deadline: 30 days from now
+    const fechaLimite = new Date();
+    fechaLimite.setDate(fechaLimite.getDate() + 30);
+
+    const { data: proyectoData, error: proyectoError } = await supabase
+      .from('proyectos')
+      .insert({
+        usuarios_id: userId,
+        cotizaciones_inicial_id: cotizacionData.id,
+        titulo: projectTitle,
+        descripcion: projectDescription,
+        estado: 'abierto',
+        fecha_limite: fechaLimite.toISOString()
+      })
+      .select('id, titulo, descripcion, estado, fecha_limite, created_at')
+      .single();
+
+    if (proyectoError) {
+      console.error('Error creating initial project:', proyectoError);
+      // Don't throw - cotizacion was created successfully
+      // Return cotizacion without proyecto
+      return { cotizacion: cotizacionData, proyecto: null };
+    }
+
+    // Return both cotizacion and proyecto
+    return {
+      cotizacion: cotizacionData,
+      proyecto: proyectoData
+    };
   }
 };

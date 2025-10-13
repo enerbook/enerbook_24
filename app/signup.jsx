@@ -67,14 +67,18 @@ export default function SignUp({ onNavigate }) {
       } else {
         // Si no necesita confirmación o la migración fue exitosa, redirigir al dashboard
         setError('');
-        if (result.migrated) {
+        if (result.migrated && result.projectCreated) {
+          console.log('Lead migration completed successfully - Project created automatically');
+          // Mostrar mensaje de éxito antes de redirigir
+          alert('¡Bienvenido a Enerbook! Tu análisis de recibo CFE ha sido guardado y tu proyecto solar ha sido creado automáticamente. Ya puedes solicitar cotizaciones de instaladores.');
+        } else if (result.migrated) {
           console.log('Lead migration completed successfully');
         }
 
         // Redirección inmediata al dashboard
         setTimeout(() => {
           router.replace('/cliente-panel');
-        }, 100);
+        }, result.migrated && result.projectCreated ? 500 : 100);
       }
     } catch (error) {
       setError(error.message || 'Error durante el registro');

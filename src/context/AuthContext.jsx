@@ -314,7 +314,8 @@ export const AuthProvider = ({ children }) => {
         return signupResult;
       }
 
-      await clientService.migrateLeadToClient(
+      // Migrate lead data and create initial project
+      const migrationResult = await clientService.migrateLeadToClient(
         signupResult.data.user.id,
         leadData
       );
@@ -326,8 +327,17 @@ export const AuthProvider = ({ children }) => {
       setClientData(clientDataResult);
       setUserType('cliente');
 
-      authLogger.success('Lead migrated to client successfully', { userId: signupResult.data.user.id });
-      return { ...signupResult, migrated: true };
+      authLogger.success('Lead migrated to client successfully', {
+        userId: signupResult.data.user.id,
+        proyectoCreado: !!migrationResult.proyecto
+      });
+
+      return {
+        ...signupResult,
+        migrated: true,
+        projectCreated: !!migrationResult.proyecto,
+        projectId: migrationResult.proyecto?.id
+      };
 
     } catch (error) {
       authLogger.error('Error migrating lead to client', { error: error.message });
