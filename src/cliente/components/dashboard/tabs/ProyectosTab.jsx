@@ -181,6 +181,27 @@ const ProyectosTab = () => {
                   const fechaLimite = new Date(proyecto.fecha_limite).toLocaleDateString('es-MX');
                   const diasRestantes = Math.ceil((new Date(proyecto.fecha_limite) - new Date()) / (1000 * 60 * 60 * 24));
 
+                  // Extraer datos técnicos de cotizaciones_inicial
+                  const cotizacionInicial = proyecto.cotizaciones_inicial;
+                  const sizingResults = cotizacionInicial?.sizing_results || {};
+                  const reciboData = cotizacionInicial?.recibo_cfe || {};
+                  const resumenEnergetico = cotizacionInicial?.resumen_energetico || {};
+
+                  // Debug temporal
+                  console.log('Proyecto:', proyecto.id);
+                  console.log('sizing_results:', sizingResults);
+                  console.log('Keys en sizing_results:', Object.keys(sizingResults));
+
+                  // Formatear datos con valores por defecto
+                  const potenciaRecomendada = sizingResults?.kWp_needed
+                    ? parseFloat(sizingResults.kWp_needed).toFixed(2)
+                    : 'N/A';
+                  const numeroPaneles = sizingResults?.n_panels || 'N/A';
+                  const consumoPromedio = resumenEnergetico?.consumo_promedio
+                    ? Math.round(resumenEnergetico.consumo_promedio)
+                    : 'N/A';
+                  const tarifa = reciboData?.tarifa || 'N/A';
+
                   return (
                     <div
                       key={proyecto.id}
@@ -201,6 +222,40 @@ const ProyectosTab = () => {
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 mb-3">{proyecto.descripcion}</p>
+
+                        {/* Resumen técnico del proyecto */}
+                        <div className="bg-gray-50 rounded-lg p-3 mb-3 space-y-2">
+                          <h4 className="text-xs font-semibold text-gray-700 mb-2">Información Técnica</h4>
+
+                          {/* Grid de información */}
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <p className="text-xs text-gray-500">Potencia recomendada</p>
+                              <p className="text-xs font-semibold text-gray-900">
+                                {potenciaRecomendada} kW
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Paneles sugeridos</p>
+                              <p className="text-xs font-semibold text-gray-900">
+                                {numeroPaneles} paneles
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Consumo promedio</p>
+                              <p className="text-xs font-semibold text-gray-900">
+                                {consumoPromedio} kWh/mes
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Tarifa CFE</p>
+                              <p className="text-xs font-semibold text-gray-900">
+                                {tarifa}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <span>Fecha límite: {fechaLimite}</span>
                           <span className={diasRestantes > 7 ? 'text-green-600' : diasRestantes > 0 ? 'text-orange-600' : 'text-red-600'}>
@@ -230,23 +285,16 @@ const ProyectosTab = () => {
                       </div>
 
                       {/* Action buttons */}
-                      <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-                        <button
-                          onClick={handleSolicitarCotizaciones}
-                          className="flex-1 px-3 py-2 rounded-lg text-white text-xs font-medium hover:opacity-90 transition-opacity"
-                          style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
-                        >
-                          Solicitar Cotizaciones
-                        </button>
+                      <div className="mt-4 pt-4 border-t border-gray-100">
                         <button
                           onClick={(e) => handleToggleProjectStatus(proyecto.id, proyecto.estado, e)}
-                          className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                          className={`w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                             proyecto.estado === 'abierto'
                               ? 'border border-orange-300 text-orange-600 hover:bg-orange-50'
                               : 'border border-green-300 text-green-600 hover:bg-green-50'
                           }`}
                         >
-                          {proyecto.estado === 'abierto' ? 'Pausar' : 'Publicar'}
+                          {proyecto.estado === 'abierto' ? 'Pausar Proyecto' : 'Publicar Proyecto'}
                         </button>
                       </div>
                     </div>

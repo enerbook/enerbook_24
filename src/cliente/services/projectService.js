@@ -10,7 +10,10 @@ export const projectService = {
   getClientProjects: async (clientId) => {
     const { data, error } = await supabase
       .from('proyectos')
-      .select('*')
+      .select(`
+        *,
+        cotizaciones_inicial (*)
+      `)
       .eq('usuarios_id', clientId)
       .order('created_at', { ascending: false });
 
