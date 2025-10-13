@@ -1,6 +1,6 @@
 import React from 'react';
-import DashboardTab from '../../src/cliente/components/dashboard/tabs/DashboardTab';
+import ProyectosTab from '../../src/cliente/components/dashboard/tabs/ProyectosTab';
 
 export default function DashboardPage() {
-  return <DashboardTab />;
+  return <ProyectosTab />;
 }
