@@ -6,7 +6,6 @@ import { useRouter } from 'expo-router';
 import { useSolicitarCotizaciones } from '../../../hooks/useSolicitarCotizaciones';
 import SolicitarCotizacionesModal from '../../modals/SolicitarCotizacionesModal';
 import ReceiptUploadModal from '../../modals/ReceiptUploadModal';
-import DetallesProyectoSolar from '../DetallesProyectoSolar';
 import { authService } from '../../../services/authService';
 import { projectService } from '../../../services/projectService';
 
@@ -20,7 +19,6 @@ const ProyectosTab = () => {
   } = useClienteProyectos();
   const { isModalOpen, openModal, closeModal, handleSuccess } = useSolicitarCotizaciones();
   const [showNuevoProyectoModal, setShowNuevoProyectoModal] = useState(false);
-  const [selectedProyectoId, setSelectedProyectoId] = useState(null);
   const [ocrData, setOcrData] = useState(null);
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const { userType } = useClienteAuth();
@@ -120,19 +118,6 @@ const ProyectosTab = () => {
     }
   };
 
-  // Si hay un proyecto seleccionado, mostrar la vista de detalles
-  if (selectedProyectoId) {
-    return (
-      <DetallesProyectoSolar
-        proyectoId={selectedProyectoId}
-        onClose={() => {
-          setSelectedProyectoId(null);
-          refreshProyectos(); // Recargar datos al volver
-        }}
-      />
-    );
-  }
-
   return (
     <main className="flex-1 px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
       <div className="space-y-8">
@@ -201,7 +186,7 @@ const ProyectosTab = () => {
                       className="bg-white rounded-lg p-4 border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all"
                     >
                       <div
-                        onClick={() => setSelectedProyectoId(proyecto.id)}
+                        onClick={() => router.push(`/proyecto/${proyecto.id}`)}
                         className="cursor-pointer"
                       >
                         <div className="flex items-center justify-between mb-3">

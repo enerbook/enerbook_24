@@ -13,7 +13,7 @@ const RootLayoutNav = () => {
   useEffect(() => {
     if (loading) return;
 
-    const inProtectedRoute = segments[0] === 'instalador-panel' || segments[0] === 'lead-panel' || segments[0] === 'cliente-panel' || segments[0] === 'admin';
+    const inProtectedRoute = segments[0] === 'instalador-panel' || segments[0] === 'lead-panel' || segments[0] === 'cliente-panel' || segments[0] === 'admin' || segments[0] === 'proyecto';
     const inAuthRoute = segments[0] === 'installer-login' || segments[0] === 'login' || segments[0] === 'installer-signup' || segments[0] === 'signup';
 
     // Obtener la URL completa actual
@@ -34,7 +34,7 @@ const RootLayoutNav = () => {
         } else {
           router.replace('/login');
         }
-      } else if (segments[0] === 'cliente-panel') {
+      } else if (segments[0] === 'cliente-panel' || segments[0] === 'proyecto') {
         router.replace('/login');
       } else if (segments[0] === 'instalador-panel') {
         router.replace('/installer-login');
