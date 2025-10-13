@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { router } from 'expo-router';
 import LoginNavbar from '../src/cliente/components/auth/LoginNavbar';
 import { useAuth } from '../src/context/AuthContext';
+import PublicarProyectoModal from '../src/cliente/components/modals/PublicarProyectoModal';
 
 export default function SignUp({ onNavigate }) {
   const { clientSignup, migrateLeadToClient, userType, leadData } = useAuth();
@@ -14,6 +15,8 @@ export default function SignUp({ onNavigate }) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPublicarModal, setShowPublicarModal] = useState(false);
+  const [createdProjectId, setCreatedProjectId] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -21,6 +24,17 @@ export default function SignUp({ onNavigate }) {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleModalClose = () => {
+    setShowPublicarModal(false);
+    // Redirigir al dashboard después de cerrar el modal
+    router.replace('/cliente-panel');
+  };
+
+  const handlePublishSuccess = () => {
+    // El modal se cerrará automáticamente y redirigirá
+    console.log('Project published successfully');
   };
 
   const handleSubmit = async (e) => {
@@ -65,20 +79,25 @@ export default function SignUp({ onNavigate }) {
           router.push('/login');
         }, 3000);
       } else {
-        // Si no necesita confirmación o la migración fue exitosa, redirigir al dashboard
+        // Si no necesita confirmación o la migración fue exitosa
         setError('');
-        if (result.migrated && result.projectCreated) {
+        if (result.migrated && result.projectCreated && result.projectId) {
           console.log('Lead migration completed successfully - Project created automatically');
-          // Mostrar mensaje de éxito antes de redirigir
-          alert('¡Bienvenido a Enerbook! Tu análisis de recibo CFE ha sido guardado y tu proyecto solar ha sido creado automáticamente. Ya puedes solicitar cotizaciones de instaladores.');
+          // Guardar projectId y mostrar modal
+          setCreatedProjectId(result.projectId);
+          setShowPublicarModal(true);
         } else if (result.migrated) {
-          console.log('Lead migration completed successfully');
+          console.log('Lead migration completed successfully without project');
+          // Redirigir directamente si no se creó proyecto
+          setTimeout(() => {
+            router.replace('/cliente-panel');
+          }, 100);
+        } else {
+          // Signup normal sin migración
+          setTimeout(() => {
+            router.replace('/cliente-panel');
+          }, 100);
         }
-
-        // Redirección inmediata al dashboard
-        setTimeout(() => {
-          router.replace('/cliente-panel');
-        }, result.migrated && result.projectCreated ? 500 : 100);
       }
     } catch (error) {
       setError(error.message || 'Error durante el registro');
@@ -252,6 +271,16 @@ export default function SignUp({ onNavigate }) {
           </div>
         </aside>
       </div>
+
+      {/* Modal de publicación de proyecto */}
+      {showPublicarModal && createdProjectId && (
+        <PublicarProyectoModal
+          isOpen={showPublicarModal}
+          onClose={handleModalClose}
+          projectId={createdProjectId}
+          onPublish={handlePublishSuccess}
+        />
+      )}
     </>
   );
 }

@@ -317,7 +317,7 @@ export const clientService = {
         cotizaciones_inicial_id: cotizacionData.id,
         titulo: projectTitle,
         descripcion: projectDescription,
-        estado: 'abierto',
+        estado: 'cerrado',
         fecha_limite: fechaLimite.toISOString()
       })
       .select('id, titulo, descripcion, estado, fecha_limite, created_at')

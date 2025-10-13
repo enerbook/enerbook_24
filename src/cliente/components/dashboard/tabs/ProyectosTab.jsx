@@ -148,10 +148,8 @@ const ProyectosTab = () => {
           </button>
         </div>
 
-        {/* Mis Cotizaciones */}
+        {/* Projects List */}
         <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
-          <h2 className="text-sm font-bold text-gray-900 mb-6">Mis Cotizaciones</h2>
-
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
@@ -183,14 +181,9 @@ const ProyectosTab = () => {
 
                   // Extraer datos técnicos de cotizaciones_inicial
                   const cotizacionInicial = proyecto.cotizaciones_inicial;
-                  const sizingResults = cotizacionInicial?.sizing_results || {};
+                  const sizingResults = cotizacionInicial?.sizing_results?.results || {};
                   const reciboData = cotizacionInicial?.recibo_cfe || {};
                   const resumenEnergetico = cotizacionInicial?.resumen_energetico || {};
-
-                  // Debug temporal
-                  console.log('Proyecto:', proyecto.id);
-                  console.log('sizing_results:', sizingResults);
-                  console.log('Keys en sizing_results:', Object.keys(sizingResults));
 
                   // Formatear datos con valores por defecto
                   const potenciaRecomendada = sizingResults?.kWp_needed
