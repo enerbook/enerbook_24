@@ -3,7 +3,16 @@
     "allow": [
       "Bash(rm:*)",
       "Bash(mkdir:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(curl:*)",
+      "Bash(supabase functions deploy:*)",
+      "Bash(supabase db dump:*)",
+      "Bash(supabase projects list:*)",
+      "Bash(supabase status:*)",
+      "Bash(python3:*)",
+      "Bash(npm install:*)",
+      "Bash(supabase projects api-keys:*)",
+      "Read(//private/tmp/**)"
     ],
     "deny": [],
     "ask": []

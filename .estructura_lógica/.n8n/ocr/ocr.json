@@ -22,7 +22,7 @@
         2384,
         144
       ],
-      "id": "147d670c-8502-4782-845f-b07ba9c97738",
+      "id": "1a1d3d63-fe29-422c-add9-b8e1b19366fa",
       "name": "HTTP Request1",
       "credentials": {
         "mistralCloudApi": {
@@ -48,7 +48,7 @@
         2608,
         144
       ],
-      "id": "df9e061a-be6b-4c85-8c42-1b5f8a203cbc",
+      "id": "39f83bfd-794e-4849-9f17-9073605d58a0",
       "name": "HTTP Request2",
       "credentials": {
         "mistralCloudApi": {
@@ -86,7 +86,7 @@
         2160,
         144
       ],
-      "id": "76c122b0-2eeb-4f04-85f3-166654dfd653",
+      "id": "298934b4-0f62-47bb-b782-86ca561642ab",
       "name": "Posterior",
       "credentials": {
         "mistralCloudApi": {
@@ -97,7 +97,7 @@
     },
     {
       "parameters": {
-        "text": "={\n  \"prompt\": {\n    \"role\": \"Extractor de Datos\",\n    \"description\": \"Extrae los datos de consumo mensual en kWh desde una tabla de texto plano como la que aparece en una factura CFE. Busca tablas con columnas de período, demanda kW, consumo kWh, factor potencia, etc.\",\n    \"input_data\": \"{{ $json.pages[0].markdown }}\",\n    \"rules\": [\n      {\n        \"rule\": \"Busca tablas que contengan columnas como 'Periodo', 'Consumo total kWh', 'Demanda kW', etc.\"\n      },\n      {\n        \"rule\": \"Extrae SOLO el período (mes y año) y el consumo en kWh de cada fila.\"\n      },\n      {\n        \"rule\": \"El período debe estar en formato MES + año de 2 dígitos (ej: JUN24, FEB25, DIC24).\"\n      },\n      {\n        \"rule\": \"Si el mes aparece como 3 letras (JUN, FEB, DIC), manténlo así. Si aparece completo, abrevia a 3 letras en español.\"\n      },\n      {\n        \"rule\": \"El consumo debe ser solo el número entero de kWh, sin comas ni símbolos.\"\n      },\n      {\n        \"rule\": \"Si hay filas duplicadas del mismo mes con diferentes consumos, mantén ambas por separado.\"\n      },\n      {\n        \"rule\": \"Ignora encabezados, totales, promedios y cualquier dato que no sea un período específico.\"\n      },\n      {\n        \"rule\": \"Si el consumo contiene comas (ej: 42,842), elimina las comas (42842).\"\n      },\n      {\n        \"rule\": \"Ordena los datos cronológicamente del más antiguo al más reciente.\"\n      },\n      {\n        \"rule\": \"NO inventes valores. Usa SOLO los que están claramente indicados en la tabla.\"\n      },\n      {\n        \"rule\": \"El resultado debe ser ÚNICAMENTE JSON válido, sin texto adicional, explicaciones ni comentarios.\"\n      },\n\n    ],\n    \"output_example\": {\n      \"consumo_historico\": [\n        {\"periodo\": \"JUN24\", \"kwh\": 42842},\n        {\"periodo\": \"JUL24\", \"kwh\": 56355},\n        {\"periodo\": \"AGO24\", \"kwh\": 60341}\n      ],\n      \"consumo_max\": 62988\n    },\n    \"response_format\": \"JSON\"\n  }\n}",
+        "text": "={\n  \"prompt\": {\n    \"role\": \"Extractor de Datos de Factura CFE\",\n    \"description\": \"Extrae los datos de consumo mensual en kWh desde una tabla markdown de una factura CFE. La tabla contiene rangos de fechas de facturación que deben convertirse al período correcto.\",\n    \"input_data\": \"{{ $json.pages[0].markdown }}\",\n    \"rules\": [\n      {\n        \"rule\": \"CRÍTICO: Los períodos en la tabla aparecen como rangos de fechas (ej: 'del 07 AGO 24 al 08 OCT 24'). Debes extraer ÚNICAMENTE la FECHA FINAL del rango (segundo mes y año).\"\n      },\n      {\n        \"rule\": \"EJEMPLO: 'del 07 AGO 24 al 08 OCT 24' → el período es 'OCT24' (no AGO24)\"\n      },\n      {\n        \"rule\": \"EJEMPLO: 'del 07 FEB 25 al 07 ABR 25' → el período es 'ABR25' (no FEB25)\"\n      },\n      {\n        \"rule\": \"El formato del período debe ser SIEMPRE: 3 letras del mes en MAYÚSCULAS + 2 dígitos del año (ej: OCT24, ABR25, DIC23)\"\n      },\n      {\n        \"rule\": \"Los meses abreviados válidos son: ENE, FEB, MAR, ABR, MAY, JUN, JUL, AGO, SEP, OCT, NOV, DIC\"\n      },\n      {\n        \"rule\": \"Si el mes ya está abreviado en 3 letras (JUN, FEB, DIC, AGO, OCT, ABR), manténlo tal cual\"\n      },\n      {\n        \"rule\": \"El año debe ser de 2 dígitos: 23, 24, 25, etc.\"\n      },\n      {\n        \"rule\": \"Extrae el consumo en kWh de la columna correspondiente como número entero\"\n      },\n      {\n        \"rule\": \"Si el consumo contiene comas (ej: 42,842), elimínalas para obtener el número entero (42842)\"\n      },\n      {\n        \"rule\": \"Ignora las columnas de 'Importe', 'Pagos' y 'Pendientes de Pago'\"\n      },\n      {\n        \"rule\": \"Elimina cualquier símbolo de moneda ($) y puntos decimales del consumo\"\n      },\n      {\n        \"rule\": \"Calcula 'consumo_max' como el valor máximo de kWh entre todos los períodos extraídos\"\n      },\n      {\n        \"rule\": \"NO incluyas encabezados, totales, promedios o filas sin datos válidos\"\n      },\n      {\n        \"rule\": \"Si una celda está vacía o no contiene datos numéricos de consumo, omite esa fila\"\n      },\n      {\n        \"rule\": \"NO inventes valores. Usa ÚNICAMENTE los datos presentes en la tabla\"\n      },\n      {\n        \"rule\": \"El orden de los elementos en 'consumo_historico' debe mantener el orden cronológico de la tabla (del más reciente al más antiguo o viceversa según aparezca)\"\n      },\n      {\n        \"rule\": \"CRÍTICO: El resultado debe ser ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin explicaciones, sin markdown, sin bloques de código. Solo el JSON puro.\"\n      }\n    ],\n    \"output_example\": {\n      \"consumo_historico\": [\n        {\"periodo\": \"ABR25\", \"kwh\": 198},\n        {\"periodo\": \"FEB25\", \"kwh\": 196},\n        {\"periodo\": \"DIC24\", \"kwh\": 183},\n        {\"periodo\": \"OCT24\", \"kwh\": 204},\n        {\"periodo\": \"AGO24\", \"kwh\": 192},\n        {\"periodo\": \"JUN24\", \"kwh\": 223},\n        {\"periodo\": \"ABR24\", \"kwh\": 200},\n        {\"periodo\": \"FEB24\", \"kwh\": 193},\n        {\"periodo\": \"DIC23\", \"kwh\": 247},\n        {\"periodo\": \"OCT23\", \"kwh\": 268},\n        {\"periodo\": \"AGO23\", \"kwh\": 268}\n      ],\n      \"consumo_max\": 268\n    },\n    \"response_format\": \"JSON\",\n    \"validation\": {\n      \"check\": \"Verifica que cada período extraído corresponda a la FECHA FINAL del rango mostrado en la tabla\",\n      \"example_correct\": \"'del 07 JUN 24 al 07 AGO 24' → AGO24 ✓\",\n      \"example_wrong\": \"'del 07 JUN 24 al 07 AGO 24' → JUN24 ✗\"\n    }\n  }\n}",
         "schemaType": "fromJson",
         "jsonSchemaExample": "{\n  \"consumo_historico\": [{\n    \"periodo\": \"\",\n    \"kwh\": 0\n  }],\n  \"consumo_max\": 0\n}",
         "options": {}
@@ -108,7 +108,7 @@
         2816,
         144
       ],
-      "id": "78c9d4d6-5a4c-40e0-b020-16b8ccd26770",
+      "id": "1c3c3d19-5071-45f5-9323-fa1ddb19e7d7",
       "name": "datos_recibo_posterior_cfe"
     },
     {
@@ -122,7 +122,7 @@
         1504,
         -176
       ],
-      "id": "99be281b-c1b0-42b6-983c-509f7cba52e6"
+      "id": "89d86363-f04e-4435-b990-91c6f35fa588"
     },
     {
       "parameters": {
@@ -136,7 +136,7 @@
         1728,
         -176
       ],
-      "id": "fb007ad0-42cb-498f-9b99-b89387c15e09",
+      "id": "732f3a16-8d84-448d-b75e-aa90881fcc3b",
       "name": "Query Cache",
       "alwaysOutputData": true,
       "executeOnce": false,
@@ -179,7 +179,7 @@
         1936,
         -176
       ],
-      "id": "26a419f7-9c86-41c8-8297-230236fb9248",
+      "id": "7a23ba52-901f-4541-8277-fc80f9c0b12b",
       "name": "Cache Exists?"
     },
     {
@@ -194,7 +194,7 @@
         2640,
         -144
       ],
-      "id": "561ad77a-6061-461e-8f58-6e7689635e0f",
+      "id": "db8d2bf3-b7bb-41c1-89e8-90ba9dc910bb",
       "name": "Save to Cache",
       "credentials": {
         "postgres": {
@@ -214,7 +214,7 @@
         2896,
         -64
       ],
-      "id": "3d05215d-4cdc-452c-8a45-f550c603981f"
+      "id": "62ef73dc-69a6-4fc4-b9f0-6c8d03be56dd"
     },
     {
       "parameters": {
@@ -238,7 +238,7 @@
         240,
         -176
       ],
-      "id": "7747bd9b-bd1e-40a1-9806-00ecf823d6d1",
+      "id": "118eb3e8-9bc2-4333-87d9-a8e17848a079",
       "name": "HTTP Request",
       "credentials": {
         "mistralCloudApi": {
@@ -264,7 +264,7 @@
         464,
         -176
       ],
-      "id": "fc52a0cc-ad85-4b13-827e-84749f380c8d",
+      "id": "69944a98-d18d-42d9-a48a-b756ffbbf1c0",
       "name": "HTTP Request6",
       "credentials": {
         "mistralCloudApi": {
@@ -303,25 +303,7 @@
         1280,
         -176
       ],
-      "id": "2b05c266-e8c7-4dc4-8dc6-b963bc5481be"
-    },
-    {
-      "parameters": {
-        "text": "=Extrae los datos del recibo CFE del siguiente texto y devuelve ÚNICAMENTE un JSON válido sin explicaciones adicionales.\nREGLAS DE EXTRACCIÓN:\n- no_servicio: busca \"NO. DE SERVICIO:\" y extrae el número\n- RMU: busca \"RMU:\" y extrae el número  \n- cuenta: busca \"CFE CUENTA:\" y extrae el código\n- tarifa: busca \"TARIFA:\" y extrae el código (ej: GDMTH)\n- no_medidor: busca \"NO. MEDIDOR:\" y extrae el código\n- multiplicador: busca \"MULTIPLICADOR:\" y extrae el número\n- no_hilos: busca \"NO HILOS:\" y extrae el número\n- nombre: nombre del cliente (aparece después de los datos de CFE)\n- direccion: dirección completa del cliente tal como aparece en el recibo\n- direccion_formatted: reformatea la dirección para Google Places API siguiendo estas reglas generales para México:\n  * Convierte a formato título (primera letra mayúscula)\n  * Elimina referencias técnicas: NAVE, BODEGA, LOCAL, DEPTO, OFICINA, PISO, INTERIOR + números\n  * Estandariza: AV/AVE → Av., CALLE → Calle, BLVD → Blvd., COL → Col., FRACC → Fracc.\n  * Convierte abreviaciones de estados a nombres completos + \", México\"\n  * Estructura limpia: \"Calle Número, Colonia, CP Ciudad, Estado, México\"\n- periodo_inicio: fecha inicio del período, convierte formato \"31 MAY 25\" a \"2025-05-31\"\n- periodo_fin: fecha fin del período, convierte formato \"30 JUN 25\" a \"2025-06-30\"\n- kwh_total: suma todos los consumos kWh (base + intermedia + otros)\n- total_pagar_mxn: extrae solo el número del monto total a pagar\n\nTEXTO DEL RECIBO:\n{{ $json.pages[0].markdown }}\n\n",
-        "schemaType": "fromJson",
-        "jsonSchemaExample": "{\n  \"no_servicio\": \"\",\n  \"RMU\": \"\",\n  \"cuenta\": \"\",\n  \"tarifa\": \"\",\n  \"no_medidor\": \"\",\n  \"multiplicador\": \"\",\n  \"no_hilos\": \"\",\n  \"nombre\": \"\",\n  \"direccion\": \"\",\n  \"periodo_inicio\": \"YYYY-MM-DD\",\n  \"periodo_fin\": \"YYYY-MM-DD\",\n  \"kwh_total\": \"\",\n  \"total_pagar_mxn\": \"\"\n}",
-        "options": {
-          "systemPromptTemplate": "Eres un extractor de datos especializado en recibos CFE. Devuelves solo JSON válido."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
-      "typeVersion": 1.2,
-      "position": [
-        688,
-        -176
-      ],
-      "id": "25d8926b-77c0-4a6d-9ece-cd85ed0079fe",
-      "name": "datos_recibo_frontal_cfe1"
+      "id": "2ae52357-695c-4ac8-8567-c8290da41ff0"
     },
     {
       "parameters": {
@@ -337,7 +319,7 @@
         4016,
         -176
       ],
-      "id": "2bcb29c8-ab3b-4162-ba0a-cbda0a31d9fe",
+      "id": "cabb439a-7d6c-4f90-affe-281554af323d",
       "name": "Irradiación1"
     },
     {
@@ -364,7 +346,7 @@
         1056,
         -176
       ],
-      "id": "8d68c3a0-d7e6-4282-9d9f-76b31567c050"
+      "id": "67c3fe86-3adf-48be-ab3f-b7bd1f7aa37c"
     },
     {
       "parameters": {
@@ -377,7 +359,7 @@
         2384,
         -64
       ],
-      "id": "98f5c9c9-7157-4a1e-bcad-7beced1fc711"
+      "id": "fdb368a6-dcb7-41bc-a1ff-40c720f14113"
     },
     {
       "parameters": {
@@ -408,7 +390,7 @@
         16,
         -176
       ],
-      "id": "2259519f-a48d-481a-9a78-77ad4922838c",
+      "id": "22e1b6d4-ae52-400a-b22b-fed2df1d8276",
       "name": "Frontal",
       "credentials": {
         "mistralCloudApi": {
@@ -427,7 +409,7 @@
         3584,
         -176
       ],
-      "id": "a9fa1bdc-f2a7-46b6-b6d2-ce51a478196c",
+      "id": "b396c82c-d333-4f96-82d9-b63e4a53b320",
       "name": "Code"
     },
     {
@@ -442,7 +424,7 @@
         3808,
         -176
       ],
-      "id": "27b44d1b-44b4-40d2-bbac-737ab3eae405",
+      "id": "5f3e54dc-c83a-4d5a-bb9e-ba6f7ca635d3",
       "name": "Save Temp Quote",
       "credentials": {
         "postgres": {
@@ -463,7 +445,7 @@
         3184,
         -176
       ],
-      "id": "6d56ca7a-9e81-42b0-9e34-b6fa9426cfd4",
+      "id": "d50068be-3969-4765-b06f-8dc1a922ae4f",
       "name": "Merge"
     },
     {
@@ -477,12 +459,12 @@
         3392,
         -176
       ],
-      "id": "01d8cc94-5407-414f-9e65-a3dfc7b72e8f"
+      "id": "91dacb31-30cd-4d65-a585-2736fb80c02d"
     },
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "ocr-clientes",
+        "path": "ocr-input",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -492,9 +474,9 @@
         -864,
         128
       ],
-      "id": "eca66f6d-e9b0-45dd-977c-c51890ec5e41",
+      "id": "669e91b7-fa9b-4ccc-945b-92f111cb7d57",
       "name": "Input",
-      "webhookId": "cf3963cf-fb09-42f1-9ad3-a7954dfa5d0a"
+      "webhookId": "ac352058-a428-4e50-b361-d7d62480c7e7"
     },
     {
       "parameters": {
@@ -506,7 +488,7 @@
         -640,
         128
       ],
-      "id": "7e99c0be-f555-4fbb-a2a0-857a8235af70",
+      "id": "f06eb2c2-849a-4cb7-a123-49808460e40d",
       "name": "Code1"
     },
     {
@@ -522,7 +504,7 @@
         -432,
         128
       ],
-      "id": "d93b680a-974c-4d41-bb25-8405730002e4",
+      "id": "c7bfed0f-2ca0-4743-a16f-53145a28f42b",
       "name": "Switch"
     },
     {
@@ -569,21 +551,48 @@
         2160,
         -64
       ],
-      "id": "3e6752d3-45ec-455e-946c-ed86023ac01f"
+      "id": "a4e1b0f4-19e4-4853-8af6-49e974db9de0"
     },
     {
       "parameters": {
-        "modelName": "models/gemini-2.5-pro",
+        "model": {
+          "__rl": true,
+          "value": "claude-3-haiku-20240307",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 3"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
       "position": [
-        1104,
-        656
+        1712,
+        512
       ],
-      "id": "ded8b6bf-c285-4dd5-8b68-cd04e8219dc5",
-      "name": "Google Gemini Chat Model"
+      "id": "bf68fb42-0c4a-4bce-8162-4fc827ddbfa3",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "CoNkmjeMGzkDNaXN",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={\n  \"role\": \"Extractor Especializado de Recibos CFE\",\n  \"description\": \"Extrae información completa de recibos de la Comisión Federal de Electricidad (CFE) de México. Devuelve ÚNICAMENTE JSON válido sin explicaciones adicionales.\",\n  \"input_data\": \"{{ $json.pages[0].markdown }}\",\n  \"instrucciones\": \"Lee TODO el texto completo antes de extraer. NO cortes información parcial - extrae campos completos. Si un campo no existe, usa null. El resultado debe ser SOLO JSON válido, sin markdown, sin bloques de código, sin explicaciones.\",\n  \"campos_a_extraer\": {\n    \"no_servicio\": \"Busca 'NO. DE SERVICIO:' y extrae el número completo (generalmente 12 dígitos). Ejemplo: 219890418432\",\n    \"RMU\": \"Busca 'RMU:' y extrae el código completo incluyendo números, guiones y texto (incluye TODO hasta el siguiente campo). Ejemplo: 72270 89-04-01 XAXX-010101 061 CFE\",\n    \"cuenta\": \"Busca 'CUENTA:' o 'CFE CUENTA:' y extrae el código alfanumérico completo (generalmente 16 caracteres). Ejemplo: 12DV08C011231540\",\n    \"tarifa\": \"Busca 'TARIFA:' y extrae el código (puede ser numérico como 01 o alfanumérico como GDMTH). Ejemplo: 01\",\n    \"no_medidor\": \"Busca 'NO. MEDIDOR:' o 'NO MEDIDOR:' y extrae el identificador completo. Ejemplo: 0B48J7\",\n    \"multiplicador\": \"Busca 'MULTIPLICADOR:' y extrae el número. Ejemplo: 1\",\n    \"no_hilos\": \"Busca 'NO HILOS:' o 'NO. HILOS:' y extrae el número (generalmente 1, 2 o 3). Ejemplo: 1\",\n    \"nombre\": \"Busca el nombre del cliente al inicio del recibo, antes de la dirección (generalmente en MAYÚSCULAS después del logo CFE). Ejemplo: FELIPE CARRANZA R\",\n    \"direccion\": \"Extrae la dirección COMPLETA del cliente tal como aparece en el recibo, sin modificar. Incluye calle, número, colonia, código postal, ciudad y estado. Ejemplo: 42 NTE 2207 PROLG 22 PINO SUAREZ Y BLVD XONACA DIEZ DE MAYO 08JC.P.72270 PUEBLA,PUE.\",\n    \"direccion_formatted\": \"Reformatea la dirección: 1) Convierte a formato título (primera letra mayúscula). 2) Elimina referencias: NAVE, BODEGA, LOCAL, DEPTO, OFICINA, PISO, INTERIOR + números. 3) Estandariza: AV/AVE a Av., CALLE a Calle, BLVD a Blvd., COL a Col., FRACC a Fracc. 4) Convierte estados: PUE a Puebla, QRO a Querétaro, CDMX/DF a Ciudad de México. 5) Agrega ', México' al final. Formato: 'Calle Número, Colonia, CP Ciudad, Estado, México'\",\n    \"periodo_inicio\": \"Busca 'PERIODO FACTURADO:' y extrae la primera fecha. Convierte del formato 'DD MES AA' (ejemplo: 07 ABR 25) al formato ISO 8601 'YYYY-MM-DD' (ejemplo: 2025-04-07). Meses: ENE=01, FEB=02, MAR=03, ABR=04, MAY=05, JUN=06, JUL=07, AGO=08, SEP=09, OCT=10, NOV=11, DIC=12. Año: 25=2025, 24=2024.\",\n    \"periodo_fin\": \"Busca 'PERIODO FACTURADO:' y extrae la segunda fecha (después del guión o 'al'). Convierte del formato 'DD MES AA' (ejemplo: 06 JUN 25) al formato ISO 8601 'YYYY-MM-DD' (ejemplo: 2025-06-06).\",\n    \"kwh_total\": \"Busca en la tabla de consumo 'Energía (kWh)' la columna 'Total período' y suma TODOS los valores de kWh (Básico + Intermedio + Excedente). Devuelve como número entero sin decimales ni comas. Ejemplo: si Básico=150 e Intermedio=27, entonces 177\",\n    \"total_pagar_mxn\": \"Busca el monto total a pagar (aparece como 'TOTAL A PAGAR:' o 'Total' en tabla de desglose con símbolo $). Elimina símbolos de moneda y comas, convierte a número decimal con punto y 2 decimales. Ejemplo: $242 = 242.00 o 242.56 = 242.56\"\n  },\n  \"validaciones\": \"Verifica que no_servicio tenga al menos 10 dígitos, que cuenta sea alfanumérico, que fechas estén en formato YYYY-MM-DD, que kwh_total y total_pagar_mxn sean numéricos. Si algún campo no se encuentra, asigna null.\",\n  \"ejemplo_salida\": {\n    \"no_servicio\": \"219890418432\",\n    \"RMU\": \"72270 89-04-01 XAXX-010101 061 CFE\",\n    \"cuenta\": \"12DV08C011231540\",\n    \"tarifa\": \"01\",\n    \"no_medidor\": \"0B48J7\",\n    \"multiplicador\": \"1\",\n    \"no_hilos\": \"1\",\n    \"nombre\": \"FELIPE CARRANZA R\",\n    \"direccion\": \"42 NTE 2207 PROLG 22 PINO SUAREZ Y BLVD XONACA DIEZ DE MAYO 08JC.P.72270 PUEBLA,PUE.\",\n    \"direccion_formatted\": \"Calle 42 Nte 2207, Col. Pino Suárez y Blvd Xonaca, 72270 Puebla, Puebla, México\",\n    \"periodo_inicio\": \"2025-04-07\",\n    \"periodo_fin\": \"2025-06-06\",\n    \"kwh_total\": \"177\",\n    \"total_pagar_mxn\": \"242.00\"\n  },\n  \"formato_respuesta\": \"Devuelve ÚNICAMENTE el JSON con los datos extraídos, sin explicaciones, sin markdown, sin bloques de código.\"\n}",
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"no_servicio\": \"219890418432\",\n  \"RMU\": \"72270 89-04-01 XAXX-010101 061 CFE\",\n  \"cuenta\": \"12DV08C011231540\",\n  \"tarifa\": \"01\",\n  \"no_medidor\": \"0B48J7\",\n  \"multiplicador\": \"1\",\n  \"no_hilos\": \"1\",\n  \"nombre\": \"FELIPE CARRANZA R\",\n  \"direccion\": \"42 NTE 2207 PROLG 22 PINO SUAREZ Y BLVD XONACA DIEZ DE MAYO 08JC.P.72270 PUEBLA,PUE.\",\n  \"direccion_formatted\": \"Calle 42 Nte 2207, Col. Pino Suárez y Blvd Xonaca, 72270 Puebla, Puebla, México\",\n  \"periodo_inicio\": \"2025-04-07\",\n  \"periodo_fin\": \"2025-06-06\",\n  \"kwh_total\": \"177\",\n  \"total_pagar_mxn\": \"242.00\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        -176
+      ],
+      "id": "59e4679d-456b-4740-99f4-692cc7132d47",
+      "name": "datos_recibo_frontal_cfe1"
     }
   ],
   "connections": {
@@ -726,17 +735,6 @@
         ]
       ]
     },
-    "datos_recibo_frontal_cfe1": {
-      "main": [
-        [
-          {
-            "node": "Dirección a Pin1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Dirección a Pin1": {
       "main": [
         [
@@ -870,17 +868,28 @@
         ]
       ]
     },
-    "Google Gemini Chat Model": {
+    "Anthropic Chat Model": {
       "ai_languageModel": [
         [
           {
-            "node": "datos_recibo_frontal_cfe1",
+            "node": "datos_recibo_posterior_cfe",
             "type": "ai_languageModel",
             "index": 0
           },
           {
-            "node": "datos_recibo_posterior_cfe",
+            "node": "datos_recibo_frontal_cfe1",
             "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "datos_recibo_frontal_cfe1": {
+      "main": [
+        [
+          {
+            "node": "Dirección a Pin1",
+            "type": "main",
             "index": 0
           }
         ]

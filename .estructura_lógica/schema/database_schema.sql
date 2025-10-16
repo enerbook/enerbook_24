@@ -3,7 +3,7 @@
 -- Complete database structure including tables, constraints, indexes,
 -- functions, triggers, and RLS policies
 --
--- Generated: 2025-10-02
+-- Generated: 2025-10-15
 -- Database: Supabase PostgreSQL
 -- Project: enerbook_v25 (qkdvosjitrkopnarbozv)
 -- ============================================================================
@@ -266,6 +266,39 @@ CREATE TABLE IF NOT EXISTS public.contratos (
 COMMENT ON TABLE public.contratos IS 'Contratos firmados entre clientes e instaladores';
 COMMENT ON COLUMN public.contratos.tipo_pago_seleccionado IS 'Tipo de pago: upfront (pago total), milestones (por hitos), financing (financiamiento)';
 
+-- Table: pagos
+-- Description: Payment transactions for projects
+CREATE TABLE IF NOT EXISTS public.pagos (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    proyecto_id uuid,
+    cliente_id uuid,
+    instalador_id uuid,
+    payment_method text NOT NULL,
+    total_amount numeric NOT NULL,
+    platform_fee numeric NOT NULL,
+    installer_amount numeric NOT NULL,
+    stripe_payment_intent_id text,
+    stripe_customer_id text,
+    status text DEFAULT 'pending'::text,
+    CONSTRAINT pagos_pkey PRIMARY KEY (id),
+    CONSTRAINT pagos_proyecto_id_fkey FOREIGN KEY (proyecto_id) REFERENCES public.proyectos(id),
+    CONSTRAINT pagos_cliente_id_fkey FOREIGN KEY (cliente_id) REFERENCES public.usuarios(id),
+    CONSTRAINT pagos_instalador_id_fkey FOREIGN KEY (instalador_id) REFERENCES public.proveedores(id),
+    CONSTRAINT pagos_payment_method_check CHECK (
+        payment_method = ANY (ARRAY['upfront'::text, 'milestones'::text, 'financing'::text])
+    ),
+    CONSTRAINT pagos_status_check CHECK (
+        status = ANY (ARRAY['pending'::text, 'processing'::text, 'succeeded'::text, 'failed'::text, 'canceled'::text, 'requires_action'::text])
+    )
+);
+
+COMMENT ON TABLE public.pagos IS 'Transacciones de pago para proyectos solares';
+COMMENT ON COLUMN public.pagos.payment_method IS 'Método de pago: upfront (pago completo), milestones (por hitos), financing (financiamiento)';
+COMMENT ON COLUMN public.pagos.platform_fee IS 'Comisión de la plataforma Enerbook';
+COMMENT ON COLUMN public.pagos.installer_amount IS 'Monto neto que recibe el instalador';
+
 -- Table: pagos_milestones
 -- Description: Payment milestones for contracts
 CREATE TABLE IF NOT EXISTS public.pagos_milestones (
@@ -487,6 +520,149 @@ CREATE TABLE IF NOT EXISTS public.admin_audit_log (
 
 COMMENT ON TABLE public.admin_audit_log IS 'Log de auditoría de acciones de administradores';
 
+-- Table: installer_milestone_templates
+-- Description: Milestone templates created by installers
+CREATE TABLE IF NOT EXISTS public.installer_milestone_templates (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    instalador_id uuid,
+    template_name text NOT NULL,
+    is_default boolean DEFAULT false,
+    milestones jsonb NOT NULL,
+    CONSTRAINT installer_milestone_templates_pkey PRIMARY KEY (id),
+    CONSTRAINT installer_milestone_templates_instalador_id_fkey FOREIGN KEY (instalador_id) REFERENCES public.proveedores(id)
+);
+
+COMMENT ON TABLE public.installer_milestone_templates IS 'Plantillas de hitos de pago creadas por instaladores';
+COMMENT ON COLUMN public.installer_milestone_templates.milestones IS 'Array JSON con la configuración de hitos (número, nombre, porcentaje, etc)';
+
+-- Table: installer_transfers
+-- Description: Stripe transfers to installers
+CREATE TABLE IF NOT EXISTS public.installer_transfers (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    payment_id uuid,
+    instalador_id uuid,
+    stripe_transfer_id text,
+    amount numeric NOT NULL,
+    status text DEFAULT 'pending'::text,
+    transferred_at timestamp with time zone,
+    metadata jsonb,
+    CONSTRAINT installer_transfers_pkey PRIMARY KEY (id),
+    CONSTRAINT installer_transfers_payment_id_fkey FOREIGN KEY (payment_id) REFERENCES public.payments(id),
+    CONSTRAINT installer_transfers_instalador_id_fkey FOREIGN KEY (instalador_id) REFERENCES public.proveedores(id),
+    CONSTRAINT installer_transfers_status_check CHECK (
+        status = ANY (ARRAY['pending'::text, 'in_transit'::text, 'paid'::text, 'failed'::text, 'canceled'::text])
+    )
+);
+
+COMMENT ON TABLE public.installer_transfers IS 'Transferencias de Stripe a instaladores';
+COMMENT ON COLUMN public.installer_transfers.stripe_transfer_id IS 'ID de la transferencia en Stripe';
+
+-- Table: landing_stats
+-- Description: Statistics displayed on landing page
+CREATE TABLE IF NOT EXISTS public.landing_stats (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    proyectos_realizados integer DEFAULT 0,
+    reduccion_promedio_recibos numeric DEFAULT 0,
+    energia_producida_anual numeric DEFAULT 0,
+    estados_cobertura integer DEFAULT 0,
+    activo boolean DEFAULT true,
+    notas text,
+    CONSTRAINT landing_stats_pkey PRIMARY KEY (id)
+);
+
+COMMENT ON TABLE public.landing_stats IS 'Estadísticas mostradas en la página de inicio';
+COMMENT ON COLUMN public.landing_stats.proyectos_realizados IS 'Número total de proyectos completados';
+COMMENT ON COLUMN public.landing_stats.reduccion_promedio_recibos IS 'Porcentaje promedio de reducción en recibos';
+COMMENT ON COLUMN public.landing_stats.energia_producida_anual IS 'Total de energía producida anualmente en kWh';
+
+-- Table: landing_stats_computed
+-- Description: Computed statistics for landing page (auto-calculated)
+CREATE TABLE IF NOT EXISTS public.landing_stats_computed (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    proyectos_realizados integer DEFAULT 0,
+    reduccion_promedio_recibos numeric DEFAULT 0,
+    energia_producida_anual numeric DEFAULT 0,
+    estados_cobertura integer DEFAULT 0,
+    computed_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    CONSTRAINT landing_stats_computed_pkey PRIMARY KEY (id)
+);
+
+COMMENT ON TABLE public.landing_stats_computed IS 'Estadísticas calculadas automáticamente para la página de inicio';
+COMMENT ON COLUMN public.landing_stats_computed.computed_at IS 'Fecha y hora en que se calcularon las estadísticas';
+
+-- Table: payment_milestones
+-- Description: Individual payment milestones within a payment
+CREATE TABLE IF NOT EXISTS public.payment_milestones (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    payment_id uuid,
+    milestone_number integer NOT NULL,
+    title text NOT NULL,
+    description text,
+    percentage numeric NOT NULL,
+    amount numeric NOT NULL,
+    status text DEFAULT 'pending'::text,
+    stripe_payment_intent_id text,
+    completed_at timestamp with time zone,
+    paid_at timestamp with time zone,
+    CONSTRAINT payment_milestones_pkey PRIMARY KEY (id),
+    CONSTRAINT payment_milestones_payment_id_milestone_number_key UNIQUE (payment_id, milestone_number),
+    CONSTRAINT payment_milestones_payment_id_fkey FOREIGN KEY (payment_id) REFERENCES public.payments(id),
+    CONSTRAINT payment_milestones_status_check CHECK (
+        status = ANY (ARRAY['pending'::text, 'in_progress'::text, 'completed'::text, 'paid'::text, 'failed'::text])
+    ),
+    CONSTRAINT payment_milestones_percentage_check CHECK (
+        (percentage > (0)::numeric) AND (percentage <= (100)::numeric)
+    )
+);
+
+COMMENT ON TABLE public.payment_milestones IS 'Hitos de pago individuales dentro de un payment (tabla payments)';
+COMMENT ON COLUMN public.payment_milestones.milestone_number IS 'Número secuencial del hito (1, 2, 3, etc)';
+
+-- Table: payments (updated version with all columns)
+-- Description: Main payment transactions table
+-- Note: This replaces the simpler "pagos" table
+CREATE TABLE IF NOT EXISTS public.payments (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    proyecto_id uuid,
+    cliente_id uuid,
+    instalador_id uuid,
+    payment_method text NOT NULL,
+    total_amount numeric NOT NULL,
+    platform_fee numeric NOT NULL,
+    installer_amount numeric NOT NULL,
+    stripe_payment_intent_id text,
+    stripe_customer_id text,
+    status text DEFAULT 'pending'::text,
+    paid_at timestamp with time zone,
+    metadata jsonb,
+    CONSTRAINT payments_pkey PRIMARY KEY (id),
+    CONSTRAINT payments_proyecto_id_fkey FOREIGN KEY (proyecto_id) REFERENCES public.proyectos(id),
+    CONSTRAINT payments_cliente_id_fkey FOREIGN KEY (cliente_id) REFERENCES public.usuarios(id),
+    CONSTRAINT payments_instalador_id_fkey FOREIGN KEY (instalador_id) REFERENCES public.proveedores(id),
+    CONSTRAINT payments_payment_method_check CHECK (
+        payment_method = ANY (ARRAY['upfront'::text, 'milestones'::text, 'financing'::text])
+    ),
+    CONSTRAINT payments_status_check CHECK (
+        status = ANY (ARRAY['pending'::text, 'processing'::text, 'succeeded'::text, 'failed'::text, 'canceled'::text, 'requires_action'::text, 'refunded'::text])
+    )
+);
+
+COMMENT ON TABLE public.payments IS 'Transacciones de pago principales para proyectos solares (versión actualizada)';
+COMMENT ON COLUMN public.payments.payment_method IS 'Método de pago: upfront (pago completo), milestones (por hitos), financing (financiamiento)';
+COMMENT ON COLUMN public.payments.platform_fee IS 'Comisión de la plataforma Enerbook';
+COMMENT ON COLUMN public.payments.installer_amount IS 'Monto neto que recibe el instalador';
+COMMENT ON COLUMN public.payments.paid_at IS 'Fecha y hora en que se completó el pago';
+COMMENT ON COLUMN public.payments.metadata IS 'Metadata adicional del pago en formato JSON';
+
 -- ============================================================================
 -- INDEXES
 -- ============================================================================
@@ -536,6 +712,14 @@ CREATE INDEX IF NOT EXISTS idx_contratos_estado_pago ON public.contratos(estado_
 CREATE INDEX IF NOT EXISTS idx_contratos_tipo_pago ON public.contratos(tipo_pago_seleccionado);
 CREATE INDEX IF NOT EXISTS idx_contratos_stripe_payment_intent ON public.contratos(stripe_payment_intent_id);
 
+-- Indexes for pagos
+CREATE INDEX IF NOT EXISTS idx_pagos_proyecto_id ON public.pagos(proyecto_id);
+CREATE INDEX IF NOT EXISTS idx_pagos_cliente_id ON public.pagos(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_pagos_instalador_id ON public.pagos(instalador_id);
+CREATE INDEX IF NOT EXISTS idx_pagos_status ON public.pagos(status);
+CREATE INDEX IF NOT EXISTS idx_pagos_stripe_payment_intent ON public.pagos(stripe_payment_intent_id);
+CREATE INDEX IF NOT EXISTS idx_pagos_stripe_customer ON public.pagos(stripe_customer_id);
+
 -- Indexes for pagos_milestones
 CREATE INDEX IF NOT EXISTS idx_pagos_milestones_contratos_id ON public.pagos_milestones(contratos_id);
 CREATE INDEX IF NOT EXISTS idx_pagos_milestones_estado ON public.pagos_milestones(estado);
@@ -562,6 +746,35 @@ CREATE INDEX IF NOT EXISTS idx_disputes_contratos_id ON public.stripe_disputes(c
 -- Indexes for admin_audit_log
 CREATE INDEX IF NOT EXISTS idx_audit_log_admin_date ON public.admin_audit_log(admin_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_log_action_type ON public.admin_audit_log(action_type, created_at DESC);
+
+-- Indexes for installer_milestone_templates
+CREATE INDEX IF NOT EXISTS idx_installer_templates_instalador ON public.installer_milestone_templates(instalador_id);
+CREATE INDEX IF NOT EXISTS idx_installer_templates_default ON public.installer_milestone_templates(instalador_id, is_default) WHERE (is_default = true);
+
+-- Indexes for installer_transfers
+CREATE INDEX IF NOT EXISTS idx_installer_transfers_payment ON public.installer_transfers(payment_id);
+CREATE INDEX IF NOT EXISTS idx_installer_transfers_instalador ON public.installer_transfers(instalador_id);
+CREATE INDEX IF NOT EXISTS idx_installer_transfers_status ON public.installer_transfers(status);
+CREATE INDEX IF NOT EXISTS idx_installer_transfers_stripe ON public.installer_transfers(stripe_transfer_id);
+
+-- Indexes for landing_stats
+CREATE INDEX IF NOT EXISTS idx_landing_stats_activo ON public.landing_stats(activo);
+
+-- Indexes for landing_stats_computed
+CREATE INDEX IF NOT EXISTS idx_landing_stats_computed_at ON public.landing_stats_computed(computed_at DESC);
+
+-- Indexes for payment_milestones
+CREATE INDEX IF NOT EXISTS idx_payment_milestones_payment ON public.payment_milestones(payment_id);
+CREATE INDEX IF NOT EXISTS idx_payment_milestones_status ON public.payment_milestones(status);
+CREATE INDEX IF NOT EXISTS idx_payment_milestones_stripe ON public.payment_milestones(stripe_payment_intent_id);
+
+-- Indexes for payments
+CREATE INDEX IF NOT EXISTS idx_payments_proyecto ON public.payments(proyecto_id);
+CREATE INDEX IF NOT EXISTS idx_payments_cliente ON public.payments(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_payments_instalador ON public.payments(instalador_id);
+CREATE INDEX IF NOT EXISTS idx_payments_status ON public.payments(status);
+CREATE INDEX IF NOT EXISTS idx_payments_stripe_intent ON public.payments(stripe_payment_intent_id);
+CREATE INDEX IF NOT EXISTS idx_payments_stripe_customer ON public.payments(stripe_customer_id);
 
 -- ============================================================================
 -- FUNCTIONS
@@ -716,6 +929,9 @@ CREATE TRIGGER update_cotizaciones_final_updated_at BEFORE UPDATE ON public.coti
 CREATE TRIGGER update_contratos_updated_at BEFORE UPDATE ON public.contratos
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_pagos_updated_at BEFORE UPDATE ON public.pagos
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_pagos_milestones_updated_at BEFORE UPDATE ON public.pagos_milestones
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -734,6 +950,18 @@ CREATE TRIGGER update_resenas_updated_at BEFORE UPDATE ON public.resenas
 CREATE TRIGGER update_stripe_disputes_updated_at BEFORE UPDATE ON public.stripe_disputes
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_installer_milestone_templates_updated_at BEFORE UPDATE ON public.installer_milestone_templates
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_landing_stats_updated_at BEFORE UPDATE ON public.landing_stats
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_payment_milestones_updated_at BEFORE UPDATE ON public.payment_milestones
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_payments_updated_at BEFORE UPDATE ON public.payments
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================
@@ -748,6 +976,7 @@ ALTER TABLE public.cotizaciones_leads_temp ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.proyectos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cotizaciones_final ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contratos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pagos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pagos_milestones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transacciones_financiamiento ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comisiones_enerbook ENABLE ROW LEVEL SECURITY;
@@ -756,6 +985,12 @@ ALTER TABLE public.resenas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stripe_webhooks_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stripe_disputes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_audit_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.installer_milestone_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.installer_transfers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.landing_stats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.landing_stats_computed ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_milestones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
 -- Policies for usuarios
 CREATE POLICY "Users can view own data" ON public.usuarios
@@ -851,6 +1086,16 @@ CREATE POLICY "Contract parties can view contracts" ON public.contratos
 CREATE POLICY "Users can create contracts" ON public.contratos
     FOR INSERT WITH CHECK ((auth.uid())::text = (usuarios_id)::text);
 
+-- Policies for pagos
+CREATE POLICY "Payment parties can view payments" ON public.pagos
+    FOR SELECT USING (((auth.uid())::text = (cliente_id)::text) OR (EXISTS (SELECT 1 FROM proveedores WHERE ((proveedores.id = pagos.instalador_id) AND (proveedores.auth_user_id = auth.uid())))));
+
+CREATE POLICY "Clients can create payments" ON public.pagos
+    FOR INSERT WITH CHECK ((auth.uid())::text = (cliente_id)::text);
+
+CREATE POLICY "Only admins can view all payments" ON public.pagos
+    FOR SELECT USING (EXISTS (SELECT 1 FROM administradores WHERE ((administradores.usuario_id = auth.uid()) AND (administradores.activo = true))));
+
 -- Policies for pagos_milestones
 CREATE POLICY "Contract parties can view milestones" ON public.pagos_milestones
     FOR SELECT USING (EXISTS (SELECT 1 FROM contratos WHERE ((contratos.id = pagos_milestones.contratos_id) AND (((contratos.usuarios_id)::text = (auth.uid())::text) OR (EXISTS (SELECT 1 FROM proveedores WHERE ((proveedores.id = contratos.proveedores_id) AND (proveedores.auth_user_id = auth.uid()))))))));
@@ -891,6 +1136,48 @@ CREATE POLICY "Only verified admins can view disputes" ON public.stripe_disputes
 -- Policies for admin_audit_log
 CREATE POLICY "Admins can view own audit logs" ON public.admin_audit_log
     FOR SELECT USING ((admin_id = auth.uid()) OR is_super_admin());
+
+-- Policies for installer_milestone_templates
+CREATE POLICY "Installers can manage own templates" ON public.installer_milestone_templates
+    FOR ALL USING (EXISTS (SELECT 1 FROM proveedores WHERE ((proveedores.id = installer_milestone_templates.instalador_id) AND (proveedores.auth_user_id = auth.uid()))));
+
+CREATE POLICY "Templates are publicly readable" ON public.installer_milestone_templates
+    FOR SELECT USING (true);
+
+-- Policies for installer_transfers
+CREATE POLICY "Transfer parties can view transfers" ON public.installer_transfers
+    FOR SELECT USING (EXISTS (SELECT 1 FROM proveedores WHERE ((proveedores.id = installer_transfers.instalador_id) AND (proveedores.auth_user_id = auth.uid()))));
+
+CREATE POLICY "Only admins can manage transfers" ON public.installer_transfers
+    FOR ALL USING (EXISTS (SELECT 1 FROM administradores WHERE ((administradores.usuario_id = auth.uid()) AND (administradores.activo = true))));
+
+-- Policies for landing_stats
+CREATE POLICY "Stats are publicly readable" ON public.landing_stats
+    FOR SELECT USING (activo = true);
+
+CREATE POLICY "Only admins can manage stats" ON public.landing_stats
+    FOR ALL USING (EXISTS (SELECT 1 FROM administradores WHERE ((administradores.usuario_id = auth.uid()) AND (administradores.activo = true))));
+
+-- Policies for landing_stats_computed
+CREATE POLICY "Computed stats are publicly readable" ON public.landing_stats_computed
+    FOR SELECT USING (true);
+
+CREATE POLICY "Only admins can manage computed stats" ON public.landing_stats_computed
+    FOR ALL USING (EXISTS (SELECT 1 FROM administradores WHERE ((administradores.usuario_id = auth.uid()) AND (administradores.activo = true))));
+
+-- Policies for payment_milestones
+CREATE POLICY "Payment parties can view payment milestones" ON public.payment_milestones
+    FOR SELECT USING (EXISTS (SELECT 1 FROM payments WHERE ((payments.id = payment_milestones.payment_id) AND (((payments.cliente_id)::text = (auth.uid())::text) OR (EXISTS (SELECT 1 FROM proveedores WHERE ((proveedores.id = payments.instalador_id) AND (proveedores.auth_user_id = auth.uid()))))))));
+
+-- Policies for payments
+CREATE POLICY "Payment parties can view payments table" ON public.payments
+    FOR SELECT USING (((auth.uid())::text = (cliente_id)::text) OR (EXISTS (SELECT 1 FROM proveedores WHERE ((proveedores.id = payments.instalador_id) AND (proveedores.auth_user_id = auth.uid())))));
+
+CREATE POLICY "Clients can create payments table" ON public.payments
+    FOR INSERT WITH CHECK ((auth.uid())::text = (cliente_id)::text);
+
+CREATE POLICY "Only admins can view all payments table" ON public.payments
+    FOR SELECT USING (EXISTS (SELECT 1 FROM administradores WHERE ((administradores.usuario_id = auth.uid()) AND (administradores.activo = true))));
 
 -- ============================================================================
 -- END OF SCHEMA

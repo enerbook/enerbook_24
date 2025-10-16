@@ -1,0 +1,450 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "payment-upfront",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        -72
+      ],
+      "webhookId": "payment-upfront",
+      "id": "f2386e72-752e-415e-a561-e7497898692c"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json.body;\nconst totalAmount = data.total_amount;\nconst platformFee = totalAmount * 0.08;\nconst installerAmount = totalAmount * 0.92;\n\nreturn {\n  json: {\n    ...data,\n    platform_fee: platformFee,\n    installer_amount: installerAmount\n  }\n};\n"
+      },
+      "name": "Calculate Fees",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        -72
+      ],
+      "id": "30e6be3e-77cf-4f80-a038-035263bb42b1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/rpc/get_installer_stripe_account",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "instalador_id",
+              "value": "={{ $json.instalador_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get Installer Stripe Account",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -160,
+        120
+      ],
+      "id": "ca399ae3-47ca-47b7-8e41-9f699ccee2be",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "customer",
+        "operation": "create",
+        "name": "={{ $json.cliente_nombre }}",
+        "additionalFields": {
+          "email": "={{ $json.cliente_email }}",
+          "metadata": {
+            "metadataProperties": [
+              {
+                "key": "cliente_id",
+                "value": "={{ $json.cliente_id }}"
+              },
+              {
+                "key": "proyecto_id",
+                "value": "={{ $json.proyecto_id }}"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Create Stripe Customer",
+      "type": "n8n-nodes-base.stripe",
+      "typeVersion": 1,
+      "position": [
+        288,
+        -24
+      ],
+      "id": "f5fbdc61-bcae-41e4-853f-1d5b44cd0ab0",
+      "credentials": {
+        "stripeApi": {
+          "id": "eR0pW1U9zWqxBzyP",
+          "name": "Stripe account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/functions/v1/insert_payment_record",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzAzMjEsImV4cCI6MjA3MzgwNjMyMX0.0A5yFG0miswgOoMfEl28Tj_3TTUgQ5O9MEEODRVR85c"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMzAzMjEsImV4cCI6MjA3MzgwNjMyMX0.0A5yFG0miswgOoMfEl28Tj_3TTUgQ5O9MEEODRVR85c"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "proyecto_id",
+              "value": "={{ $json.metadata.proyecto_id }}"
+            },
+            {
+              "name": "cliente_id",
+              "value": "={{ $json.metadata.cliente_id }} "
+            },
+            {
+              "name": "instalador_id",
+              "value": "={{ $json.transfer_data.destination }}"
+            },
+            {
+              "name": "payment_method",
+              "value": "upfront"
+            },
+            {
+              "name": "total_amount",
+              "value": "={{ $json.amount }}"
+            },
+            {
+              "name": "platform_fee",
+              "value": "={{ $json.application_fee_amount }}"
+            },
+            {
+              "name": "installer_amount",
+              "value": "={{ $json.amount - $json.application_fee_amount }}"
+            },
+            {
+              "name": "stripe_payment_intent_id",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "stripe_customer_id",
+              "value": "={{ $json.customer }}"
+            },
+            {
+              "name": "status",
+              "value": "{{ $json.status }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Insert Payment Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        960,
+        -288
+      ],
+      "id": "5f9d1655-1d54-4f55-8a55-dfe258aa99ea",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"client_secret\": \"{{ $('Create Payment Intent').item.json.client_secret }}\",\n  \"payment_id\": \"{{ $json.data.id }}\",\n  \"stripe_payment_intent_id\": \"{{ $json.data.stripe_payment_intent_id }}\"\n}",
+        "options": {}
+      },
+      "name": "Response Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -336
+      ],
+      "id": "fb1fcd5c-aa29-4a2b-aa4c-0c88dc50f01b"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"{{ $json.error }}\",\n  \"message\": \"Error processing payment\"\n}\n",
+        "options": {}
+      },
+      "name": "Response Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -48
+      ],
+      "id": "613bd8d9-faca-4ced-b256-eb59ed06d79d"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        64,
+        -144
+      ],
+      "id": "af577d7d-4d07-4585-9b37-e1b2ac35502e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.stripe.com/v1/payment_intents",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "amount",
+              "value": "={{ Math.round($json.total_amount * 100) }}"
+            },
+            {
+              "name": "currency",
+              "value": "mxn"
+            },
+            {
+              "name": "customer",
+              "value": "={{ $('Create Stripe Customer').item.json.id }}"
+            },
+            {
+              "name": "application_fee_amount",
+              "value": "={{ Math.round($json.platform_fee * 100) }}"
+            },
+            {
+              "name": "transfer_data[destination]",
+              "value": "={{ $json.stripe_account_id }}"
+            },
+            {
+              "name": "metadata[proyecto_id]",
+              "value": "={{ $json.proyecto_id }}"
+            },
+            {
+              "name": "metadata[cliente_id]",
+              "value": "={{ $json.cliente_id }}"
+            },
+            {
+              "name": "metadata[instalador_id]",
+              "value": "={{ $json.instalador_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        -216
+      ],
+      "id": "f16c5ed4-4c03-42fd-84aa-ed01a67781f2",
+      "name": "Create Payment Intent",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "kcYxC3Ml9hkKS4Zz",
+          "name": "Header Auth account Stripe"
+        },
+        "stripeApi": {
+          "id": "eR0pW1U9zWqxBzyP",
+          "name": "Stripe account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        512,
+        -216
+      ],
+      "id": "bb0ddafb-6501-4421-a818-4b817d0f73e2",
+      "name": "Merge1"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Calculate Fees",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Fees": {
+      "main": [
+        [
+          {
+            "node": "Get Installer Stripe Account",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Installer Stripe Account": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Response Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Stripe Customer": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Response Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Payment Record": {
+      "main": [
+        [
+          {
+            "node": "Response Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Create Stripe Customer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Payment Intent": {
+      "main": [
+        [
+          {
+            "node": "Insert Payment Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Create Payment Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3dea49b7dd9b43976d38842c495efe40be7c7e03943c21cc3656ea0a8437e9d2"
+  }
+}
