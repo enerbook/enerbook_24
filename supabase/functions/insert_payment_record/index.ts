@@ -38,18 +38,18 @@ serve(async (req) => {
     const stripe_customer_id = body.stripe_customer_id?.toString().trim()
     const stripe_status = body.status?.toString().trim()
 
-    // Map Stripe status to our database status
+    // Map Stripe status to our database status (payment_status enum)
     const statusMap: Record<string, string> = {
       'requires_payment_method': 'processing',
       'requires_confirmation': 'processing',
-      'requires_action': 'requires_action',
+      'requires_action': 'processing',
       'processing': 'processing',
       'requires_capture': 'processing',
-      'canceled': 'canceled',
-      'succeeded': 'succeeded',
+      'canceled': 'failed',
+      'succeeded': 'completed',
     }
 
-    const status = statusMap[stripe_status] || 'processing'
+    const status = statusMap[stripe_status] || 'pending'
 
     // Validate required fields
     if (!proyecto_id || !cliente_id || !instalador_input || !total_amount) {
@@ -92,7 +92,7 @@ serve(async (req) => {
 
     // Insert payment record
     const { data, error } = await supabaseClient
-      .from('pagos')
+      .from('payments')
       .insert({
         proyecto_id,
         cliente_id,

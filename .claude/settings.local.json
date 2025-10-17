@@ -12,7 +12,15 @@
       "Bash(python3:*)",
       "Bash(npm install:*)",
       "Bash(supabase projects api-keys:*)",
-      "Read(//private/tmp/**)"
+      "Read(//private/tmp/**)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(psql:*)",
+      "Bash(chmod:*)",
+      "Bash(pg_dump:*)",
+      "Bash(brew install:*)",
+      "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' /opt/homebrew/opt/postgresql@17/bin/pg_dump )"
     ],
     "deny": [],
     "ask": []

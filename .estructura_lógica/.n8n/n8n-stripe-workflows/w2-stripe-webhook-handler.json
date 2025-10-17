@@ -1,0 +1,642 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "stripe-events",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5151ddc2-108f-4c3d-900d-0cc3fa1b3d38",
+      "name": "Webhook - Stripe Events",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -640,
+        -128
+      ],
+      "webhookId": "0f95c5e4-d729-413e-afe0-717308b83ab5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener datos del webhook\nconst webhookData = $input.first().json;\nconst signature = webhookData.headers?.['stripe-signature'];\nconst event = webhookData.body || webhookData;\n\n// Log para debug\nconsole.log('=====================================');\nconsole.log('Stripe Event Received');\nconsole.log('Event Type:', event.type);\nconsole.log('Event ID:', event.id);\nconsole.log('=====================================');\n\n// Extraer metadata si existe\nlet metadata = {};\nif (event.data?.object?.metadata) {\n  metadata = event.data.object.metadata;\n  console.log('Metadata found:', metadata);\n}\n\n// Check if this is a milestone payment\nconst is_milestone = !!metadata.milestone_id;\nconst milestone_id = metadata.milestone_id || null;\n\nif (is_milestone) {\n  console.log('💎 Milestone payment detected:', milestone_id);\n} else {\n  console.log('💰 Upfront payment detected');\n}\n\n// En producción, validar firma:\n// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);\n// const webhookSecret = 'whsec_8580eefd727e6b6cc4df7ef5cd96d06f48c14f0bff32e43c7abd2de052aeb495';\n// const event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);\n\nreturn [{\n  json: {\n    ...event,\n    metadata_extracted: metadata,\n    is_milestone: is_milestone,\n    milestone_id: milestone_id\n  }\n}];"
+      },
+      "id": "f70611cf-728f-4b8b-967a-0be451034655",
+      "name": "Code - Validate & Extract Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.type }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "payment_intent.succeeded"
+            },
+            {
+              "value2": "transfer.created",
+              "output": 1
+            },
+            {
+              "value2": "payment_intent.payment_failed",
+              "output": 2
+            },
+            {
+              "value2": "charge.succeeded",
+              "output": 3
+            },
+            {
+              "value2": "charge.updated",
+              "output": 3
+            }
+          ]
+        },
+        "fallbackOutput": 3
+      },
+      "id": "9f5b21a9-a1b4-409b-974e-56d4be3d1fe1",
+      "name": "Switch - Route by Event Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.is_milestone }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "0fa63b6d-8216-4541-bcf8-514eaecc70c8",
+      "name": "IF Is Milestone Payment",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -512
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/payments",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "stripe_payment_intent_id",
+              "value": "=eq.{{ $('Code - Validate & Extract Event').first().json.data.object.id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"completed\",\n  \"paid_at\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "b4900197-ecc9-40cc-a488-cbebf46984e0",
+      "name": "Update Payment - Milestone",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        256,
+        -608
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/payment_milestones",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $('Code - Validate & Extract Event').first().json.milestone_id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"paid\",\n  \"paid_at\": \"{{ $now.toISO() }}\",\n  \"stripe_payment_intent_id\": \"{{ $('Code - Validate & Extract Event').first().json.data.object.id }}\"\n}",
+        "options": {}
+      },
+      "id": "1e375c45-de19-4c07-b2f9-943c59fd2f3a",
+      "name": "Update Milestone - Paid",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        480,
+        -608
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/proyectos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $('Code - Validate & Extract Event').first().json.metadata_extracted.proyecto_id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"payment_status\": \"paid\",\n  \"payment_method\": \"milestones\",\n  \"updated_at\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "15f3bd08-8b81-4035-8f4a-a5eaea51c5c7",
+      "name": "Update Proyecto - Milestone Paid",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        704,
+        -608
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/payments",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "stripe_payment_intent_id",
+              "value": "=eq.{{ $('Code - Validate & Extract Event').first().json.data.object.id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"completed\",\n  \"paid_at\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "0c35a799-5537-4442-b39b-625ac8abfe1d",
+      "name": "Update Payment - Upfront",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        480,
+        -416
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/proyectos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $('Code - Validate & Extract Event').first().json.metadata_extracted.proyecto_id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"payment_status\": \"paid\",\n  \"payment_method\": \"upfront\",\n  \"updated_at\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "bd3fc90b-6c3e-426b-a312-120e18178c50",
+      "name": "Update Proyecto - Upfront Paid",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        704,
+        -416
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/installer_transfers",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"payment_id\": \"{{ $json.metadata_extracted.payment_id || $json.data.object.metadata.payment_id }}\",\n  \"instalador_id\": \"{{ $json.metadata_extracted.instalador_id || $json.data.object.metadata.instalador_id }}\",\n  \"stripe_transfer_id\": \"{{ $json.data.object.id }}\",\n  \"amount\": {{ $json.data.object.amount / 100 }},\n  \"status\": \"completed\",\n  \"transferred_at\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "c0ccde95-eb13-49ba-9551-617085d5d013",
+      "name": "Insert Transfer Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        704,
+        -224
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/payments",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "stripe_payment_intent_id",
+              "value": "=eq.{{ $json.data.object.id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"failed\",\n  \"metadata\": {{ JSON.stringify({ error_message: $json.data.object.last_payment_error?.message || 'Payment failed', migrated_from: 'pagos' }) }},\n  \"updated_at\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "aeb05dcd-5b5b-400c-9ede-40af99a487ce",
+      "name": "Update Payment - Failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        704,
+        -32
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log ignored events for debugging\nconst eventType = $json.type;\nconsole.log(`ℹ️ Event type '${eventType}' received but not processed (not relevant for our workflow)`);\nconsole.log('This is normal - Stripe sends many event types');\n\nreturn [{\n  json: {\n    ...$json,\n    processed: false,\n    reason: 'Event type not handled by this workflow'\n  }\n}];"
+      },
+      "id": "83d3b5c5-2dba-491c-8a65-83d7f2579885",
+      "name": "Log Ignored Events",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process charge.succeeded event\nconsole.log('💳 Processing charge.succeeded event');\nconst charge = $json.data.object;\n\nif (charge.payment_intent) {\n  console.log('This charge is associated with payment_intent:', charge.payment_intent);\n  // The payment_intent.succeeded event will handle the database updates\n  return [{\n    json: {\n      ...$json,\n      message: 'Charge succeeded - waiting for payment_intent.succeeded to update database'\n    }\n  }];\n} else {\n  console.log('Standalone charge (not associated with payment_intent)');\n  return [{\n    json: {\n      ...$json,\n      message: 'Standalone charge processed'\n    }\n  }];\n}"
+      },
+      "id": "78aa3282-83d0-4584-b8d2-f4e8233c83c9",
+      "name": "Process Charge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "15bbad10-396d-4643-a80a-f08909cfb7ef",
+      "name": "Respond to Webhook - Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        928,
+        -128
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook - Stripe Events": {
+      "main": [
+        [
+          {
+            "node": "Code - Validate & Extract Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Validate & Extract Event": {
+      "main": [
+        [
+          {
+            "node": "Switch - Route by Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Route by Event Type": {
+      "main": [
+        [
+          {
+            "node": "IF Is Milestone Payment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Transfer Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Payment - Failed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process Charge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Is Milestone Payment": {
+      "main": [
+        [
+          {
+            "node": "Update Payment - Milestone",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Payment - Upfront",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Payment - Milestone": {
+      "main": [
+        [
+          {
+            "node": "Update Milestone - Paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Milestone - Paid": {
+      "main": [
+        [
+          {
+            "node": "Update Proyecto - Milestone Paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Proyecto - Milestone Paid": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook - Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Payment - Upfront": {
+      "main": [
+        [
+          {
+            "node": "Update Proyecto - Upfront Paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Proyecto - Upfront Paid": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook - Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Transfer Record": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook - Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Payment - Failed": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook - Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Ignored Events": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook - Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Charge": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook - Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "3dea49b7dd9b43976d38842c495efe40be7c7e03943c21cc3656ea0a8437e9d2"
+  }
+}
