@@ -3,8 +3,11 @@ import { useInstaller } from '../../context/InstallerContext';
 import { SkeletonGrid } from '../common/SkeletonLoader';
 import SearchAndFilters from '../common/SearchAndFilters';
 import usePersistedFilters from '../../hooks/usePersistedFilters';
+import { useRouter } from 'expo-router';
 
 const ProjectsTab = () => {
+  const router = useRouter();
+
   // Usar filtros persistidos
   const { filters, updateFilters, clearFilters } = usePersistedFilters('myProjects');
 
@@ -244,7 +247,8 @@ const ProjectsTab = () => {
 
                 {/* Actions */}
                 <button
-                  className="w-full py-2.5 px-4 text-white rounded-xl text-sm font-medium transition-colors"
+                  onClick={() => router.push(`/contrato/${contrato.id}`)}
+                  className="w-full py-2.5 px-4 text-white rounded-xl text-sm font-medium transition-colors hover:opacity-90"
                   style={{backgroundColor: '#090e1a'}}
                 >
                   Ver Detalles del Contrato
