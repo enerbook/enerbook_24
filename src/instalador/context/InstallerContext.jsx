@@ -30,10 +30,15 @@ export const InstallerProvider = ({ children }) => {
   const [installerLoading, setInstallerLoading] = useState(true);
   const [installerError, setInstallerError] = useState(null);
 
-  // Estado de proyectos disponibles
+  // Estado de proyectos disponibles para cotizar
   const [availableProjects, setAvailableProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [projectsError, setProjectsError] = useState(null);
+
+  // Estado de mis proyectos (con contratos)
+  const [myProjects, setMyProjects] = useState([]);
+  const [myProjectsLoading, setMyProjectsLoading] = useState(false);
+  const [myProjectsError, setMyProjectsError] = useState(null);
 
   // Estado de cotizaciones
   const [quotations, setQuotations] = useState([]);
@@ -188,6 +193,80 @@ export const InstallerProvider = ({ children }) => {
   }, [installer?.id]);
 
   /**
+   * Cargar mis proyectos (proyectos con contratos activos)
+   */
+  const loadMyProjects = useCallback(async () => {
+    if (!installer?.id) return [];
+
+    try {
+      setMyProjectsLoading(true);
+      setMyProjectsError(null);
+
+      const { data: contratos, error } = await supabase
+        .from('contratos')
+        .select(`
+          *,
+          proyectos:cotizaciones_final_id (
+            proyectos_id,
+            proyectos:proyectos_id (
+              id,
+              titulo,
+              descripcion,
+              estado,
+              fecha_limite,
+              created_at,
+              updated_at,
+              cotizaciones_inicial:cotizaciones_inicial_id (
+                recibo_cfe,
+                consumo_kwh_historico,
+                resumen_energetico,
+                sizing_results
+              )
+            )
+          ),
+          cotizaciones_final:cotizaciones_final_id (*),
+          usuarios:usuarios_id (
+            id,
+            nombre,
+            correo_electronico,
+            telefono
+          )
+        `)
+        .eq('proveedores_id', installer.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Transformar datos para facilitar el acceso
+      const proyectosConContratos = contratos?.map(contrato => ({
+        contrato: {
+          id: contrato.id,
+          numero_contrato: contrato.numero_contrato,
+          precio_total_sistema: contrato.precio_total_sistema,
+          tipo_pago_seleccionado: contrato.tipo_pago_seleccionado,
+          estado: contrato.estado,
+          fecha_firma: contrato.fecha_firma,
+          fecha_inicio_instalacion: contrato.fecha_inicio_instalacion,
+          fecha_completado: contrato.fecha_completado,
+          estado_pago: contrato.estado_pago,
+        },
+        proyecto: contrato.proyectos?.proyectos || null,
+        cotizacion: contrato.cotizaciones_final || null,
+        cliente: contrato.usuarios || null,
+      })) || [];
+
+      setMyProjects(proyectosConContratos);
+      return proyectosConContratos;
+    } catch (error) {
+      console.error('Error loading my projects:', error);
+      setMyProjectsError(error.message);
+      return [];
+    } finally {
+      setMyProjectsLoading(false);
+    }
+  }, [installer?.id]);
+
+  /**
    * Enviar cotización
    */
   const submitQuotation = useCallback(async (projectId, quotationFormData) => {
@@ -229,11 +308,12 @@ export const InstallerProvider = ({ children }) => {
   const refreshAll = useCallback(async () => {
     await Promise.all([
       loadAvailableProjects(),
+      loadMyProjects(),
       loadQuotations(),
       loadContracts(),
       loadReviews()
     ]);
-  }, [loadAvailableProjects, loadQuotations, loadContracts, loadReviews]);
+  }, [loadAvailableProjects, loadMyProjects, loadQuotations, loadContracts, loadReviews]);
 
   /**
    * Limpiar contador de alertas nuevas
@@ -251,11 +331,12 @@ export const InstallerProvider = ({ children }) => {
   useEffect(() => {
     if (installer?.id) {
       loadAvailableProjects();
+      loadMyProjects();
       loadQuotations();
       loadContracts();
       loadReviews();
     }
-  }, [installer?.id, loadAvailableProjects, loadQuotations, loadContracts, loadReviews]);
+  }, [installer?.id, loadAvailableProjects, loadMyProjects, loadQuotations, loadContracts, loadReviews]);
 
   // Suscripción realtime a proyectos disponibles
   useEffect(() => {
@@ -351,10 +432,15 @@ export const InstallerProvider = ({ children }) => {
     installerLoading,
     installerError,
 
-    // Proyectos disponibles
+    // Proyectos disponibles para cotizar
     availableProjects,
     projectsLoading,
     projectsError,
+
+    // Mis proyectos (con contratos)
+    myProjects,
+    myProjectsLoading,
+    myProjectsError,
 
     // Cotizaciones
     quotations,
@@ -378,6 +464,7 @@ export const InstallerProvider = ({ children }) => {
     // Acciones
     loadInstaller,
     loadAvailableProjects,
+    loadMyProjects,
     loadQuotations,
     loadContracts,
     loadReviews,

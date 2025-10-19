@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiFileText, FiAward, FiFolder, FiUser, FiLogOut } from 'react-icons/fi';
+import { FiFileText, FiFolder, FiUser, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
 
@@ -53,8 +53,7 @@ const InstallerSidebar = ({ activeTab, onClose }) => {
   };
 
   const sidebarItems = [
-    { id: 'documentos', label: 'Documentos', icon: FiFileText },
-    { id: 'certificaciones', label: 'Certificaciones', icon: FiAward },
+    { id: 'cotizaciones', label: 'Cotizaciones', icon: FiFileText },
     { id: 'proyectos', label: 'Proyectos', icon: FiFolder },
   ];
 
@@ -79,11 +78,11 @@ const InstallerSidebar = ({ activeTab, onClose }) => {
           ))}
         </div>
 
+        {/* Divider */}
+        <div className="my-6 border-t border-gray-200"></div>
+
         {/* Account Navigation */}
-        <div className="mt-8">
-          <h3 className="text-sm font-semibold text-gray-400 mb-1 px-2">
-            Cuenta
-          </h3>
+        <div>
           <div className="space-y-1">
             {accountItems.map((item) => (
               <NavButton key={item.id} item={item} activeTab={activeTab} onClose={onClose} router={router} />
