@@ -1,0 +1,342 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "milestone-pay",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "debfc8fa-afcf-4024-a2ea-38de5fe0513a",
+      "name": "Webhook - Milestone Pay",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -752,
+        416
+      ],
+      "webhookId": "milestone-pay-webhook-id"
+    },
+    {
+      "parameters": {
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/payment_milestones",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $json.body.milestone_id }}"
+            },
+            {
+              "name": "select",
+              "value": "*, payment:payments(*)"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "88a8177b-84b1-4b68-b10e-d510a7e724f0",
+      "name": "Get Milestone + Payment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -528,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const milestoneResponse = $input.first().json;\nconst milestone = Array.isArray(milestoneResponse) ? milestoneResponse[0] : milestoneResponse;\n\nif (!milestone) {\n  throw new Error('Milestone not found');\n}\n\nif (milestone.status !== 'completed') {\n  throw new Error('Milestone must be completed before payment');\n}\n\nconst milestoneAmount = milestone.amount;\nconst platformFee = milestoneAmount * 0.08;\nconst installerAmount = milestoneAmount * 0.92;\n\nconsole.log('=====================================');\nconsole.log('Milestone Payment - Calculations');\nconsole.log('Milestone ID:', milestone.id);\nconsole.log('Milestone Amount:', milestoneAmount);\nconsole.log('Platform Fee (8%):', platformFee);\nconsole.log('Installer Amount (92%):', installerAmount);\nconsole.log('=====================================');\n\nreturn [{\n  json: {\n    milestone_id: milestone.id,\n    milestone_number: milestone.milestone_number,\n    title: milestone.title,\n    amount: milestoneAmount,\n    milestone_platform_fee: platformFee,\n    milestone_installer_amount: installerAmount,\n    payment_id: milestone.payment_id,\n    proyecto_id: milestone.payment.proyecto_id,\n    cliente_id: milestone.payment.cliente_id,\n    instalador_id: milestone.payment.instalador_id\n  }\n}];"
+      },
+      "id": "352a1b7b-14e1-429a-9ca4-2cc5b690cacd",
+      "name": "Calculate Milestone Fee",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/proveedores",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $json.instalador_id }}"
+            },
+            {
+              "name": "select",
+              "value": "stripe_account_id"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0392ee19-d610-4d72-94cc-5af0ad2f031a",
+      "name": "Get Installer Stripe Account",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -80,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const milestoneData = $('Calculate Milestone Fee').first().json;\nconst installerResponse = $input.first().json;\nconst installer = Array.isArray(installerResponse) ? installerResponse[0] : installerResponse;\n\nif (!installer || !installer.stripe_account_id) {\n  throw new Error('Installer Stripe account not found');\n}\n\nconsole.log('=====================================');\nconsole.log('Merge Data for Stripe Payment Intent');\nconsole.log('Stripe Account ID:', installer.stripe_account_id);\nconsole.log('=====================================');\n\nreturn [{\n  json: {\n    ...milestoneData,\n    stripe_account_id: installer.stripe_account_id\n  }\n}];"
+      },
+      "id": "74accd86-a99a-4fa0-8e26-9f8a5ca0e67c",
+      "name": "Merge Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.stripe.com/v1/payment_intents",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "amount",
+              "value": "={{ Math.round($json.amount * 100) }}"
+            },
+            {
+              "name": "currency",
+              "value": "mxn"
+            },
+            {
+              "name": "application_fee_amount",
+              "value": "={{ Math.round($json.milestone_platform_fee * 100) }}"
+            },
+            {
+              "name": "transfer_data[destination]",
+              "value": "={{ $json.stripe_account_id }}"
+            },
+            {
+              "name": "metadata[milestone_id]",
+              "value": "={{ $json.milestone_id }}"
+            },
+            {
+              "name": "metadata[payment_method]",
+              "value": "milestones"
+            },
+            {
+              "name": "metadata[proyecto_id]",
+              "value": "={{ $json.proyecto_id }}"
+            },
+            {
+              "name": "metadata[cliente_id]",
+              "value": "={{ $json.cliente_id }}"
+            },
+            {
+              "name": "metadata[instalador_id]",
+              "value": "={{ $json.instalador_id }}"
+            },
+            {
+              "name": "metadata[is_milestone]",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "56a5720b-93b6-4625-b554-02eac2c81152",
+      "name": "Stripe - Create Payment Intent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        368,
+        416
+      ],
+      "credentials": {
+        "stripeApi": {
+          "id": "eR0pW1U9zWqxBzyP",
+          "name": "Stripe account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://qkdvosjitrkopnarbozv.supabase.co/rest/v1/payment_milestones",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $('Merge Data').first().json.milestone_id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrZHZvc2ppdHJrb3BuYXJib3p2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODIzMDMyMSwiZXhwIjoyMDczODA2MzIxfQ.AB4ke4bt8qF6QG8SWCOyQ2EF24UW-gBm50nNWOYrixI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"stripe_payment_intent_id\": \"{{ $json.id }}\",\n  \"status\": \"in_progress\"\n}",
+        "options": {}
+      },
+      "id": "a473e7b9-17ff-470e-992c-202bbbc92d57",
+      "name": "Update Milestone - Processing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        592,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"client_secret\": \"{{ $('Stripe - Create Payment Intent').first().json.client_secret }}\",\n  \"milestone_id\": \"{{ $('Merge Data').first().json.milestone_id }}\",\n  \"amount\": {{ $('Merge Data').first().json.amount }},\n  \"payment_intent_id\": \"{{ $('Stripe - Create Payment Intent').first().json.id }}\"\n}",
+        "options": {}
+      },
+      "id": "0cbc19f2-ec26-486d-9ed4-b11d5389a7b4",
+      "name": "Respond to Webhook - Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        816,
+        416
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook - Milestone Pay": {
+      "main": [
+        [
+          {
+            "node": "Get Milestone + Payment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Milestone + Payment": {
+      "main": [
+        [
+          {
+            "node": "Calculate Milestone Fee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Milestone Fee": {
+      "main": [
+        [
+          {
+            "node": "Get Installer Stripe Account",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Installer Stripe Account": {
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Data": {
+      "main": [
+        [
+          {
+            "node": "Stripe - Create Payment Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe - Create Payment Intent": {
+      "main": [
+        [
+          {
+            "node": "Update Milestone - Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Milestone - Processing": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook - Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "3dea49b7dd9b43976d38842c495efe40be7c7e03943c21cc3656ea0a8437e9d2"
+  }
+}
