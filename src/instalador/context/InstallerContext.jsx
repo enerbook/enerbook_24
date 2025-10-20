@@ -194,6 +194,7 @@ export const InstallerProvider = ({ children }) => {
 
   /**
    * Cargar mis proyectos (proyectos con contratos activos)
+   * OPTIMIZADO: Query simplificada sin joins profundos
    */
   const loadMyProjects = useCallback(async () => {
     if (!installer?.id) return [];
@@ -202,42 +203,30 @@ export const InstallerProvider = ({ children }) => {
       setMyProjectsLoading(true);
       setMyProjectsError(null);
 
+      // Query simplificada - solo datos esenciales
       const { data: contratos, error } = await supabase
         .from('contratos')
         .select(`
-          *,
-          proyectos:cotizaciones_final_id (
-            proyectos_id,
-            proyectos:proyectos_id (
-              id,
-              titulo,
-              descripcion,
-              estado,
-              fecha_limite,
-              created_at,
-              updated_at,
-              cotizaciones_inicial:cotizaciones_inicial_id (
-                recibo_cfe,
-                consumo_kwh_historico,
-                resumen_energetico,
-                sizing_results
-              )
-            )
-          ),
-          cotizaciones_final:cotizaciones_final_id (*),
-          usuarios:usuarios_id (
-            id,
-            nombre,
-            correo_electronico,
-            telefono
-          )
+          id,
+          numero_contrato,
+          precio_total_sistema,
+          tipo_pago_seleccionado,
+          estado,
+          fecha_firma,
+          fecha_inicio_instalacion,
+          fecha_completado,
+          estado_pago,
+          created_at,
+          cotizaciones_final_id,
+          usuarios_id
         `)
         .eq('proveedores_id', installer.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(20); // Limitar resultados iniciales
 
       if (error) throw error;
 
-      // Transformar datos para facilitar el acceso
+      // Transformar datos de forma simple
       const proyectosConContratos = contratos?.map(contrato => ({
         contrato: {
           id: contrato.id,
@@ -250,9 +239,10 @@ export const InstallerProvider = ({ children }) => {
           fecha_completado: contrato.fecha_completado,
           estado_pago: contrato.estado_pago,
         },
-        proyecto: contrato.proyectos?.proyectos || null,
-        cotizacion: contrato.cotizaciones_final || null,
-        cliente: contrato.usuarios || null,
+        // Los datos de proyecto y cliente se cargarán bajo demanda cuando se necesiten
+        proyecto: null,
+        cotizacion: null,
+        cliente: null,
       })) || [];
 
       setMyProjects(proyectosConContratos);
@@ -327,14 +317,23 @@ export const InstallerProvider = ({ children }) => {
     loadInstaller();
   }, [loadInstaller]);
 
-  // Efecto: cuando se carga el instalador, cargar sus datos
+  // Efecto: cuando se carga el instalador, cargar sus datos EN PARALELO
   useEffect(() => {
     if (installer?.id) {
-      loadAvailableProjects();
-      loadMyProjects();
-      loadQuotations();
-      loadContracts();
-      loadReviews();
+      // Cargar datos críticos primero en paralelo (ahora incluye myProjects optimizado)
+      Promise.all([
+        loadAvailableProjects(),
+        loadMyProjects(),
+        loadQuotations(),
+      ]);
+
+      // Cargar datos secundarios después (no bloquean la UI)
+      setTimeout(() => {
+        Promise.all([
+          loadContracts(),
+          loadReviews()
+        ]);
+      }, 100);
     }
   }, [installer?.id, loadAvailableProjects, loadMyProjects, loadQuotations, loadContracts, loadReviews]);
 

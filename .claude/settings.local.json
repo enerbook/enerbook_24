@@ -20,7 +20,8 @@
       "Bash(chmod:*)",
       "Bash(pg_dump:*)",
       "Bash(brew install:*)",
-      "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' /opt/homebrew/opt/postgresql@17/bin/pg_dump )"
+      "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' /opt/homebrew/opt/postgresql@17/bin/pg_dump )",
+      "Bash(npm run web:*)"
     ],
     "deny": [],
     "ask": []

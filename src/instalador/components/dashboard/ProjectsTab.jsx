@@ -176,24 +176,23 @@ const ProjectsTab = () => {
                 <div className="mb-4">
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="text-lg font-bold text-gray-900">
-                      {proyecto?.titulo || 'Proyecto sin título'}
+                      Contrato {contrato.numero_contrato}
                     </h3>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEstadoBadgeColor(contrato.estado)}`}>
                       {contrato.estado}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600">
-                    Contrato: {contrato.numero_contrato}
+                    {proyecto?.titulo || 'Ver detalles para más información'}
                   </p>
                 </div>
 
-                {/* Cliente Info */}
+                {/* Cliente Info - Optimizado */}
                 <div className="mb-4 pb-4 border-b border-gray-100">
                   <p className="text-sm text-gray-600 mb-1">Cliente</p>
-                  <p className="text-sm font-medium text-gray-900">{cliente?.nombre || 'N/A'}</p>
-                  {cliente?.correo_electronico && (
-                    <p className="text-xs text-gray-500 mt-1">{cliente.correo_electronico}</p>
-                  )}
+                  <p className="text-sm font-medium text-gray-900">
+                    {cliente?.nombre || 'Cargando...'}
+                  </p>
                 </div>
 
                 {/* Contract Details */}

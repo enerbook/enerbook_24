@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { FiUser, FiEdit3, FiCheck, FiX } from 'react-icons/fi';
 import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../lib/supabaseClient';
+import DocumentsTab from './DocumentsTab';
+import CertificationsTab from './CertificationsTab';
+import UploadDocumentModal from '../modals/UploadDocumentModal';
+import UploadCertificationModal from '../modals/UploadCertificationModal';
 
 const ProfileTab = ({ userProfile: initialProfile }) => {
   const { user } = useAuth();
@@ -23,6 +27,28 @@ const ProfileTab = ({ userProfile: initialProfile }) => {
     fecha_fundacion: '',
     curp_representante: '',
     estados_operacion: ''
+  });
+
+  // Estados para documentos y certificaciones (usando los componentes existentes)
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showCertificationModal, setShowCertificationModal] = useState(false);
+  const [uploadAction, setUploadAction] = useState('');
+  const [certificationAction, setCertificationAction] = useState('');
+  const [selectedDocument, setSelectedDocument] = useState('');
+  const [selectedCertification, setSelectedCertification] = useState('');
+
+  // Estados para los datos de documentos y certificaciones
+  const [documentStatus, setDocumentStatus] = useState({
+    'Acta Constitutiva': { uploaded: false, filename: '' },
+    'RFC de la Empresa': { uploaded: false, filename: '' },
+    'Comprobante de Domicilio Fiscal': { uploaded: false, filename: '' },
+    'Identificación del Representante Legal': { uploaded: false, filename: '' },
+    'CURP del Representante Legal': { uploaded: false, filename: '' },
+  });
+
+  const [certificationStatus, setCertificationStatus] = useState({
+    'ISO 9001 - Gestión de Calidad': { filename: '', expirationDate: '' },
+    'Certificación en Instalaciones Fotovoltaicas': { filename: '', expirationDate: '' },
   });
 
   // Cargar datos del proveedor desde Supabase
@@ -149,6 +175,65 @@ const ProfileTab = ({ userProfile: initialProfile }) => {
 
     setIsEditing(false);
     setError('');
+  };
+
+  // Manejar acción de documento (Subir/Reemplazar)
+  const handleDocumentAction = (docName, action) => {
+    setSelectedDocument(docName);
+    setUploadAction(action);
+    setShowUploadModal(true);
+  };
+
+  // Manejar subida de documento
+  const handleDocumentUpload = () => {
+    // Aquí iría la lógica de subida real
+    console.log('Subiendo documento:', selectedDocument);
+
+    // Simular subida exitosa
+    setDocumentStatus(prev => ({
+      ...prev,
+      [selectedDocument]: {
+        uploaded: true,
+        filename: `${selectedDocument}.pdf`
+      }
+    }));
+
+    setShowUploadModal(false);
+  };
+
+  // Manejar acción de certificación (Agregar/Reemplazar)
+  const handleCertificationAction = (certName, action) => {
+    setSelectedCertification(certName);
+    setCertificationAction(action);
+    setShowCertificationModal(true);
+  };
+
+  // Manejar subida de certificación
+  const handleCertificationUpload = () => {
+    // Aquí iría la lógica de subida real
+    console.log('Subiendo certificación:', selectedCertification);
+
+    // Si es agregar nueva certificación
+    if (certificationAction === 'Agregar') {
+      setCertificationStatus(prev => ({
+        ...prev,
+        [selectedCertification]: {
+          filename: `${selectedCertification}.pdf`,
+          expirationDate: '2025-12-31'
+        }
+      }));
+    } else {
+      // Simular actualización
+      setCertificationStatus(prev => ({
+        ...prev,
+        [selectedCertification]: {
+          ...prev[selectedCertification],
+          filename: `${selectedCertification}_updated.pdf`
+        }
+      }));
+    }
+
+    setShowCertificationModal(false);
   };
 
   return (
@@ -349,6 +434,39 @@ const ProfileTab = ({ userProfile: initialProfile }) => {
           </div>
         </div>
       </div>
+
+      {/* Sección de Documentos - Usando componente existente */}
+      <div className="mt-8">
+        <DocumentsTab
+          documentStatus={documentStatus}
+          handleDocumentAction={handleDocumentAction}
+        />
+      </div>
+
+      {/* Sección de Certificaciones - Usando componente existente */}
+      <div className="mt-8">
+        <CertificationsTab
+          certificationStatus={certificationStatus}
+          handleCertificationAction={handleCertificationAction}
+        />
+      </div>
+
+      {/* Modales */}
+      {showUploadModal && (
+        <UploadDocumentModal
+          uploadAction={uploadAction}
+          setShowUploadModal={setShowUploadModal}
+          handleDocumentUpload={handleDocumentUpload}
+        />
+      )}
+
+      {showCertificationModal && (
+        <UploadCertificationModal
+          certificationAction={certificationAction}
+          setShowCertificationModal={setShowCertificationModal}
+          handleCertificationUpload={handleCertificationUpload}
+        />
+      )}
     </div>
   );
 };
