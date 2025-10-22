@@ -186,7 +186,7 @@ const ProyectosTab = () => {
                       className="bg-white rounded-lg p-4 border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all"
                     >
                       <div
-                        onClick={() => router.push(`/proyecto/${proyecto.id}`)}
+                        onClick={() => router.push(`/cliente-panel/proyecto/${proyecto.id}`)}
                         className="cursor-pointer"
                       >
                         <div className="flex items-center justify-between mb-3">

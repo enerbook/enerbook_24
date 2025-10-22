@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import ProyectoAppLayout from '../../src/cliente/components/layout/ProyectoAppLayout';
-import ResumenTab from '../../src/cliente/components/dashboard/proyecto-tabs/ResumenTab';
-import CotizacionesTab from '../../src/cliente/components/dashboard/proyecto-tabs/CotizacionesTab';
-import FacturacionTab from '../../src/cliente/components/dashboard/proyecto-tabs/FacturacionTab';
-import StatusTrackingTab from '../../src/cliente/components/dashboard/proyecto-tabs/StatusTrackingTab';
-import { projectService } from '../../src/cliente/services/projectService';
+import ProyectoAppLayout from '../../../src/cliente/components/layout/ProyectoAppLayout';
+import ResumenTab from '../../../src/cliente/components/dashboard/proyecto-tabs/ResumenTab';
+import CotizacionesTab from '../../../src/cliente/components/dashboard/proyecto-tabs/CotizacionesTab';
+import FacturacionTab from '../../../src/cliente/components/dashboard/proyecto-tabs/FacturacionTab';
+import StatusTrackingTab from '../../../src/cliente/components/dashboard/proyecto-tabs/StatusTrackingTab';
+import PagosTab from '../../../src/cliente/components/dashboard/proyecto-tabs/PagosTab';
+import { projectService } from '../../../src/cliente/services/projectService';
 
 export default function ProyectoDetailPage() {
   const { id } = useLocalSearchParams();
@@ -80,6 +81,13 @@ export default function ProyectoDetailPage() {
           <CotizacionesTab
             proyecto={proyecto}
             cotizaciones={cotizaciones}
+            onReload={loadProyectoData}
+          />
+        );
+      case 'pagos':
+        return (
+          <PagosTab
+            proyecto={proyecto}
             onReload={loadProyectoData}
           />
         );

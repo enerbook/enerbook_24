@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { router } from 'expo-router';
 import InstallerNavbar from '../src/instalador/components/auth/InstallerNavbar';
+import { useAuth } from '../src/context/AuthContext';
 
 const InstallerSignup = () => {
+  const { installerSignup } = useAuth();
   const [formData, setFormData] = useState({
     companyName: '',
     fullName: '',
@@ -12,6 +14,7 @@ const InstallerSignup = () => {
   });
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -24,34 +27,37 @@ const InstallerSignup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+    setError('');
+
     try {
-      // TODO: Implementar lógica de registro con Supabase
-      // const { data, error } = await supabase.auth.signUp({
-      //   email: formData.email,
-      //   password: formData.password,
-      //   options: {
-      //     data: {
-      //       company_name: formData.companyName,
-      //       full_name: formData.fullName,
-      //       phone: formData.phone,
-      //       user_type: 'installer'
-      //     }
-      //   }
-      // });
-      // 
-      // if (error) throw error;
-      // 
-      // // Redirigir al dashboard después del registro exitoso
-      // router.push('/instalador-panel');
-      
-      // Simulación temporal
-      setTimeout(() => {
-        router.push('/instalador-panel');
-        setIsLoading(false);
-      }, 1000);
+      const result = await installerSignup(
+        formData.email,
+        formData.password,
+        {
+          companyName: formData.companyName,
+          fullName: formData.fullName,
+          phone: formData.phone
+        }
+      );
+
+      if (result.error) {
+        setError(result.error.message || 'Error durante el registro');
+      } else if (result.needsEmailConfirmation) {
+        alert('¡Registro exitoso! Por favor revisa tu correo electrónico para confirmar tu cuenta. Tu cuenta será activada por un administrador.');
+        setTimeout(() => {
+          router.push('/installer-login');
+        }, 2000);
+      } else {
+        // Registro exitoso sin necesidad de confirmación
+        alert('¡Registro exitoso! Tu cuenta será activada por un administrador.');
+        setTimeout(() => {
+          router.push('/installer-login');
+        }, 1000);
+      }
     } catch (error) {
       console.error('Error en registro:', error);
+      setError(error.message || 'Error durante el registro');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -84,6 +90,13 @@ const InstallerSignup = () => {
             <div className="flex justify-center mb-6">
               <img src="/img/icon_negro.svg" alt="Enerbook" className="h-20 w-auto" />
             </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="mb-4 p-4 border border-red-200 text-red-800 rounded-lg bg-red-50">
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Company Name */}

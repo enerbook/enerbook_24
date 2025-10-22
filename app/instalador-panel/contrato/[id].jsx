@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import ContratoAppLayout from '../../src/instalador/components/layout/ContratoAppLayout';
-import ResumenTab from '../../src/instalador/components/contrato-tabs/ResumenTab';
-import DocumentosTab from '../../src/instalador/components/contrato-tabs/DocumentosTab';
-import PagosTab from '../../src/instalador/components/contrato-tabs/PagosTab';
-import ComunicacionTab from '../../src/instalador/components/contrato-tabs/ComunicacionTab';
-import EstadoTab from '../../src/instalador/components/contrato-tabs/EstadoTab';
-import { supabase } from '../../src/lib/supabaseClient';
-import { useInstaller } from '../../src/instalador/context/InstallerContext';
+import ContratoAppLayout from '../../../src/instalador/components/layout/ContratoAppLayout';
+import ResumenTab from '../../../src/instalador/components/contrato-tabs/ResumenTab';
+import DocumentosTab from '../../../src/instalador/components/contrato-tabs/DocumentosTab';
+import PagosTab from '../../../src/instalador/components/contrato-tabs/PagosTab';
+import ComunicacionTab from '../../../src/instalador/components/contrato-tabs/ComunicacionTab';
+import EstadoTab from '../../../src/instalador/components/contrato-tabs/EstadoTab';
+import { supabase } from '../../../src/lib/supabaseClient';
+import { useInstaller } from '../../../src/instalador/context/InstallerContext';
 
 export default function ContratoDetailPage() {
   const { id } = useLocalSearchParams();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiFileText, FiDollarSign, FiActivity, FiArrowLeft, FiClipboard } from 'react-icons/fi';
+import { FiFileText, FiDollarSign, FiActivity, FiArrowLeft, FiClipboard, FiCreditCard } from 'react-icons/fi';
 import { useRouter } from 'expo-router';
 
 // Navigation button component
@@ -48,6 +48,7 @@ const ProyectoSidebar = ({ activeTab, onTabChange, onClose, proyecto }) => {
   const sidebarItems = [
     { id: 'resumen', label: 'Resumen', icon: FiFileText },
     { id: 'cotizaciones', label: 'Cotizaciones', icon: FiClipboard },
+    { id: 'pagos', label: 'Pagos', icon: FiCreditCard },
     { id: 'facturacion', label: 'Facturación', icon: FiDollarSign },
     { id: 'status', label: 'Status Tracking', icon: FiActivity },
   ];

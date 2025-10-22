@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { Slot, useRouter } from 'expo-router';
-import { ClienteAuthProvider } from '../../src/cliente/context/ClienteAuthContext';
-import { ClienteDashboardDataProvider } from '../../src/cliente/context/ClienteDashboardDataContext';
-import { ClienteProyectosProvider } from '../../src/cliente/context/ClienteProyectosContext';
-import { useAuth } from '../../src/context/AuthContext';
+import { ClienteAuthProvider } from '../../../src/cliente/context/ClienteAuthContext';
+import { ClienteDashboardDataProvider } from '../../../src/cliente/context/ClienteDashboardDataContext';
+import { ClienteProyectosProvider } from '../../../src/cliente/context/ClienteProyectosContext';
+import { useAuth } from '../../../src/context/AuthContext';
 
 export default function ProyectoLayout() {
   const { user, userType, loading } = useAuth();

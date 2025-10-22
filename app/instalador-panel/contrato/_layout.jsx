@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { Slot, useRouter } from 'expo-router';
-import { InstallerProvider } from '../../src/instalador/context/InstallerContext';
-import { useAuth } from '../../src/context/AuthContext';
+import { InstallerProvider } from '../../../src/instalador/context/InstallerContext';
+import { useAuth } from '../../../src/context/AuthContext';
 
 export default function ContratoLayout() {
   const { user, userType, loading } = useAuth();

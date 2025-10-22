@@ -7,13 +7,16 @@ import { supabase } from '../../lib/supabaseClient';
 
 export const authService = {
   // Sign up new installer
-  signUp: async (email, password, userType = 'instalador') => {
+  signUp: async (email, password, userType = 'instalador', metadata = {}) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          user_type: userType
+          user_type: userType,
+          company_name: metadata.companyName || '',
+          full_name: metadata.fullName || '',
+          phone: metadata.phone || ''
         }
       }
     });

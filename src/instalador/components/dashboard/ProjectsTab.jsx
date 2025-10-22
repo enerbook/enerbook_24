@@ -246,7 +246,7 @@ const ProjectsTab = () => {
 
                 {/* Actions */}
                 <button
-                  onClick={() => router.push(`/contrato/${contrato.id}`)}
+                  onClick={() => router.push(`/instalador-panel/contrato/${contrato.id}`)}
                   className="w-full py-2.5 px-4 text-white rounded-xl text-sm font-medium transition-colors hover:opacity-90"
                   style={{backgroundColor: '#090e1a'}}
                 >

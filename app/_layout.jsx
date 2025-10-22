@@ -3,7 +3,10 @@ import "../src/styles/camera-animations.css";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { PaymentProvider } from '../src/context/PaymentContext';
+import { StripeProvider } from '../src/lib/stripeProvider';
 import { useEffect } from "react";
+import { Platform } from "react-native";
 
 const RootLayoutNav = () => {
   const { user, userType, loading } = useAuth();
@@ -84,11 +87,28 @@ export default function RootLayout() {
     }
   }, []);
 
-  return (
+  const AppContent = (
     <AuthProvider>
-      <SafeAreaProvider>
-        <RootLayoutNav />
-      </SafeAreaProvider>
+      <PaymentProvider>
+        <SafeAreaProvider>
+          <RootLayoutNav />
+        </SafeAreaProvider>
+      </PaymentProvider>
     </AuthProvider>
   );
+
+  // Only wrap with StripeProvider on native platforms
+  if (Platform.OS !== 'web' && StripeProvider) {
+    return (
+      <StripeProvider
+        publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+        merchantIdentifier="merchant.mx.enerbook"
+      >
+        {AppContent}
+      </StripeProvider>
+    );
+  }
+
+  // On web, return without StripeProvider (will use Stripe.js separately)
+  return AppContent;
 }

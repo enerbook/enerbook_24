@@ -74,7 +74,7 @@ export default function AdminPanelLayout() {
         supabase.from('cotizaciones_leads_temp').select('id', { count: 'exact' }),
         supabase.from('proyectos').select('estado'),
         supabase.from('contratos').select('estado, precio_total_sistema'),
-        supabase.from('comisiones_enerbook').select('monto_comision, estado_pago')
+        supabase.from('comisiones_enerbook').select('monto_comision, estado')
       ]);
 
       setMetrics({

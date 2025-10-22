@@ -161,6 +161,31 @@ const ProveedoresTab = () => {
     });
   };
 
+  const handleToggleActivation = async (proveedorId, currentStatus) => {
+    try {
+      console.log('Toggling activation:', { proveedorId, currentStatus, newStatus: !currentStatus });
+
+      const { data, error } = await supabase
+        .from('proveedores')
+        .update({ activo: !currentStatus })
+        .eq('id', proveedorId)
+        .select();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Update successful:', data);
+
+      // Reload data
+      await loadProveedoresData();
+    } catch (error) {
+      console.error('Error toggling proveedor activation:', error);
+      alert('Error al actualizar el estado del proveedor: ' + error.message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex-1 items-center justify-center py-12">
@@ -286,10 +311,10 @@ const ProveedoresTab = () => {
               <p className="text-lg font-semibold text-gray-900">
                 Lista de Proveedores
               </p>
-              <div className="flex">
+              <div className="flex gap-2">
                 <button
                   onClick={() => setFilterStatus('todos')}
-                  className={`px-3 py-1 rounded-lg mr-2 ${
+                  className={`px-3 py-1 rounded-lg ${
                     filterStatus === 'todos' ? 'bg-gray-800' : 'bg-gray-100'
                   }`}
                 >
@@ -300,9 +325,21 @@ const ProveedoresTab = () => {
                   </p>
                 </button>
                 <button
+                  onClick={() => setFilterStatus('inactivos')}
+                  className={`px-3 py-1 rounded-lg ${
+                    filterStatus === 'inactivos' ? 'bg-orange-500' : 'bg-gray-100'
+                  }`}
+                >
+                  <p className={`text-sm ${
+                    filterStatus === 'inactivos' ? 'text-white' : 'text-gray-700'
+                  }`}>
+                    Pendientes Aprobación
+                  </p>
+                </button>
+                <button
                   onClick={() => setFilterStatus('activos')}
-                  className={`px-3 py-1 rounded-lg mr-2 ${
-                    filterStatus === 'activos' ? 'bg-orange-500' : 'bg-gray-100'
+                  className={`px-3 py-1 rounded-lg ${
+                    filterStatus === 'activos' ? 'bg-green-500' : 'bg-gray-100'
                   }`}
                 >
                   <p className={`text-sm ${
@@ -314,7 +351,7 @@ const ProveedoresTab = () => {
                 <button
                   onClick={() => setFilterStatus('stripe-pendiente')}
                   className={`px-3 py-1 rounded-lg ${
-                    filterStatus === 'stripe-pendiente' ? 'bg-orange-500' : 'bg-gray-100'
+                    filterStatus === 'stripe-pendiente' ? 'bg-gray-800' : 'bg-gray-100'
                   }`}
                 >
                   <p className={`text-sm ${
@@ -357,6 +394,11 @@ const ProveedoresTab = () => {
                       <p className="text-sm text-gray-600">
                         {proveedor.nombre_contacto} • {proveedor.email}
                       </p>
+                      {proveedor.telefono && (
+                        <p className="text-sm text-gray-500">
+                          {proveedor.telefono}
+                        </p>
+                      )}
                       <div className="flex items-center mt-2">
                         <div className="flex items-center mr-4">
                           <Ionicons name="construct" size={14} color="#6B7280" />
@@ -382,15 +424,44 @@ const ProveedoresTab = () => {
                         )}
                       </div>
                     </div>
-                    <p className="text-sm text-gray-500">
-                      {formatDate(proveedor.created_at)}
-                    </p>
+                    <div className="flex flex-col items-end">
+                      <p className="text-sm text-gray-500 mb-2">
+                        {formatDate(proveedor.created_at)}
+                      </p>
+                      <button
+                        onClick={() => handleToggleActivation(proveedor.id, proveedor.activo)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                          proveedor.activo
+                            ? 'bg-red-50 text-red-700 hover:bg-red-100'
+                            : 'bg-green-50 text-green-700 hover:bg-green-100'
+                        }`}
+                      >
+                        {proveedor.activo ? 'Desactivar' : 'Activar'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
         </div>
+
+        {proveedoresStats.inactivos > 0 && (
+          <div className="bg-red-50 rounded-lg p-4 border border-red-200 mt-6">
+            <div className="flex items-start">
+              <Ionicons name="alert-circle" size={20} color="#EF4444" />
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  Instaladores Pendientes de Aprobación
+                </p>
+                <p className="text-sm text-gray-700 mt-1">
+                  Hay {proveedoresStats.inactivos} instaladores esperando aprobación.
+                  Revisa su información y actívalos para que puedan comenzar a recibir cotizaciones.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {proveedoresStats.stripePendiente > 0 && (
           <div className="bg-orange-50 rounded-lg p-4 border border-orange-200 mt-6">

@@ -21,7 +21,13 @@
       "Bash(pg_dump:*)",
       "Bash(brew install:*)",
       "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' /opt/homebrew/opt/postgresql@17/bin/pg_dump )",
-      "Bash(npm run web:*)"
+      "Bash(npm run web:*)",
+      "Bash(PGPASSWORD:*)",
+      "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' psql -h db.qkdvosjitrkopnarbozv.supabase.co -p 5432 -U postgres -d postgres -c \"DELETE FROM auth.users WHERE email NOT IN (''test123@test.com'', ''garcia@test.com'');\")",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' psql:*)",
+      "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' psql -h db.qkdvosjitrkopnarbozv.supabase.co -p 5432 -U postgres -d postgres -c \"\n-- Verificar que el admin existe y está activo\nSELECT id, usuario_id, nivel_acceso, activo \nFROM administradores \nWHERE usuario_id = ''e3ec2455-604e-4c2f-95b0-78f8eb93f9fb'';\n\")"
     ],
     "deny": [],
     "ask": []

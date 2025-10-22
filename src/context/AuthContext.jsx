@@ -5,7 +5,9 @@ import logger, { createServiceLogger } from '../utils/logger';
 // Security: Direct imports from each feature (Principle of Least Privilege)
 // Each role's services are isolated and explicitly imported
 import { authService as clienteAuthService } from '../cliente/services/authService';
+import { authService as instaladorAuthService } from '../instalador/services/authService';
 import { clientService } from '../cliente/services/clientService';
+import { installerService } from '../instalador/services/installerService';
 import { leadService } from '../lead/services/leadService';
 
 // Create service-specific logger
@@ -346,6 +348,40 @@ export const AuthProvider = ({ children }) => {
     }
   }, [tempLeadId, leadData, clientSignup, fetchClientData]);
 
+  const installerSignup = async (email, password, metadata = {}) => {
+    try {
+      // Pasar metadata al servicio de autenticación
+      // El trigger de base de datos creará automáticamente el registro en proveedores
+      const data = await instaladorAuthService.signUp(email, password, 'instalador', metadata);
+
+      // Si el signup fue exitoso pero necesita confirmación de email
+      if (data.user && !data.session) {
+        authLogger.info('Installer signup requires email confirmation', {
+          userId: data.user.id,
+          metadata: metadata
+        });
+        return {
+          data,
+          error: null,
+          needsEmailConfirmation: true,
+          message: "Registro exitoso. Por favor revisa tu correo electrónico para confirmar tu cuenta."
+        };
+      }
+
+      // Si hay sesión inmediata (no requiere confirmación de email)
+      if (data.user && data.session) {
+        authLogger.success('Installer signup successful with immediate session', {
+          userId: data.user.id
+        });
+      }
+
+      return { data, error: null };
+    } catch (error) {
+      authLogger.error('Error in installer signup', { email, error: error.message });
+      return { error };
+    }
+  };
+
   const clientLogin = async (email, password) => {
     try {
       const data = await authService.signIn(email, password);
@@ -398,6 +434,7 @@ export const AuthProvider = ({ children }) => {
       clientData,
       setClientData,
       installerLogin,
+      installerSignup,
       clientLogin,
       clientSignup,
       logout,
