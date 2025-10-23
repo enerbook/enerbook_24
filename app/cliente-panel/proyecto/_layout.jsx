@@ -22,14 +22,27 @@ export default function ProyectoLayout() {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <div className="text-gray-600">Cargando...</div>
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
+            <p className="text-sm text-gray-600">Verificando sesión...</p>
+          </div>
+        </div>
       </View>
     );
   }
 
   // Si no hay usuario autenticado como cliente, mostrar vista vacía (el useEffect redirigirá)
   if (!user || userType !== 'cliente') {
-    return <View />;
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+          <div className="text-center">
+            <p className="text-sm text-gray-600">Redirigiendo...</p>
+          </div>
+        </div>
+      </View>
+    );
   }
 
   return (

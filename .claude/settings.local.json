@@ -1,35 +1,32 @@
 {
   "permissions": {
     "allow": [
+      "Bash(xargs sed:*)",
+      "Bash(\"s|from ''../../../../hooks/useSolicitarCotizaciones|from ''../../hooks/useSolicitarCotizaciones|g\" )",
+      "Bash(\"s|from ''../../../../context/LeadDashboardDataContext|from ''../../context/LeadDashboardDataContext|g\" )",
+      "Bash(find:*)",
+      "Bash({} +)",
+      "Bash(\"s|from ''../../context/|from ''../../../context/|g\" )",
       "Bash(rm:*)",
-      "Bash(mkdir:*)",
-      "Bash(cp:*)",
-      "Bash(curl:*)",
-      "Bash(supabase functions deploy:*)",
-      "Bash(supabase db dump:*)",
-      "Bash(supabase projects list:*)",
-      "Bash(supabase status:*)",
-      "Bash(python3:*)",
-      "Bash(npm install:*)",
-      "Bash(supabase projects api-keys:*)",
-      "Read(//private/tmp/**)",
+      "Bash(\"s|from ''../../context/Lead|from ''../../../context/Lead|g\" )",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(psql:*)",
-      "Bash(chmod:*)",
-      "Bash(pg_dump:*)",
+      "Bash(git rm:*)",
       "Bash(brew install:*)",
-      "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' /opt/homebrew/opt/postgresql@17/bin/pg_dump )",
-      "Bash(npm run web:*)",
-      "Bash(PGPASSWORD:*)",
-      "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' psql -h db.qkdvosjitrkopnarbozv.supabase.co -p 5432 -U postgres -d postgres -c \"DELETE FROM auth.users WHERE email NOT IN (''test123@test.com'', ''garcia@test.com'');\")",
-      "Bash(lsof:*)",
-      "Bash(xargs kill:*)",
-      "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' psql:*)",
-      "Bash(PGPASSWORD='2Be@S/JxV3ra%vU' psql -h db.qkdvosjitrkopnarbozv.supabase.co -p 5432 -U postgres -d postgres -c \"\n-- Verificar que el admin existe y está activo\nSELECT id, usuario_id, nivel_acceso, activo \nFROM administradores \nWHERE usuario_id = ''e3ec2455-604e-4c2f-95b0-78f8eb93f9fb'';\n\")"
+      "Bash(supabase:*)",
+      "Bash(npm install:*)",
+      "Bash(npx supabase:*)",
+      "Bash(echo $?)",
+      "Bash(npm run start:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase",
+    "n8n-mcp",
+    "google"
+  ]
 }

@@ -29,16 +29,27 @@ export default function ProyectoDetailPage() {
       const { proyecto: proyectoData, cotizacionInicial: cotizacionInicialData, cotizaciones: cotizacionesData } =
         await projectService.getProjectWithDetails(id);
 
+      if (!proyectoData) {
+        console.error('Project data is null or undefined');
+        setProyecto(null);
+        setCotizacionInicial(null);
+        setCotizaciones([]);
+        return;
+      }
+
       setProyecto(proyectoData);
       setCotizacionInicial(cotizacionInicialData);
-      setCotizaciones(cotizacionesData);
+      setCotizaciones(cotizacionesData || []);
 
       console.log('✅ Project data loaded:', {
         proyecto: proyectoData.titulo,
-        cotizaciones: cotizacionesData.length
+        cotizaciones: (cotizacionesData || []).length
       });
     } catch (error) {
-      console.error('Error loading project data:', error);
+      console.error('❌ Error loading project data:', error);
+      setProyecto(null);
+      setCotizacionInicial(null);
+      setCotizaciones([]);
     } finally {
       setLoading(false);
     }

@@ -219,12 +219,29 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
 
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user ?? null;
-      setUser(user);
-      setToken(session?.access_token ?? null);
-      await loadUserData(user);
-      setLoading(false);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          authLogger.error('Error getting session', { error: error.message });
+          setLoading(false);
+          return;
+        }
+
+        const user = session?.user ?? null;
+        setUser(user);
+        setToken(session?.access_token ?? null);
+
+        // Load user data in parallel with setting loading to false for faster UX
+        if (user) {
+          loadUserData(user).finally(() => setLoading(false));
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        authLogger.error('Unexpected error in getSession', { error: error.message });
+        setLoading(false);
+      }
     };
 
     getSession();
@@ -234,7 +251,13 @@ export const AuthProvider = ({ children }) => {
         const user = session?.user ?? null;
         setUser(user);
         setToken(session?.access_token ?? null);
-        await loadUserData(user);
+
+        if (user) {
+          await loadUserData(user);
+        } else {
+          setUserType(null);
+          setClientData(null);
+        }
         setLoading(false);
       }
     );
