@@ -4,7 +4,7 @@ import React from "react";
 const MetricTile = ({ title, value, subtitle }) => {
   return (
     <div
-      className="p-4 rounded-2xl border border-gray-100 flex items-center justify-between"
+      className="p-4 rounded-2xl border border-gray-200 flex items-center justify-between"
       style={{ backgroundColor: "#fcfcfc" }} // sin sombras
     >
       <div className="min-w-0 pr-3">

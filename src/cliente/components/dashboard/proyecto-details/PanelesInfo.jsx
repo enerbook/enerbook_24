@@ -4,7 +4,7 @@ const PanelesInfo = ({ paneles }) => {
   if (!paneles) return null;
 
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
+    <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
       <h4 className="text-xs font-semibold text-gray-900 mb-2">Paneles Solares</h4>
       <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
         <div><span className="font-medium">Marca:</span> {paneles.marca}</div>

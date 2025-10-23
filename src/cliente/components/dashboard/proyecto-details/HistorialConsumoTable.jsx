@@ -18,7 +18,7 @@ const HistorialConsumoTable = ({ consumoHistorico }) => {
           </thead>
           <tbody>
             {consumoHistorico.map((item, index) => (
-              <tr key={index} className="border-b border-gray-100">
+              <tr key={index} className="border-b border-gray-200">
                 <td className="py-2 font-medium text-gray-900">{item.periodo}</td>
                 <td className="py-2 text-right text-gray-900">{item.value || item.kwh || 0}</td>
               </tr>

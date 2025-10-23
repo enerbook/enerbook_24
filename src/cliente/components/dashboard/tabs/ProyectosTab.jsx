@@ -134,7 +134,7 @@ const ProyectosTab = () => {
         </div>
 
         {/* Projects List */}
-        <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+        <div className="p-6 rounded-lg border border-gray-200" style={{ backgroundColor: '#fcfcfc' }}>
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
@@ -183,7 +183,7 @@ const ProyectosTab = () => {
                   return (
                     <div
                       key={proyecto.id}
-                      className="bg-white rounded-lg p-4 border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all"
+                      className="bg-white rounded-lg p-4 border border-gray-200 hover:border-orange-300 transition-all"
                     >
                       <div
                         onClick={() => router.push(`/cliente-panel/proyecto/${proyecto.id}`)}
@@ -241,7 +241,7 @@ const ProyectosTab = () => {
                           </span>
                         </div>
                         {cotizacionesProyecto.length > 0 && (
-                          <div className="mt-3 pt-3 border-t border-gray-100">
+                          <div className="mt-3 pt-3 border-t border-gray-200">
                             <p className="text-xs font-medium text-gray-700 mb-2">
                               {cotizacionesProyecto.length} cotización{cotizacionesProyecto.length !== 1 ? 'es' : ''} recibida{cotizacionesProyecto.length !== 1 ? 's' : ''}
                             </p>
@@ -263,14 +263,11 @@ const ProyectosTab = () => {
                       </div>
 
                       {/* Action buttons */}
-                      <div className="mt-4 pt-4 border-t border-gray-100">
+                      <div className="mt-4 pt-4 border-t border-gray-200">
                         <button
                           onClick={(e) => handleToggleProjectStatus(proyecto.id, proyecto.estado, e)}
-                          className={`w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                            proyecto.estado === 'abierto'
-                              ? 'border border-orange-300 text-orange-600 hover:bg-orange-50'
-                              : 'border border-green-300 text-green-600 hover:bg-green-50'
-                          }`}
+                          className="w-full px-3 py-2 rounded-lg text-white text-xs font-medium transition-opacity hover:opacity-90"
+                          style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
                         >
                           {proyecto.estado === 'abierto' ? 'Pausar Proyecto' : 'Publicar Proyecto'}
                         </button>

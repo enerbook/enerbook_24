@@ -9,41 +9,22 @@ const CotizacionesTab = ({ setSelectedProject, setShowProjectModal, setShowQuote
   // Usar filtros persistidos
   const { filters, updateFilters, clearFilters } = usePersistedFilters('cotizaciones');
 
-  // Usar context para proyectos disponibles
-  const { availableProjects: rawProjects, projectsLoading, projectsError } = useInstaller();
+  // Usar context para proyectos disponibles y cotizaciones enviadas
+  const { availableProjects: rawProjects, projectsLoading, projectsError, quotations } = useInstaller();
 
-  // Formatear proyectos usando utilidad compartida
+  // Formatear proyectos y filtrar los que ya tienen cotización enviada
   const projects = useMemo(() => {
-    // Debug: verificar datos antes del formateo
-    if (rawProjects && rawProjects.length > 0) {
-      console.log('🔍 CotizacionesTab - Raw project sample:', {
-        proyecto_id: rawProjects[0]?.id,
-        tiene_cotizacion: !!rawProjects[0]?.cotizaciones_inicial,
-        consumo_type: typeof rawProjects[0]?.cotizaciones_inicial?.consumo_kwh_historico,
-        consumo_is_array: Array.isArray(rawProjects[0]?.cotizaciones_inicial?.consumo_kwh_historico),
-        consumo_first_item: rawProjects[0]?.cotizaciones_inicial?.consumo_kwh_historico?.[0],
-        sizing_keys: rawProjects[0]?.cotizaciones_inicial?.sizing_results
-          ? Object.keys(rawProjects[0].cotizaciones_inicial.sizing_results)
-          : []
-      });
-    }
-
+    // Formatear todos los proyectos disponibles
     const formatted = rawProjects?.map(formatProjectData) || [];
 
-    // Debug: verificar datos después del formateo
-    if (formatted.length > 0) {
-      console.log('📊 CotizacionesTab - Formatted project sample:', {
-        name: formatted[0].name,
-        power: formatted[0].power,
-        consumption: formatted[0].consumption,
-        tariff: formatted[0].tariff,
-        location: formatted[0].location,
-        production: formatted[0].production
-      });
-    }
+    // Filtrar proyectos que NO tienen cotización enviada por este instalador
+    const projectsWithoutQuotation = formatted.filter(project => {
+      const hasQuotation = quotations?.some(q => q.proyectos_id === project.id);
+      return !hasQuotation;
+    });
 
-    return formatted;
-  }, [rawProjects]);
+    return projectsWithoutQuotation;
+  }, [rawProjects, quotations]);
 
   // Aplicar filtros y búsqueda
   const filteredProjects = useMemo(() => {

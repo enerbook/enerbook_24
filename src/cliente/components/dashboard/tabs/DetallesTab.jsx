@@ -25,7 +25,7 @@ const DetallesTab = () => {
       <div className="space-y-6 lg:space-y-8">
         {/* Top Section - Cotizar energía solar */}
         <div className="w-full lg:w-1/2">
-          <div className="p-4 lg:p-6 rounded-lg border border-gray-100 flex flex-col lg:flex-row items-center justify-between gap-4" style={{ backgroundColor: '#fcfcfc' }}>
+          <div className="p-4 lg:p-6 rounded-lg border border-gray-200 flex flex-col lg:flex-row items-center justify-between gap-4" style={{ backgroundColor: '#fcfcfc' }}>
             <div className="flex-1 text-center lg:text-left">
               <h2 className="text-sm font-bold text-gray-900 mb-3">
                 Cotiza energía solar de forma segura
@@ -53,7 +53,7 @@ const DetallesTab = () => {
 
         {/* Datos del Recibo CFE Section */}
         <div className="w-full lg:w-1/2">
-          <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+          <div className="p-6 rounded-lg border border-gray-200" style={{ backgroundColor: '#fcfcfc' }}>
             <h2 className="text-sm font-bold text-gray-900 mb-4">Datos del Recibo Cfe</h2>
             <div className="space-y-3">
               {hasData && reciboData ? (
@@ -101,7 +101,7 @@ const DetallesTab = () => {
         {/* Barras de Resumen */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
           {/* Resumen Energético */}
-          <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+          <div className="p-6 rounded-lg border border-gray-200" style={{ backgroundColor: '#fcfcfc' }}>
             <h3 className="text-sm font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent mb-3">Resumen Energético</h3>
             <div className="space-y-3">
               {hasData ? (
@@ -132,7 +132,7 @@ const DetallesTab = () => {
           </div>
 
           {/* Dimensionamiento del Sistema Solar */}
-          <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+          <div className="p-6 rounded-lg border border-gray-200" style={{ backgroundColor: '#fcfcfc' }}>
             <h3 className="text-sm font-bold text-gray-900 mb-3">Dimensionamiento del Sistema Solar</h3>
             <div className="space-y-3">
               {hasData && sistemaData ? (

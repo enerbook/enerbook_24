@@ -17,7 +17,7 @@ const CotizacionesList = ({ cotizaciones, proyecto, onAcceptQuotation }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6">
       <h2 className="text-sm font-bold text-gray-900 mb-4">
         Cotizaciones Recibidas ({cotizaciones.length})
       </h2>
@@ -36,10 +36,11 @@ const CotizacionesList = ({ cotizaciones, proyecto, onAcceptQuotation }) => {
         </div>
       ) : (
         <div className="space-y-4">
-          {cotizaciones.map((cotizacion) => (
+          {cotizaciones.map((cotizacion, index) => (
             <CotizacionCard
               key={cotizacion.id}
               cotizacion={cotizacion}
+              cotizacionIndex={index + 1}
               isExpanded={selectedCotizacionId === cotizacion.id}
               onToggle={() => handleToggle(cotizacion.id)}
               onAcceptQuotation={onAcceptQuotation}

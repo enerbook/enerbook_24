@@ -121,7 +121,7 @@ const PerfilTab = () => {
     <main className="flex-1 px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
       <div className="space-y-8">
         {/* Top Section - Cotizar energía solar */}
-        <div className="p-8 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+        <div className="p-8 rounded-lg border border-gray-200" style={{ backgroundColor: '#fcfcfc' }}>
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <h2 className="text-sm font-bold text-gray-900 mb-4">
@@ -156,7 +156,7 @@ const PerfilTab = () => {
         <div className="py-4"></div>
 
         {/* Profile Form */}
-        <div className="p-8 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+        <div className="p-8 rounded-lg border border-gray-200" style={{ backgroundColor: '#fcfcfc' }}>
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 border border-orange-200 text-orange-800 rounded-lg" style={{backgroundColor: '#FFF7ED'}}>

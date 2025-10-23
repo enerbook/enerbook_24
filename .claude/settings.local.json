@@ -21,7 +21,10 @@
       "Bash(npm run start:*)",
       "Bash(node:*)",
       "Bash(npx expo start:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(for:*)",
+      "Bash(do sed -i '' 's/border-gray-100/border-gray-200/g' \"$file\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

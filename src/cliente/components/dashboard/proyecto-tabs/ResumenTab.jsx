@@ -55,17 +55,16 @@ const ResumenTab = ({ proyecto, cotizacionInicial, cotizaciones, onReload }) => 
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h1 className="text-lg font-bold text-gray-900 mb-2">{proyecto.titulo}</h1>
             <p className="text-sm text-gray-600">{proyecto.descripcion}</p>
           </div>
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-            proyecto.estado === 'abierto'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-gray-100 text-gray-800'
-          }`}>
+          <span
+            className="px-3 py-1 rounded-full text-xs font-semibold text-white"
+            style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+          >
             {proyecto.estado === 'abierto' ? 'Abierto' : 'Pausado'}
           </span>
         </div>
@@ -102,11 +101,10 @@ const ResumenTab = ({ proyecto, cotizacionInicial, cotizaciones, onReload }) => 
         <button
           onClick={handleToggleStatus}
           disabled={isTogglingStatus}
-          className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            proyecto.estado === 'abierto'
-              ? 'border border-orange-300 text-orange-600 hover:bg-orange-50'
-              : 'border border-green-300 text-green-600 hover:bg-green-50'
-          } ${isTogglingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full px-3 py-2 rounded-lg text-white text-sm font-medium transition-opacity ${
+            isTogglingStatus ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
+          }`}
+          style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
         >
           {isTogglingStatus ? 'Procesando...' : proyecto.estado === 'abierto' ? 'Pausar Proyecto' : 'Publicar Proyecto'}
         </button>
@@ -122,7 +120,7 @@ const ResumenTab = ({ proyecto, cotizacionInicial, cotizaciones, onReload }) => 
       <AnalysisCharts cotizacionInicial={cotizacionInicial} />
 
       {/* Información Técnica */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6">
         <h2 className="text-base font-bold text-gray-900 mb-4">Información Técnica</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
@@ -154,7 +152,7 @@ const ResumenTab = ({ proyecto, cotizacionInicial, cotizaciones, onReload }) => 
 
       {/* Historial de Consumo */}
       {cotizacionInicial?.consumo_kwh_historico && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-base font-bold text-gray-900 mb-4">Historial de Consumo</h2>
           <HistorialConsumoTable consumoHistorico={cotizacionInicial.consumo_kwh_historico} />
         </div>

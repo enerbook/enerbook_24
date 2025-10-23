@@ -42,16 +42,17 @@ const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
   };
 
   const handleSubmitQuote = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
+      console.log('[SendQuoteModal] Iniciando envío...');
+
       // Validar campos requeridos
       if (!formData.paneles_marca || !formData.inversores_marca || !formData.precio_total) {
         alert('Por favor, completa al menos los campos de Paneles, Inversor y Precio Final');
-        setLoading(false);
         return;
       }
 
-      // Preparar opciones de pago según las seleccionadas
+      // Preparar opciones de pago
       const opciones_pago = [];
       if (paymentOptions.upfront) {
         opciones_pago.push({
@@ -79,33 +80,38 @@ const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
         });
       }
 
-      // Agregar opciones de pago al formData
       const quotationData = {
         ...formData,
         opciones_pago
       };
 
-      // Enviar cotización usando el servicio
+      console.log('[SendQuoteModal] Datos preparados:', quotationData);
+
+      // Enviar cotización
       const result = await quotationService.submitQuotation(project.id, quotationData);
 
-      // Éxito
+      console.log('[SendQuoteModal] Éxito:', result);
+
       alert('¡Cotización enviada exitosamente! El cliente podrá revisarla en su dashboard.');
       if (onSuccess) {
         onSuccess(result);
       }
       setShowQuoteModal(false);
     } catch (error) {
-      console.error('Error submitting quote:', error);
+      console.error('[SendQuoteModal] Error completo:', error);
+      console.error('[SendQuoteModal] Error.message:', error?.message);
+      console.error('[SendQuoteModal] Error.code:', error?.code);
 
-      // Mostrar mensaje de error específico
-      if (error.message.includes('Ya has enviado una cotización')) {
-        alert('Ya has enviado una cotización para este proyecto. No puedes enviar otra.');
-      } else if (error.message.includes('Usuario no autenticado')) {
-        alert('Usuario no autenticado. Por favor, inicia sesión nuevamente.');
-      } else if (error.message.includes('No se encontró perfil de proveedor')) {
-        alert('No se pudo encontrar tu perfil de proveedor. Contacta a soporte.');
+      const errorMsg = error?.message || 'Error desconocido';
+
+      if (errorMsg.includes('Ya has enviado una cotización')) {
+        alert('Ya has enviado una cotización para este proyecto.');
+      } else if (errorMsg.includes('Usuario no autenticado')) {
+        alert('Usuario no autenticado. Inicia sesión nuevamente.');
+      } else if (errorMsg.includes('No se encontró perfil de proveedor')) {
+        alert('No se encontró tu perfil de proveedor. Contacta a soporte.');
       } else {
-        alert('Error al enviar la cotización. Inténtalo de nuevo.');
+        alert(`Error: ${errorMsg}`);
       }
     } finally {
       setLoading(false);

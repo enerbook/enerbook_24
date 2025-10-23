@@ -8,7 +8,7 @@ const QuotesCTA = () => {
   return (
     <div className="w-full lg:flex-1">
       <div
-        className="p-4 lg:p-3 rounded-2xl border border-gray-100 h-full flex flex-col lg:flex-row items-center justify-between gap-4"
+        className="p-4 lg:p-3 rounded-2xl border border-gray-200 h-full flex flex-col lg:flex-row items-center justify-between gap-4"
         style={{ backgroundColor: "#fcfcfc" }}
       >
         <div className="flex-1 text-center lg:text-left">

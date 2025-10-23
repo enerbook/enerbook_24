@@ -15,21 +15,19 @@ export const formatProjectData = (proyecto) => {
   const resumenEnergetico = cotizacion?.resumen_energetico;
   const irradiacionData = cotizacion?.irradiacion_cache;
 
-  // Calcular datos de consumo
+  // Sumar consumo histórico de todos los meses disponibles
   let consumoAnual = 'No disponible';
   if (consumoHistorico && Array.isArray(consumoHistorico) && consumoHistorico.length > 0) {
-    const totalConsumo = consumoHistorico.reduce((sum, item) => sum + (item.consumo || item.kwh || 0), 0);
+    const totalConsumo = consumoHistorico.reduce((sum, item) => sum + (item.kwh || 0), 0);
     consumoAnual = `${totalConsumo.toLocaleString()} kWh`;
-  } else if (resumenEnergetico?.consumo_promedio) {
-    consumoAnual = `${(resumenEnergetico.consumo_promedio * 12).toLocaleString()} kWh`;
+  } else if (sizingResults?.inputs?.kWh_year_assumed) {
+    consumoAnual = `${sizingResults.inputs.kWh_year_assumed.toLocaleString()} kWh`;
   }
 
-  // Datos de potencia y dimensionamiento
-  let powerInfo = 'Información no disponible';
-  if (sizingResults?.kWp_needed) {
-    const paneles = sizingResults.n_panels || Math.ceil((sizingResults.kWp_needed * 1000) / (sizingResults.panel_wp || 550));
-    powerInfo = `${sizingResults.kWp_needed} kW (${paneles} paneles)`;
-  }
+  // Usar datos de dimensionamiento ya calculados desde n8n/backend
+  const powerInfo = sizingResults?.kWp_needed && sizingResults?.n_panels
+    ? `${sizingResults.kWp_needed} kW (${sizingResults.n_panels} paneles)`
+    : 'Información no disponible';
 
   return {
     id: proyecto.id,
@@ -88,20 +86,31 @@ export const formatQuotationData = (cotizacion) => {
     details: {
       capacity: sizingResults?.potencia_sistema ? `${sizingResults.potencia_sistema} kWp` : 'No especificada',
       panels: paneles?.modelo || 'No especificado',
+      panelBrand: paneles?.marca || 'No especificado',
       panelCount: paneles?.cantidad || 'N/A',
-      inverter: inversores?.modelo || 'No especificado',
-      production: sizingResults?.generacion_anual
-        ? `${sizingResults.generacion_anual.toLocaleString()} kWh/año`
-        : 'No calculada',
-      structure: estructura?.tipo || 'No especificada',
+      panelPower: paneles?.potencia_wp ? `${paneles.potencia_wp} W` : 'No especificado',
+      panelPrice: paneles?.precio ? `$${paneles.precio.toLocaleString()} MXN` : 'No especificado',
       panelWarranty: paneles?.garantia_anos ? `${paneles.garantia_anos} años` : 'No especificada',
+      inverter: inversores?.modelo || 'No especificado',
+      inverterBrand: inversores?.marca || 'No especificado',
+      inverterType: inversores?.tipo || 'No especificado',
+      inverterPower: inversores?.potencia_kw ? `${inversores.potencia_kw} kW` : 'No especificado',
+      inverterPrice: inversores?.precio ? `$${inversores.precio.toLocaleString()} MXN` : 'No especificado',
       inverterWarranty: inversores?.garantia_anos ? `${inversores.garantia_anos} años` : 'No especificada',
+      structure: estructura?.tipo || 'No especificada',
+      structureMaterial: estructura?.material || 'No especificado',
+      structurePrice: estructura?.precio ? `$${estructura.precio.toLocaleString()} MXN` : 'No especificado',
+      electricalSystem: sistemaElectrico?.descripcion || 'No especificado',
+      electricalSystemPrice: sistemaElectrico?.precio ? `$${sistemaElectrico.precio.toLocaleString()} MXN` : 'No especificado',
+      installationTime: sistemaElectrico?.tiempo_instalacion_dias
+        ? `${sistemaElectrico.tiempo_instalacion_dias} días`
+        : 'No especificado',
       installationWarranty: sistemaElectrico?.garantia_instalacion_anos
         ? `${sistemaElectrico.garantia_instalacion_anos} años`
         : 'No especificada',
-      installationTime: estructura?.tiempo_instalacion_dias
-        ? `${estructura.tiempo_instalacion_dias} días`
-        : 'No especificado',
+      production: sizingResults?.generacion_anual
+        ? `${sizingResults.generacion_anual.toLocaleString()} kWh/año`
+        : 'No calculada',
       paymentOptions: opcionesPago?.tipos || ['Contado'],
       notes: cotizacion.notas_proveedor || 'Sin notas adicionales'
     },

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 // Helper functions for chart data processing
 const generatePath = (data) => {
@@ -54,21 +55,42 @@ const getXAxisLabels = (data) => {
 };
 
 const ChartCard = ({ title, subtitle, gradientFrom, gradientTo, chartGradientFrom, chartGradientTo, className = "", data = [] }) => {
+  // Generar descripción textual para accesibilidad
+  const chartDescription = data.length > 0
+    ? `Gráfico de ${title.toLowerCase()} mostrando ${data.length} puntos de datos. Valor máximo: ${Math.max(...data.map(d => d.value))}, Valor mínimo: ${Math.min(...data.map(d => d.value))}`
+    : `Gráfico de ${title.toLowerCase()} sin datos disponibles`;
+
   return (
-    <div className={`p-8 rounded-lg border border-gray-100 ${className}`} style={{backgroundColor: '#fcfcfc'}}>
+    <div
+      className={`p-8 rounded-2xl border border-gray-200 ${className}`}
+      style={{backgroundColor: '#fcfcfc'}}
+      role="region"
+      aria-label={`Gráfico: ${title}`}
+    >
       <h3 className="text-sm font-bold text-gray-900 mb-2">{title}</h3>
       <p className="text-sm text-gray-400 mb-6">
         {subtitle}
       </p>
       {data.length === 0 && (
-        <div className="mb-4 px-3 py-2 bg-gray-100 rounded-lg">
+        <div className="mb-4 px-3 py-2 bg-gray-100 rounded-lg" role="alert">
           <p className="text-sm text-gray-500">No hay datos disponibles</p>
         </div>
       )}
-      <div className="h-64 relative overflow-hidden rounded-lg" style={{background: 'linear-gradient(to bottom, rgba(245,158,11,0.1) 0%, rgba(255,203,69,0.05) 100%)'}}>
+      <div
+        className="h-64 relative overflow-hidden rounded-lg"
+        style={{background: 'linear-gradient(to bottom, rgba(245,158,11,0.1) 0%, rgba(255,203,69,0.05) 100%)'}}
+        role="img"
+        aria-label={chartDescription}
+      >
         {/* Line chart with real data */}
         <div className="absolute bottom-0 left-0 w-full h-40">
-          <svg className="w-full h-full" viewBox="0 0 400 160" preserveAspectRatio="none">
+          <svg
+            className="w-full h-full"
+            viewBox="0 0 400 160"
+            preserveAspectRatio="none"
+            role="presentation"
+            aria-hidden="true"
+          >
             <defs>
               <linearGradient id={`line-gradient-${title.replace(/\s+/g, '-')}`} x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#F59E0B" />
@@ -122,4 +144,55 @@ const ChartCard = ({ title, subtitle, gradientFrom, gradientTo, chartGradientFro
   );
 };
 
-export default ChartCard;
+ChartCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string.isRequired,
+  gradientFrom: PropTypes.string,
+  gradientTo: PropTypes.string,
+  chartGradientFrom: PropTypes.string,
+  chartGradientTo: PropTypes.string,
+  className: PropTypes.string,
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.number.isRequired,
+      label: PropTypes.string,
+      fullLabel: PropTypes.string
+    })
+  )
+};
+
+ChartCard.defaultProps = {
+  className: "",
+  data: []
+};
+
+// Memoizar con comparación personalizada para array de datos
+const areEqual = (prevProps, nextProps) => {
+  // Comparar props primitivas
+  if (
+    prevProps.title !== nextProps.title ||
+    prevProps.subtitle !== nextProps.subtitle ||
+    prevProps.className !== nextProps.className
+  ) {
+    return false;
+  }
+
+  // Comparación profunda del array de datos
+  if (prevProps.data.length !== nextProps.data.length) {
+    return false;
+  }
+
+  // Comparar cada elemento del array
+  for (let i = 0; i < prevProps.data.length; i++) {
+    if (
+      prevProps.data[i].value !== nextProps.data[i].value ||
+      prevProps.data[i].label !== nextProps.data[i].label
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+export default React.memo(ChartCard, areEqual);

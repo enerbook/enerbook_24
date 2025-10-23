@@ -54,6 +54,7 @@ const InstallerSidebar = ({ activeTab, onClose }) => {
 
   const sidebarItems = [
     { id: 'cotizaciones', label: 'Cotizaciones', icon: FiFileText },
+    { id: 'mis-cotizaciones', label: 'Mis Cotizaciones', icon: FiFileText },
     { id: 'proyectos', label: 'Proyectos', icon: FiFolder },
   ];
 

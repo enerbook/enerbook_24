@@ -9,29 +9,23 @@ const InformacionTecnicaCard = ({ cotizacionInicial }) => {
   const { sizing_results, recibo_cfe, resumen_energetico, consumo_kwh_historico } = cotizacionInicial;
 
   const MetricCard = ({ icon, title, value, subtitle, gradient }) => (
-    <div className="relative overflow-hidden bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
-      <div
-        className="absolute top-0 right-0 w-20 h-20 opacity-10 rounded-full -mr-8 -mt-8"
-        style={{ background: gradient }}
-      />
-      <div className="relative">
-        <div className="flex items-center gap-3 mb-3">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg"
-            style={{ background: gradient }}
-          >
-            {icon}
-          </div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{title}</p>
+    <div className="bg-white rounded-2xl border border-gray-200 p-4">
+      <div className="flex items-center gap-3 mb-3">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg"
+          style={{ background: gradient }}
+        >
+          {icon}
         </div>
-        <p className="text-lg font-extrabold text-gray-900 mb-1">{value}</p>
-        {subtitle && <p className="text-xs text-gray-600">{subtitle}</p>}
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{title}</p>
       </div>
+      <p className="text-lg font-extrabold text-gray-900 mb-1">{value}</p>
+      {subtitle && <p className="text-xs text-gray-600">{subtitle}</p>}
     </div>
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6 shadow-sm">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
       <div className="flex items-center gap-3 mb-6">
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
