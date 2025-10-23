@@ -37,6 +37,17 @@ export default function ProyectoDetailPage() {
         return;
       }
 
+      // Debug: Verificar tipos de datos recibidos
+      console.log('🔍 RAW Data Types:', {
+        consumo_is_array: Array.isArray(cotizacionInicialData?.consumo_kwh_historico),
+        consumo_type: typeof cotizacionInicialData?.consumo_kwh_historico,
+        consumo_sample: cotizacionInicialData?.consumo_kwh_historico?.[0],
+        sizing_type: typeof cotizacionInicialData?.sizing_results,
+        sizing_keys: cotizacionInicialData?.sizing_results ? Object.keys(cotizacionInicialData.sizing_results) : [],
+        recibo_type: typeof cotizacionInicialData?.recibo_cfe,
+        recibo_has_nombre: !!cotizacionInicialData?.recibo_cfe?.nombre
+      });
+
       setProyecto(proyectoData);
       setCotizacionInicial(cotizacionInicialData);
       setCotizaciones(cotizacionesData || []);

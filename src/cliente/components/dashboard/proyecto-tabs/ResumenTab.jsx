@@ -37,6 +37,16 @@ const ResumenTab = ({ proyecto, cotizacionInicial, cotizaciones, onReload }) => 
 
   const diasRestantes = getDiasRestantes(proyecto.fecha_limite);
 
+  // Debug: Log cotizacionInicial data
+  console.log('🔍 ResumenTab - cotizacionInicial:', {
+    hasCotizacion: !!cotizacionInicial,
+    hasConsumo: !!cotizacionInicial?.consumo_kwh_historico,
+    consumoLength: cotizacionInicial?.consumo_kwh_historico?.length || 0,
+    consumoSample: cotizacionInicial?.consumo_kwh_historico?.[0],
+    hasSizing: !!cotizacionInicial?.sizing_results,
+    sizingStructure: cotizacionInicial?.sizing_results ? Object.keys(cotizacionInicial.sizing_results) : []
+  });
+
   // Extraer datos técnicos
   const sizingResults = cotizacionInicial?.sizing_results?.results || {};
   const reciboData = cotizacionInicial?.recibo_cfe || {};
@@ -103,13 +113,13 @@ const ResumenTab = ({ proyecto, cotizacionInicial, cotizaciones, onReload }) => 
       </div>
 
       {/* User Info Bar */}
-      <UserInfoBar />
+      <UserInfoBar cotizacionInicial={cotizacionInicial} />
 
       {/* Metrics Grid */}
-      <MetricsGrid />
+      <MetricsGrid cotizacionInicial={cotizacionInicial} />
 
       {/* Analysis Charts */}
-      <AnalysisCharts />
+      <AnalysisCharts cotizacionInicial={cotizacionInicial} />
 
       {/* Información Técnica */}
       <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">

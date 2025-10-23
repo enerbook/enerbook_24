@@ -117,8 +117,53 @@ export const InstallerProvider = ({ children }) => {
 
       if (error) throw error;
 
-      setAvailableProjects(proyectos || []);
-      return proyectos;
+      // Transformar datos de cotizaciones_inicial para consistencia
+      const proyectosTransformados = (proyectos || []).map(proyecto => {
+        if (!proyecto.cotizaciones_inicial) return proyecto;
+
+        const cotizacion = proyecto.cotizaciones_inicial;
+
+        // Transformar consumo_kwh_historico: {kwh, periodo} → {value, kwh, periodo, label, fullLabel}
+        if (cotizacion.consumo_kwh_historico && Array.isArray(cotizacion.consumo_kwh_historico)) {
+          const mesesMap = {
+            'ENE': 'Enero', 'FEB': 'Febrero', 'MAR': 'Marzo', 'ABR': 'Abril',
+            'MAY': 'Mayo', 'JUN': 'Junio', 'JUL': 'Julio', 'AGO': 'Agosto',
+            'SEP': 'Septiembre', 'OCT': 'Octubre', 'NOV': 'Noviembre', 'DIC': 'Diciembre'
+          };
+
+          cotizacion.consumo_kwh_historico = cotizacion.consumo_kwh_historico.map(item => {
+            const mesAbrev = item.periodo ? item.periodo.substring(0, 3).toUpperCase() : '';
+            const mesCompleto = mesesMap[mesAbrev] || item.periodo || '';
+
+            return {
+              value: item.kwh || 0,
+              kwh: item.kwh || 0,
+              periodo: item.periodo,
+              label: mesAbrev.charAt(0) + mesAbrev.substring(1).toLowerCase(),
+              fullLabel: mesCompleto,
+              consumo: item.kwh || 0
+            };
+          });
+        }
+
+        // Normalizar sizing_results: aplana results al nivel superior
+        if (cotizacion.sizing_results?.results) {
+          const sizing = cotizacion.sizing_results;
+          cotizacion.sizing_results = {
+            ...sizing,
+            kWp_needed: sizing.results.kWp_needed,
+            n_panels: sizing.results.n_panels,
+            yearly_prod: sizing.results.yearly_prod,
+            panel_wp: sizing.results.panel_wp,
+            irr_avg_day: sizing.inputs?.irr_avg_day
+          };
+        }
+
+        return proyecto;
+      });
+
+      setAvailableProjects(proyectosTransformados);
+      return proyectosTransformados;
     } catch (error) {
       console.error('Error loading available projects:', error);
       setProjectsError(error.message);

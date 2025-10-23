@@ -2,9 +2,14 @@ import React from 'react';
 import { useClienteAuth } from '../../../context/ClienteAuthContext';
 import { useClienteDashboardData } from '../../../context/ClienteDashboardDataContext';
 
-const UserInfoBar = () => {
+const UserInfoBar = ({ cotizacionInicial = null }) => {
   const { userType } = useClienteAuth();
-  const { reciboData, userData, hasData } = useClienteDashboardData();
+  const dashboardData = useClienteDashboardData();
+
+  // Usar cotizacionInicial del proyecto si existe, sino datos del dashboard
+  const reciboData = cotizacionInicial?.recibo_cfe || dashboardData.reciboData;
+  const userData = dashboardData.userData;
+  const hasData = !!reciboData;
 
   // Determinar datos según tipo de usuario
   let userName = 'Usuario';

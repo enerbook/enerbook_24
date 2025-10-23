@@ -14,7 +14,35 @@ const CotizacionesTab = ({ setSelectedProject, setShowProjectModal, setShowQuote
 
   // Formatear proyectos usando utilidad compartida
   const projects = useMemo(() => {
-    return rawProjects?.map(formatProjectData) || [];
+    // Debug: verificar datos antes del formateo
+    if (rawProjects && rawProjects.length > 0) {
+      console.log('🔍 CotizacionesTab - Raw project sample:', {
+        proyecto_id: rawProjects[0]?.id,
+        tiene_cotizacion: !!rawProjects[0]?.cotizaciones_inicial,
+        consumo_type: typeof rawProjects[0]?.cotizaciones_inicial?.consumo_kwh_historico,
+        consumo_is_array: Array.isArray(rawProjects[0]?.cotizaciones_inicial?.consumo_kwh_historico),
+        consumo_first_item: rawProjects[0]?.cotizaciones_inicial?.consumo_kwh_historico?.[0],
+        sizing_keys: rawProjects[0]?.cotizaciones_inicial?.sizing_results
+          ? Object.keys(rawProjects[0].cotizaciones_inicial.sizing_results)
+          : []
+      });
+    }
+
+    const formatted = rawProjects?.map(formatProjectData) || [];
+
+    // Debug: verificar datos después del formateo
+    if (formatted.length > 0) {
+      console.log('📊 CotizacionesTab - Formatted project sample:', {
+        name: formatted[0].name,
+        power: formatted[0].power,
+        consumption: formatted[0].consumption,
+        tariff: formatted[0].tariff,
+        location: formatted[0].location,
+        production: formatted[0].production
+      });
+    }
+
+    return formatted;
   }, [rawProjects]);
 
   // Aplicar filtros y búsqueda
