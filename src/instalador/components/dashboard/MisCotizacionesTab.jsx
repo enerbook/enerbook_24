@@ -54,18 +54,6 @@ const MisCotizacionesTab = ({ setSelectedQuotation, setShowQuotationModal }) => 
     return result;
   }, [quotations, filters]);
 
-  // Función para obtener el color según el estado
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'aceptada':
-        return 'bg-green-500';
-      case 'rechazada':
-        return 'bg-red-500';
-      case 'pendiente':
-      default:
-        return 'bg-orange-400';
-    }
-  };
 
   return (
     <div className="w-full mx-auto">
@@ -150,15 +138,12 @@ const MisCotizacionesTab = ({ setSelectedQuotation, setShowQuotationModal }) => 
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-lg font-bold text-gray-900">{quotation.projectName}</h3>
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(quotation.rawStatus)}`}
+                      className="inline-block px-3 py-1 rounded-full text-xs font-medium text-white"
+                      style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
                     >
                       {quotation.status}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">Cliente: {quotation.clientName}</p>
-                  {quotation.clientEmail && (
-                    <p className="text-sm text-gray-500">{quotation.clientEmail}</p>
-                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-600 mb-1">Monto Total</p>

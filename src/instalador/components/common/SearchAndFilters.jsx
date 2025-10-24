@@ -57,7 +57,6 @@ const SearchAndFilters = ({
             onChange={(e) => onFiltersChange({ status: e.target.value })}
             className="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm"
           >
-            <option value="all">Todos los estados</option>
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}

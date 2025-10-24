@@ -117,9 +117,8 @@ const CotizacionCard = ({ cotizacion, cotizacionIndex, isExpanded, onToggle, onA
                 key={index}
                 className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium border border-gray-200"
               >
-                {opcion.tipo === 'upfront' && 'Pago Total'}
+                {opcion.tipo === 'upfront' && 'Pago Contado'}
                 {opcion.tipo === 'milestones' && 'Pagos por Hitos'}
-                {opcion.tipo === 'financing' && 'Financiamiento'}
               </span>
             ))}
           </div>

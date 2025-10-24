@@ -163,6 +163,19 @@ export const projectService = {
       }
     }
 
+    // Parse JSON fields in cotizaciones_final
+    const cotizacionesParsed = (data.cotizaciones_final || []).map(cotizacion => {
+      return {
+        ...cotizacion,
+        paneles: typeof cotizacion.paneles === 'string' ? JSON.parse(cotizacion.paneles) : cotizacion.paneles,
+        inversores: typeof cotizacion.inversores === 'string' ? JSON.parse(cotizacion.inversores) : cotizacion.inversores,
+        estructura: typeof cotizacion.estructura === 'string' ? JSON.parse(cotizacion.estructura) : cotizacion.estructura,
+        sistema_electrico: typeof cotizacion.sistema_electrico === 'string' ? JSON.parse(cotizacion.sistema_electrico) : cotizacion.sistema_electrico,
+        precio_final: typeof cotizacion.precio_final === 'string' ? JSON.parse(cotizacion.precio_final) : cotizacion.precio_final,
+        opciones_pago: typeof cotizacion.opciones_pago === 'string' ? JSON.parse(cotizacion.opciones_pago) : cotizacion.opciones_pago
+      };
+    });
+
     // Transform nested data for easier consumption
     return {
       proyecto: {
@@ -177,7 +190,7 @@ export const projectService = {
         updated_at: data.updated_at
       },
       cotizacionInicial,
-      cotizaciones: data.cotizaciones_final || []
+      cotizaciones: cotizacionesParsed
     };
   }
 };

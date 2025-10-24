@@ -12,9 +12,10 @@ const InversoresInfo = ({ inversores }) => {
         <div><span className="font-medium">Tipo:</span> {inversores.tipo}</div>
         <div><span className="font-medium">Potencia:</span> {inversores.potencia_kw} kW</div>
         {inversores.precio && (
-          <div className="col-span-2">
-            <span className="font-medium">Precio:</span> ${inversores.precio.toLocaleString()} MXN
-          </div>
+          <div><span className="font-medium">Precio:</span> ${inversores.precio.toLocaleString()} MXN</div>
+        )}
+        {inversores.garantia_anos && (
+          <div><span className="font-medium">Garantía:</span> {inversores.garantia_anos} años</div>
         )}
       </div>
     </div>

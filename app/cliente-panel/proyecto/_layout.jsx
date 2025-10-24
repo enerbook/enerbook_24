@@ -21,12 +21,10 @@ export default function ProyectoLayout() {
   // Mostrar loading mientras se resuelve el estado
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
-            <p className="text-sm text-gray-600">Verificando sesión...</p>
-          </div>
+      <View style={{ flex: 1, backgroundColor: '#f9fafb', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
+          <p className="text-sm text-gray-600">Verificando sesión...</p>
         </div>
       </View>
     );
@@ -35,11 +33,9 @@ export default function ProyectoLayout() {
   // Si no hay usuario autenticado como cliente, mostrar vista vacía (el useEffect redirigirá)
   if (!user || userType !== 'cliente') {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Redirigiendo...</p>
-          </div>
+      <View style={{ flex: 1, backgroundColor: '#f9fafb', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="text-center">
+          <p className="text-sm text-gray-600">Redirigiendo...</p>
         </div>
       </View>
     );

@@ -39,13 +39,28 @@ const ProjectDetailsModal = ({ project, setShowProjectModal }) => {
               </div>
 
               <div>
-                <h3 className="text-sm font-medium text-gray-600 mb-2">Ubicación General</h3>
-                <p className="text-sm text-gray-900">{project.location}</p>
+                <h3 className="text-sm font-medium text-gray-600 mb-2">Consumo Promedio</h3>
+                <p className="text-sm text-gray-900">
+                  {project.rawData?.cotizaciones_inicial?.resumen_energetico?.consumo_promedio
+                    ? `${Math.round(project.rawData.cotizaciones_inicial.resumen_energetico.consumo_promedio)} kWh/mes`
+                    : 'N/A'}
+                </p>
               </div>
 
               <div>
                 <h3 className="text-sm font-medium text-gray-600 mb-2">Irradiación Promedio</h3>
-                <p className="text-sm text-gray-900">{project.irradiation}</p>
+                <p className="text-sm text-gray-900">
+                  {project.rawData?.cotizaciones_inicial?.sizing_results?.results?.avg_ghi
+                    ? `${parseFloat(project.rawData.cotizaciones_inicial.sizing_results.results.avg_ghi).toFixed(2)} kWh/m²/día`
+                    : project.irradiation || 'N/A'}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-600 mb-2">Región</h3>
+                <p className="text-sm text-gray-900">
+                  {project.region || 'N/A'}
+                </p>
               </div>
 
               <div>
@@ -99,21 +114,12 @@ const ProjectDetailsModal = ({ project, setShowProjectModal }) => {
                     {project.rawData.cotizaciones_inicial.consumo_kwh_historico.map((item, index) => {
                       const promedio = project.rawData.cotizaciones_inicial.resumen_energetico?.consumo_promedio || 1;
                       const porcentaje = ((item.kwh / promedio) * 100).toFixed(1);
-                      const porcentajeNum = parseFloat(porcentaje);
-                      const color = porcentajeNum > 110 ? 'red' : porcentajeNum < 95 ? 'green' : 'orange';
 
                       return (
                         <div key={index} className="grid grid-cols-3 gap-4 py-2 text-sm">
                           <span className="text-gray-900 font-medium">{item.periodo}</span>
                           <span className="text-gray-900">{item.kwh}</span>
-                          <span
-                            className={`inline-block px-2 py-1 rounded-full text-xs font-medium text-white ${
-                              color === 'red' ? 'bg-red-500' :
-                              color === 'green' ? 'bg-green-500' : 'bg-orange-400'
-                            }`}
-                          >
-                            {porcentaje}%
-                          </span>
+                          <span className="text-gray-900">{porcentaje}%</span>
                         </div>
                       );
                     })}

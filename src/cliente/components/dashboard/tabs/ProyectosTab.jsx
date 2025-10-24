@@ -246,14 +246,17 @@ const ProyectosTab = () => {
                               {cotizacionesProyecto.length} cotización{cotizacionesProyecto.length !== 1 ? 'es' : ''} recibida{cotizacionesProyecto.length !== 1 ? 's' : ''}
                             </p>
                             <div className="space-y-2">
-                              {cotizacionesProyecto.slice(0, 2).map((cotizacion) => (
-                                <div key={cotizacion.id} className="flex items-center justify-between bg-gray-50 rounded p-2">
-                                  <span className="text-xs text-gray-700">{cotizacion.proveedores?.nombre_empresa}</span>
-                                  <span className="text-xs font-semibold text-gray-900">
-                                    ${cotizacion.precio_total?.toLocaleString()} MXN
-                                  </span>
-                                </div>
-                              ))}
+                              {cotizacionesProyecto.slice(0, 2).map((cotizacion) => {
+                                const precioTotal = cotizacion.precio_final?.total || 0;
+                                return (
+                                  <div key={cotizacion.id} className="flex items-center justify-between bg-gray-50 rounded p-2">
+                                    <span className="text-xs text-gray-700">{cotizacion.proveedores?.nombre_empresa || 'Instalador'}</span>
+                                    <span className="text-xs font-semibold text-gray-900">
+                                      ${Math.round(precioTotal).toLocaleString('es-MX')} MXN
+                                    </span>
+                                  </div>
+                                );
+                              })}
                               {cotizacionesProyecto.length > 2 && (
                                 <p className="text-xs text-gray-500">y {cotizacionesProyecto.length - 2} más...</p>
                               )}

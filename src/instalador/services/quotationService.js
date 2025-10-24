@@ -112,7 +112,8 @@ export const quotationService = {
       },
       precio_final: {
         total: parseFloat(quotationFormData.precio_total) || 0,
-        produccion_anual_kwh: parseFloat(quotationFormData.produccion_anual_kwh) || 0
+        produccion_anual_kwh: parseFloat(quotationFormData.produccion_anual_kwh) || 0,
+        capacidad_sistema_kwp: parseFloat(quotationFormData.capacidad_sistema_kwp) || 0
       },
       opciones_pago: quotationFormData.opciones_pago || [],
       notas_proveedor: quotationFormData.notas_proveedor || '',

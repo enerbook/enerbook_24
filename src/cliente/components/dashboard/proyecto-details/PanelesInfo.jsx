@@ -10,11 +10,12 @@ const PanelesInfo = ({ paneles }) => {
         <div><span className="font-medium">Marca:</span> {paneles.marca}</div>
         <div><span className="font-medium">Modelo:</span> {paneles.modelo}</div>
         <div><span className="font-medium">Cantidad:</span> {paneles.cantidad}</div>
-        <div><span className="font-medium">Potencia:</span> {paneles.potencia_wp}W</div>
+        <div><span className="font-medium">Potencia:</span> {paneles.potencia_wp} W</div>
         {paneles.precio && (
-          <div className="col-span-2">
-            <span className="font-medium">Precio:</span> ${paneles.precio.toLocaleString()} MXN
-          </div>
+          <div><span className="font-medium">Precio:</span> ${paneles.precio.toLocaleString()} MXN</div>
+        )}
+        {paneles.garantia_anos && (
+          <div><span className="font-medium">Garantía:</span> {paneles.garantia_anos} años</div>
         )}
       </div>
     </div>

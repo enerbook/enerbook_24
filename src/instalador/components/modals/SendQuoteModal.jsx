@@ -6,8 +6,7 @@ const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [paymentOptions, setPaymentOptions] = useState({
     upfront: true,
-    milestones: true,
-    financing: true
+    milestones: true
   });
 
   // Estado para los campos del formulario
@@ -44,7 +43,7 @@ const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
   const handleSubmitQuote = async () => {
     try {
       setLoading(true);
-      console.log('[SendQuoteModal] Iniciando envío...');
+      console.log('[SendQuoteModal] Iniciando env��o...');
 
       // Validar campos requeridos
       if (!formData.paneles_marca || !formData.inversores_marca || !formData.precio_total) {
@@ -72,16 +71,51 @@ const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
           ]
         });
       }
-      if (paymentOptions.financing) {
-        opciones_pago.push({
-          tipo: 'financing',
-          disponible: true,
-          descripcion: 'Financiamiento a través de entidad externa'
-        });
+
+      // CALCULAR CAPACIDAD DEL SISTEMA (kWp)
+      // Capacidad = Cantidad de paneles × Potencia del panel (Wp) ÷ 1000
+      let capacidad_sistema_kwp = 0;
+      if (formData.paneles_cantidad && formData.paneles_potencia_wp) {
+        capacidad_sistema_kwp = (
+          parseInt(formData.paneles_cantidad) *
+          parseInt(formData.paneles_potencia_wp)
+        ) / 1000;
       }
+
+      // CALCULAR PRODUCCIÓN ANUAL (kWh/año)
+      // Producción = Capacidad (kWp) × HSP × 365 días × PR
+      let produccion_anual_calculada = 0;
+
+      // Obtener irradiación promedio (HSP) del proyecto
+      const sizingResults = project?.rawData?.cotizaciones_inicial?.sizing_results;
+      const irradiacionPromedio = sizingResults?.inputs?.irr_avg_day || 5.5; // Default 5.5 kWh/m²/día
+      const performanceRatio = 0.80; // Factor de pérdidas estándar (80%)
+
+      if (capacidad_sistema_kwp > 0) {
+        produccion_anual_calculada = Math.round(
+          capacidad_sistema_kwp *
+          irradiacionPromedio *
+          365 *
+          performanceRatio
+        );
+      }
+
+      // Si el usuario ingresó manualmente la producción, usar ese valor
+      const produccion_final = formData.produccion_anual_kwh
+        ? parseFloat(formData.produccion_anual_kwh)
+        : produccion_anual_calculada;
+
+      console.log('[SendQuoteModal] Cálculos realizados:', {
+        capacidad_sistema_kwp: capacidad_sistema_kwp.toFixed(2),
+        irradiacion_promedio: irradiacionPromedio,
+        performance_ratio: performanceRatio,
+        produccion_anual_kwh: produccion_final
+      });
 
       const quotationData = {
         ...formData,
+        capacidad_sistema_kwp: capacidad_sistema_kwp,
+        produccion_anual_kwh: produccion_final,
         opciones_pago
       };
 
@@ -204,7 +238,7 @@ const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-3">Opciones de Pago</label>
                 <div className="flex flex-wrap gap-4">
-                  {['upfront', 'milestones', 'financing'].map((option) => (
+                  {['upfront', 'milestones'].map((option) => (
                     <label key={option} className="flex items-center cursor-pointer">
                       <div
                         className="w-5 h-5 rounded-full flex items-center justify-center transition-colors"
@@ -220,7 +254,6 @@ const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
                       <span className="ml-2 text-sm text-gray-900">
                         {option === 'upfront' && 'Pago Total'}
                         {option === 'milestones' && 'Pagos por Hitos'}
-                        {option === 'financing' && 'Financiamiento'}
                       </span>
                     </label>
                   ))}

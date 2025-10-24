@@ -31,14 +31,6 @@ const AcceptQuotationModal = ({ quotation, onClose, onSuccess, userId }) => {
         { name: 'Entrega final', percentage: 30, amount: precioTotal * 0.30 }
       ],
       available: availableOptions.some(opt => opt.tipo === 'milestones')
-    },
-    {
-      type: 'financing',
-      title: 'Financiamiento',
-      description: 'Financiamiento a través de entidad externa',
-      amount: precioTotal,
-      details: 'Sujeto a aprobación crediticia',
-      available: availableOptions.some(opt => opt.tipo === 'financing')
     }
   ];
 
@@ -73,20 +65,20 @@ const AcceptQuotationModal = ({ quotation, onClose, onSuccess, userId }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-card">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Aceptar Cotización</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <h2 className="text-lg font-bold text-black">Aceptar Cotización</h2>
+              <p className="text-sm text-black mt-1">
                 {quotation?.proveedores?.nombre_empresa}
               </p>
             </div>
             <button
               onClick={onClose}
               disabled={loading}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
             >
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -96,16 +88,16 @@ const AcceptQuotationModal = ({ quotation, onClose, onSuccess, userId }) => {
         {/* Content */}
         <div className="p-6">
           {/* Price Summary */}
-          <div className="bg-orange-50 rounded-lg p-4 mb-6">
+          <div className="border border-card rounded-card p-4 mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Precio Total del Sistema</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-black">Precio Total del Sistema</p>
+                <p className="text-2xl font-bold text-black">
                   ${precioTotal.toLocaleString()} MXN
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-full border border-card flex items-center justify-center">
+                <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -114,16 +106,16 @@ const AcceptQuotationModal = ({ quotation, onClose, onSuccess, userId }) => {
 
           {/* Payment Options */}
           <div className="space-y-4 mb-6">
-            <h3 className="text-sm font-semibold text-gray-900">Selecciona tu Método de Pago</h3>
+            <h3 className="text-sm font-semibold text-black">Selecciona tu Método de Pago</h3>
 
             {paymentOptions.filter(opt => opt.available).map((option) => (
               <div
                 key={option.type}
                 onClick={() => !loading && setSelectedPaymentType(option.type)}
-                className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                className={`border-2 rounded-card p-4 cursor-pointer transition-all ${
                   selectedPaymentType === option.type
-                    ? 'border-orange-400 bg-orange-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-brand'
+                    : 'border-card'
                 } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <div className="flex items-start">
@@ -131,8 +123,8 @@ const AcceptQuotationModal = ({ quotation, onClose, onSuccess, userId }) => {
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                         selectedPaymentType === option.type
-                          ? 'border-orange-400 bg-orange-400'
-                          : 'border-gray-300'
+                          ? 'border-brand bg-brand'
+                          : 'border-card'
                       }`}
                     >
                       {selectedPaymentType === option.type && (
@@ -142,21 +134,21 @@ const AcceptQuotationModal = ({ quotation, onClose, onSuccess, userId }) => {
                   </div>
                   <div className="ml-3 flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <h4 className="text-sm font-semibold text-gray-900">{option.title}</h4>
-                      <span className="text-sm font-bold text-gray-900">
+                      <h4 className="text-sm font-semibold text-black">{option.title}</h4>
+                      <span className="text-sm font-bold text-black">
                         ${option.amount.toLocaleString()} MXN
                       </span>
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">{option.description}</p>
-                    <p className="text-xs text-gray-500 italic">{option.details}</p>
+                    <p className="text-xs text-black mb-2">{option.description}</p>
+                    <p className="text-xs text-black italic">{option.details}</p>
 
                     {/* Milestone breakdown */}
                     {option.type === 'milestones' && selectedPaymentType === 'milestones' && (
-                      <div className="mt-3 pt-3 border-t border-gray-200">
-                        <p className="text-xs font-medium text-gray-700 mb-2">Desglose de pagos:</p>
+                      <div className="mt-3 pt-3 border-t border-card">
+                        <p className="text-xs font-medium text-black mb-2">Desglose de pagos:</p>
                         <div className="space-y-1">
                           {option.milestones.map((milestone, index) => (
-                            <div key={index} className="flex justify-between text-xs text-gray-600">
+                            <div key={index} className="flex justify-between text-xs text-black">
                               <span>• {milestone.name} ({milestone.percentage}%)</span>
                               <span className="font-medium">${milestone.amount.toLocaleString()} MXN</span>
                             </div>
@@ -171,14 +163,14 @@ const AcceptQuotationModal = ({ quotation, onClose, onSuccess, userId }) => {
           </div>
 
           {/* Info Box */}
-          <div className="bg-blue-50 rounded-lg p-4 mb-6">
+          <div className="border border-card rounded-card p-4 mb-6">
             <div className="flex items-start">
-              <svg className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-black mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div className="flex-1">
-                <h4 className="font-semibold text-blue-900 mb-1 text-sm">¿Qué sucede después?</h4>
-                <ul className="text-xs text-blue-800 space-y-1">
+                <h4 className="font-semibold text-black mb-1 text-sm">¿Qué sucede después?</h4>
+                <ul className="text-xs text-black space-y-1">
                   <li>• Se creará un contrato formal con el instalador</li>
                   <li>• Las demás cotizaciones serán rechazadas automáticamente</li>
                   <li>• El instalador será notificado de tu aceptación</li>
@@ -193,19 +185,16 @@ const AcceptQuotationModal = ({ quotation, onClose, onSuccess, userId }) => {
             <button
               onClick={onClose}
               disabled={loading}
-              className="flex-1 py-3 px-4 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+              className="flex-1 py-3 px-4 border border-card text-black rounded-card font-medium transition-colors"
             >
               Cancelar
             </button>
             <button
               onClick={handleAccept}
               disabled={loading || !selectedPaymentType}
-              className="flex-1 py-3 px-4 text-white rounded-xl font-medium transition-colors"
-              style={{
-                background: loading || !selectedPaymentType
-                  ? '#9CA3AF'
-                  : 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'
-              }}
+              className={`flex-1 py-3 px-4 text-white rounded-card font-medium transition-colors ${
+                loading || !selectedPaymentType ? 'bg-gray-400' : 'bg-brand'
+              }`}
             >
               {loading ? 'Procesando...' : 'Confirmar y Aceptar'}
             </button>

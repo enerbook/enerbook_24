@@ -16,11 +16,48 @@ const CotizacionesList = ({ cotizaciones, proyecto, onAcceptQuotation }) => {
     setSelectedCotizacionId(prevId => prevId === cotizacionId ? null : cotizacionId);
   };
 
+  // Validar si el proyecto ha expirado (30 días desde created_at)
+  const isProjectExpired = () => {
+    if (!proyecto?.created_at) return false;
+
+    const createdDate = new Date(proyecto.created_at);
+    const expirationDate = new Date(createdDate);
+    expirationDate.setDate(expirationDate.getDate() + 30);
+
+    return new Date() > expirationDate;
+  };
+
+  // Calcular fecha límite (preferir fecha_limite de BD, fallback a created_at + 30 días)
+  const getDeadlineDate = () => {
+    if (proyecto?.fecha_limite) {
+      return proyecto.fecha_limite;
+    }
+
+    // Fallback: calcular desde created_at
+    if (proyecto?.created_at) {
+      const createdDate = new Date(proyecto.created_at);
+      createdDate.setDate(createdDate.getDate() + 30);
+      return createdDate.toISOString();
+    }
+
+    return null;
+  };
+
+  const deadlineDate = getDeadlineDate();
+  const expired = isProjectExpired();
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6">
-      <h2 className="text-sm font-bold text-gray-900 mb-4">
-        Cotizaciones Recibidas ({cotizaciones.length})
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-bold text-gray-900">
+          Cotizaciones Recibidas ({cotizaciones.length})
+        </h2>
+        {expired && (
+          <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+            Período Cerrado
+          </span>
+        )}
+      </div>
 
       {cotizaciones.length === 0 ? (
         <div className="text-center py-12">
@@ -29,9 +66,14 @@ const CotizacionesList = ({ cotizaciones, proyecto, onAcceptQuotation }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h3 className="text-sm font-medium text-gray-900 mb-2">Aún No Hay Cotizaciones</h3>
+          <h3 className="text-sm font-medium text-gray-900 mb-2">
+            {expired ? 'Período de Cotización Cerrado' : 'Aún No Hay Cotizaciones'}
+          </h3>
           <p className="text-sm text-gray-500">
-            Los instaladores tienen hasta el {formatDate(proyecto.fecha_limite)} para enviar sus propuestas
+            {expired
+              ? `El período de cotización finalizó el ${deadlineDate ? formatDate(deadlineDate) : 'N/A'}`
+              : `Los instaladores tienen hasta el ${deadlineDate ? formatDate(deadlineDate) : 'N/A'} para enviar sus propuestas`
+            }
           </p>
         </div>
       ) : (

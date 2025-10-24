@@ -24,12 +24,10 @@ export default function ClientePanelLayout() {
   // Mostrar loading mientras se resuelve el estado
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
-            <p className="text-sm text-gray-600">Cargando...</p>
-          </div>
+      <View style={{ flex: 1, backgroundColor: '#f9fafb', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
+          <p className="text-sm text-gray-600">Cargando...</p>
         </div>
       </View>
     );
@@ -38,11 +36,9 @@ export default function ClientePanelLayout() {
   // Si no hay usuario autenticado, mostrar vista vacía (el useEffect redirigirá)
   if (!user || userType === 'lead') {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Redirigiendo...</p>
-          </div>
+      <View style={{ flex: 1, backgroundColor: '#f9fafb', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="text-center">
+          <p className="text-sm text-gray-600">Redirigiendo...</p>
         </div>
       </View>
     );

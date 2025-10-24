@@ -7,6 +7,36 @@ import SistemaElectricoInfo from './SistemaElectricoInfo';
 const CotizacionDetalles = ({ cotizacion, onAcceptQuotation }) => {
   return (
     <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
+      {/* Resumen Principal: Capacidad, Producción y Precio */}
+      {(cotizacion.precio_final?.capacidad_sistema_kwp || cotizacion.precio_final?.produccion_anual_kwh || cotizacion.precio_final?.total) && (
+        <div className="grid grid-cols-3 gap-3">
+          {cotizacion.precio_final?.capacidad_sistema_kwp && (
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <p className="text-xs text-gray-500 mb-1">Capacidad del Sistema</p>
+              <p className="text-sm font-bold text-gray-900">
+                {cotizacion.precio_final.capacidad_sistema_kwp.toFixed(2)} kWp
+              </p>
+            </div>
+          )}
+          {cotizacion.precio_final?.produccion_anual_kwh && (
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <p className="text-xs text-gray-500 mb-1">Producción Estimada</p>
+              <p className="text-sm font-bold text-gray-900">
+                {Math.round(cotizacion.precio_final.produccion_anual_kwh).toLocaleString('es-MX')} kWh/año
+              </p>
+            </div>
+          )}
+          {cotizacion.precio_final?.total && (
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <p className="text-xs text-gray-500 mb-1">Precio Final</p>
+              <p className="text-sm font-bold text-gray-900">
+                ${Math.round(cotizacion.precio_final.total).toLocaleString('es-MX')} MXN
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Paneles */}
       <PanelesInfo paneles={cotizacion.paneles} />
 

@@ -39,7 +39,7 @@ const QuotationDetailsModal = ({ quotation, setShowDetailsModal }) => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Precio Final</label>
-                <div className="px-4 py-3 bg-orange-50 border-2 border-orange-400 rounded-lg text-lg font-bold text-gray-900">
+                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-gray-900">
                   {quotation.totalAmount}
                 </div>
               </div>
@@ -214,15 +214,10 @@ const QuotationDetailsModal = ({ quotation, setShowDetailsModal }) => {
               {/* Payment Options */}
               <div className="border-t border-gray-200 pt-4">
                 <label className="block text-sm font-semibold text-gray-900 mb-3">Opciones de Pago</label>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2">
                   {quotation.details.paymentOptions.map((option, index) => (
-                    <div key={index} className="flex items-center px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg">
-                      <div className="w-5 h-5 rounded-full bg-orange-400 flex items-center justify-center">
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <span className="ml-2 text-sm text-gray-900 font-medium">{option}</span>
+                    <div key={index} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium border border-gray-200">
+                      {option}
                     </div>
                   ))}
                 </div>

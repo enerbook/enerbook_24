@@ -37,8 +37,10 @@ export const formatProjectData = (proyecto) => {
     tariff: reciboData?.tarifa || 'No especificada',
     location: reciboData?.codigo_postal || 'No especificado',
     irradiation: irradiacionData?.irradiacion_promedio_anual
-      ? `${irradiacionData.irradiacion_promedio_anual.toFixed(1)} kWh/m²/día`
-      : '5.2 kWh/m²/día',
+      ? `${irradiacionData.irradiacion_promedio_anual.toFixed(2)} kWh/m²/día`
+      : sizingResults?.results?.avg_ghi
+      ? `${parseFloat(sizingResults.results.avg_ghi).toFixed(2)} kWh/m²/día`
+      : '5.20 kWh/m²/día',
     deadline: proyecto.fecha_limite
       ? new Date(proyecto.fecha_limite).toLocaleDateString('es-MX', {
           day: 'numeric',
@@ -53,7 +55,7 @@ export const formatProjectData = (proyecto) => {
     description: proyecto.descripcion || 'Sin descripción',
     clientName: proyecto.usuarios?.nombre || reciboData?.nombre || 'Cliente no especificado',
     clientEmail: proyecto.usuarios?.correo_electronico,
-    region: irradiacionData?.region_nombre || 'México',
+    region: reciboData?.region || irradiacionData?.region_nombre || 'México',
     rawData: proyecto
   };
 };
@@ -72,11 +74,33 @@ export const formatQuotationData = (cotizacion) => {
   const sistemaElectrico = cotizacion.sistema_electrico;
   const opcionesPago = cotizacion.opciones_pago;
 
+  // Obtener capacidad del sistema (prioridad: backend calculado > cálculo manual > sizing)
+  let systemCapacity = 'No especificada';
+  if (precioFinal?.capacidad_sistema_kwp) {
+    // Valor calculado en backend
+    systemCapacity = `${precioFinal.capacidad_sistema_kwp.toFixed(2)} kWp`;
+  } else if (paneles?.cantidad && paneles?.potencia_wp) {
+    // Calcular si no está en backend
+    const capacityKw = (paneles.cantidad * paneles.potencia_wp) / 1000;
+    systemCapacity = `${capacityKw.toFixed(2)} kWp`;
+  } else if (sizingResults?.kWp_needed) {
+    // Fallback a sizing results
+    systemCapacity = `${sizingResults.kWp_needed} kWp`;
+  }
+
+  // Obtener producción estimada (prioridad: backend > sizing)
+  let production = 'No calculada';
+  if (precioFinal?.produccion_anual_kwh) {
+    production = `${precioFinal.produccion_anual_kwh.toLocaleString()} kWh/año`;
+  } else if (sizingResults?.yearly_prod) {
+    production = `${sizingResults.yearly_prod.toLocaleString()} kWh/año`;
+  }
+
   return {
     id: cotizacion.id,
     projectName: proyecto?.titulo || `Proyecto ${proyecto?.id?.slice(0, 8)}`,
-    clientName: usuario?.nombre || 'Cliente no especificado',
-    clientEmail: usuario?.correo_electronico,
+    clientName: 'Cliente',
+    clientEmail: null,
     sentDate: new Date(cotizacion.created_at).toLocaleDateString('es-MX'),
     totalAmount: precioFinal?.total
       ? `$${precioFinal.total.toLocaleString()} MXN`
@@ -84,7 +108,7 @@ export const formatQuotationData = (cotizacion) => {
     status: getQuotationStatusLabel(cotizacion.estado),
     rawStatus: cotizacion.estado,
     details: {
-      capacity: sizingResults?.potencia_sistema ? `${sizingResults.potencia_sistema} kWp` : 'No especificada',
+      capacity: systemCapacity,
       panels: paneles?.modelo || 'No especificado',
       panelBrand: paneles?.marca || 'No especificado',
       panelCount: paneles?.cantidad || 'N/A',
@@ -108,9 +132,7 @@ export const formatQuotationData = (cotizacion) => {
       installationWarranty: sistemaElectrico?.garantia_instalacion_anos
         ? `${sistemaElectrico.garantia_instalacion_anos} años`
         : 'No especificada',
-      production: sizingResults?.generacion_anual
-        ? `${sizingResults.generacion_anual.toLocaleString()} kWh/año`
-        : 'No calculada',
+      production: production,
       paymentOptions: opcionesPago?.tipos || ['Contado'],
       notes: cotizacion.notas_proveedor || 'Sin notas adicionales'
     },

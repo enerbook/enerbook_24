@@ -35,8 +35,6 @@ const CotizacionesTab = ({ setSelectedProject, setShowProjectModal, setShowQuote
       const searchLower = filters.searchText.toLowerCase();
       result = result.filter(p =>
         p.name?.toLowerCase().includes(searchLower) ||
-        p.clientName?.toLowerCase().includes(searchLower) ||
-        p.location?.toLowerCase().includes(searchLower) ||
         p.tariff?.toLowerCase().includes(searchLower)
       );
     }
@@ -125,7 +123,6 @@ const CotizacionesTab = ({ setSelectedProject, setShowProjectModal, setShowQuote
           {filteredProjects.map((project) => (
             <div key={project.id} className="p-8 rounded-2xl border border-gray-100" style={{backgroundColor: '#fcfcfc'}}>
               <h3 className="text-xl font-bold text-gray-900 mb-2">{project.name}</h3>
-              <p className="text-sm text-gray-600 mb-2">Cliente: {project.clientName}</p>
               <p className="text-sm text-gray-600 mb-4">Potencia y Dimensionamiento sugerido</p>
               <p className="text-sm text-gray-800 mb-6">{project.power}</p>
 
@@ -139,11 +136,6 @@ const CotizacionesTab = ({ setSelectedProject, setShowProjectModal, setShowQuote
                 <div className="flex justify-between">
                   <span className="text-sm font-medium text-gray-600">Tipo de Tarifa</span>
                   <span className="text-sm text-gray-900">{project.tariff}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-600">Ubicación General</span>
-                  <span className="text-sm text-gray-900">{project.location}</span>
                 </div>
 
                 <div className="flex justify-between">

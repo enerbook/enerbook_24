@@ -23,7 +23,21 @@ export const quotationService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+
+    // Parse JSON fields from strings to objects
+    const parsedData = (data || []).map(cotizacion => {
+      return {
+        ...cotizacion,
+        paneles: typeof cotizacion.paneles === 'string' ? JSON.parse(cotizacion.paneles) : cotizacion.paneles,
+        inversores: typeof cotizacion.inversores === 'string' ? JSON.parse(cotizacion.inversores) : cotizacion.inversores,
+        estructura: typeof cotizacion.estructura === 'string' ? JSON.parse(cotizacion.estructura) : cotizacion.estructura,
+        sistema_electrico: typeof cotizacion.sistema_electrico === 'string' ? JSON.parse(cotizacion.sistema_electrico) : cotizacion.sistema_electrico,
+        precio_final: typeof cotizacion.precio_final === 'string' ? JSON.parse(cotizacion.precio_final) : cotizacion.precio_final,
+        opciones_pago: typeof cotizacion.opciones_pago === 'string' ? JSON.parse(cotizacion.opciones_pago) : cotizacion.opciones_pago
+      };
+    });
+
+    return parsedData;
   },
 
   // Update quotation status
