@@ -62,32 +62,32 @@ const ChartCard = ({ title, subtitle, gradientFrom, gradientTo, chartGradientFro
 
   return (
     <div
-      className={`p-8 rounded-lg border border-gray-100 ${className}`}
+      className={`p-4 sm:p-6 lg:p-8 rounded-lg border border-gray-100 ${className}`}
       style={{backgroundColor: '#fcfcfc'}}
       role="region"
       aria-label={`Gráfico: ${title}`}
     >
-      <h3 className="text-sm font-bold text-gray-900 mb-2">{title}</h3>
-      <p className="text-sm text-gray-400 mb-6">
+      <h3 className="text-sm font-bold text-gray-900 mb-1 sm:mb-2">{title}</h3>
+      <p className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-6">
         {subtitle}
       </p>
       {data.length === 0 && (
-        <div className="mb-4 px-3 py-2 bg-gray-100 rounded-lg" role="alert">
-          <p className="text-sm text-gray-500">No hay datos disponibles</p>
+        <div className="mb-2 sm:mb-4 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-100 rounded-lg" role="alert">
+          <p className="text-xs sm:text-sm text-gray-500">No hay datos disponibles</p>
         </div>
       )}
       <div
-        className="h-64 relative overflow-hidden rounded-lg"
+        className="h-48 sm:h-56 lg:h-64 relative overflow-hidden rounded-lg"
         style={{background: 'linear-gradient(to bottom, rgba(245,158,11,0.1) 0%, rgba(255,203,69,0.05) 100%)'}}
         role="img"
         aria-label={chartDescription}
       >
-        {/* Line chart with real data */}
-        <div className="absolute bottom-0 left-0 w-full h-40">
+        {/* Line chart with real data - responsive viewBox */}
+        <div className="absolute bottom-0 left-0 w-full h-full">
           <svg
             className="w-full h-full"
             viewBox="0 0 400 160"
-            preserveAspectRatio="none"
+            preserveAspectRatio="xMidYMid meet"
             role="presentation"
             aria-hidden="true"
           >
@@ -126,17 +126,17 @@ const ChartCard = ({ title, subtitle, gradientFrom, gradientTo, chartGradientFro
           </div>
         </div>
 
-        {/* Y-axis labels */}
-        <div className="absolute left-2 top-4 bottom-4 flex flex-col justify-between text-sm text-gray-400">
+        {/* Y-axis labels - responsive text */}
+        <div className="absolute left-1 sm:left-2 top-4 bottom-4 flex flex-col justify-between text-[10px] sm:text-xs lg:text-sm text-gray-400">
           {getYAxisLabels(data).map((label, index) => (
-            <span key={index}>{label}</span>
+            <span key={index} className="truncate max-w-[40px] sm:max-w-none">{label}</span>
           ))}
         </div>
 
-        {/* X-axis labels */}
-        <div className="absolute bottom-2 left-8 right-4 flex justify-between text-sm text-gray-400">
+        {/* X-axis labels - hide some on mobile */}
+        <div className="absolute bottom-1 sm:bottom-2 left-6 sm:left-8 right-2 sm:right-4 flex justify-between text-[10px] sm:text-xs lg:text-sm text-gray-400">
           {getXAxisLabels(data).map((label, index) => (
-            <span key={index}>{label}</span>
+            <span key={index} className={`${index % 2 === 1 ? 'hidden sm:inline' : ''}`}>{label}</span>
           ))}
         </div>
       </div>

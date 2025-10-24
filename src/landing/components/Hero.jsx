@@ -4,11 +4,11 @@ import '../../styles/global.css';
 
 export default function Hero({ onNavigate, onOpenModal }) {
   return (
-    <section id="hero" className="relative overflow-hidden bg-[#090e1a] min-h-screen">
-      {/* Contenido */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid min-h-screen grid-cols-1 lg:grid-cols-2 items-center gap-8 sm:gap-12 lg:gap-16 pt-16 sm:pt-20 pb-8 sm:pb-12">
+    <section id="hero" className="relative overflow-hidden bg-[#090e1a] min-h-[calc(100vh-3.5rem)] lg:min-h-screen">
+      {/* Contenido - Mobile first flexbox, desktop grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:grid lg:grid-cols-2 min-h-[calc(100vh-3.5rem)] lg:min-h-screen items-center justify-center lg:items-center gap-8 sm:gap-12 lg:gap-16 py-12 sm:py-16 lg:py-20">
         {/* Columna de texto */}
-        <div className="text-white text-center lg:text-left order-2 lg:order-1 px-2 sm:px-4 lg:-ml-8 xl:-ml-12"> 
+        <div className="text-white text-center lg:text-left order-2 lg:order-1 px-0 sm:px-4 lg:-ml-8 xl:-ml-12 w-full lg:w-auto"> 
           <h1 className="font-extrabold leading-tight text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl">
             <div className="bg-gradient-to-r from-[#F59E0B] to-[#FBBF24] bg-clip-text text-transparent lg:whitespace-nowrap">
             La Plataforma Más Rápida
@@ -82,17 +82,17 @@ export default function Hero({ onNavigate, onOpenModal }) {
 
       </div>
 
-        {/* Columna de imagen */}
-        <div className="relative order-1 lg:order-2 flex justify-center lg:justify-end px-4 sm:px-0 lg:translate-x-8 xl:translate-x-12">
+        {/* Columna de imagen - Mobile first responsive */}
+        <div className="relative order-1 lg:order-2 flex justify-center lg:justify-end px-0 sm:px-4 lg:px-0 lg:translate-x-8 xl:translate-x-12 w-full lg:w-auto">
           {/* Imagen grande (personajes + panel en un solo PNG) */}
           <img
             src="/img/hero.png"
             alt="Instaladores Enerbook con panel solar"
-            className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-md xl:max-w-lg 2xl:max-w-xl h-auto object-contain"
+            className="w-[280px] xs:w-[320px] sm:w-[380px] md:w-[440px] lg:w-[400px] xl:w-[480px] 2xl:w-[560px] h-auto object-contain"
             draggable="false"
           />
           {/* Glow/sombra debajo de los personajes */}
-          
+
         </div>
       </div>
 

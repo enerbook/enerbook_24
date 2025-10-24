@@ -27,8 +27,13 @@ export default function Home() {
 
   return (
     <>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, height: '100%' }}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+          overScrollMode="never"
+        >
           <Navbar onNavigate={navigateToDashboard} />
           <Hero onNavigate={navigateToDashboard} onOpenModal={() => setIsModalOpen(true)} />
           <Stats />
@@ -38,10 +43,10 @@ export default function Home() {
           <Experts />
           <InstallersCTA />
           <Footer />
-        </View>
-      </ScrollView>
-      
-      <ReceiptUploadModal 
+        </ScrollView>
+      </View>
+
+      <ReceiptUploadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleReceiptUpload}

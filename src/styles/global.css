@@ -60,18 +60,46 @@ html, body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system;
   background: var(--ink);
   color: var(--text);
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
 }
 
 body {
   @apply antialiased;
+  /* iOS safe areas support */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 #root {
   height: 100%;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
 }
 
 section[id] {
   @apply scroll-mt-24;
+}
+
+/* Mobile-specific fixes */
+@media (max-width: 768px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Fix input zoom on iOS */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* ================================
@@ -93,6 +121,46 @@ section[id] {
 
 .experts-title {
   margin-top: 0;
+}
+
+/* Touch targets utility classes */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.touch-target-sm {
+  min-height: 36px;
+  min-width: 36px;
+}
+
+@media (min-width: 768px) {
+  .touch-target {
+    min-height: auto;
+    min-width: auto;
+  }
+
+  .touch-target-sm {
+    min-height: auto;
+    min-width: auto;
+  }
+}
+
+/* Safe area utilities for iOS */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right);
 }
 
 /* ================================
@@ -787,4 +855,30 @@ html[data-theme="dark"] .text-gray-700 {
 
 html[data-theme="dark"] .border-gray-200 {
   border-color: rgba(255,255,255,.12) !important;
+}
+
+/* ================================
+   Modal Z-Index Fixes
+=================================== */
+/* Asegurar que los modales estén siempre encima */
+.modal-overlay,
+[data-modal-overlay] {
+  z-index: 9999 !important;
+}
+
+.modal-content,
+[data-modal-content] {
+  z-index: 10000 !important;
+}
+
+/* Fix específico para ProjectDetailsModal */
+.project-details-modal-overlay {
+  z-index: 9999 !important;
+  position: fixed !important;
+  inset: 0 !important;
+}
+
+.project-details-modal-content {
+  z-index: 10000 !important;
+  position: relative !important;
 }

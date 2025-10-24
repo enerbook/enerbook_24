@@ -3,6 +3,9 @@ module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',  // Extra small devices
+      },
       colors: {
         ink: "#090e1a",
         brand: "#f59e0b",

@@ -32,7 +32,7 @@ const NavButton = ({ item, activeTab, onClose }) => {
       aria-current={isActive ? 'page' : undefined}
       role="tab"
       tabIndex={0}
-      className={`w-full flex items-center px-2 py-1.5 text-left rounded-md transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-300 ${
+      className={`w-full flex items-center px-3 py-3 sm:px-2 sm:py-1.5 text-left rounded-md transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-300 min-h-[44px] sm:min-h-0 ${
         isActive
           ? 'bg-white text-gray-900 shadow-sm'
           : 'text-gray-400 hover:bg-white hover:text-gray-700'
@@ -61,30 +61,31 @@ const LeadSidebar = ({ activeTab, onClose }) => {
   ];
 
   return (
-    <div className="flex w-64 lg:w-48 bg-white lg:bg-gray-50 flex-col h-full lg:max-h-screen shadow-xl lg:shadow-none">
-      <div className="p-2 -mt-6 flex-shrink-0">
+    <div className="flex w-full sm:w-72 lg:w-48 bg-white lg:bg-gray-50 flex-col h-full shadow-xl lg:shadow-none">
+      {/* Safe area top padding for mobile */}
+      <div className="p-4 lg:p-2 flex-shrink-0 pt-safe">
         <div className="flex items-center justify-center">
-          <img src="/img/FulllogoColor.svg" alt="Enerbook" className="h-32 w-auto" />
+          <img src="/img/FulllogoColor.svg" alt="Enerbook" className="h-24 sm:h-28 lg:h-32 w-auto" />
         </div>
       </div>
 
-      <nav className="flex-1 px-2 -mt-6 overflow-y-auto" aria-label="Navegación principal">
+      <nav className="flex-1 px-4 sm:px-3 lg:px-2 pb-safe overflow-y-auto" aria-label="Navegación principal">
         {/* Main Navigation */}
-        <div className="space-y-1" role="tablist" aria-label="Pestañas de navegación">
+        <div className="space-y-2 sm:space-y-1" role="tablist" aria-label="Pestañas de navegación">
           {sidebarItems.map((item) => (
             <NavButton key={item.id} item={item} activeTab={activeTab} onClose={onClose} />
           ))}
         </div>
 
         {/* Lead CTA */}
-        <div className="mt-6 px-2">
-          <div className="bg-gradient-to-r from-orange-400 to-yellow-400 rounded-lg p-3 text-center" role="region" aria-label="Llamado a la acción">
-            <h3 className="text-sm font-bold text-white mb-1">¡Regístrate!</h3>
-            <p className="text-sm text-white mb-2 leading-tight">Guarda tu análisis y recibe cotizaciones</p>
+        <div className="mt-6 mb-4">
+          <div className="bg-gradient-to-r from-orange-400 to-yellow-400 rounded-lg p-4 sm:p-3 text-center" role="region" aria-label="Llamado a la acción">
+            <h3 className="text-sm font-bold text-white mb-2 sm:mb-1">¡Regístrate!</h3>
+            <p className="text-sm text-white mb-3 sm:mb-2 leading-relaxed sm:leading-tight">Guarda tu análisis y recibe cotizaciones</p>
             <button
               onClick={() => router.push('/signup')}
               aria-label="Crear cuenta de usuario en Enerbook"
-              className="w-full bg-white font-semibold py-1.5 px-2 rounded text-sm hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-400"
+              className="w-full bg-white font-semibold py-2.5 sm:py-1.5 px-3 sm:px-2 rounded text-sm hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-400 min-h-[44px] sm:min-h-0"
               style={{ color: '#090e1a' }}
             >
               Crear Cuenta

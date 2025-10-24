@@ -4,51 +4,51 @@ import { FiX } from 'react-icons/fi';
 const QuotationDetailsModal = ({ quotation, setShowDetailsModal }) => {
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-auto">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+      <div className="bg-white rounded-xl sm:rounded-2xl max-w-6xl w-full max-h-[85vh] sm:max-h-[90vh] overflow-auto">
+        {/* Modal Header - Fixed positioning */}
+        <div className="sticky top-0 bg-white z-50 flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Detalles de la Cotización</h2>
-            <p className="text-sm text-gray-600 mt-1">{quotation.projectName}</p>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Detalles de la Cotización</h2>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">{quotation.projectName}</p>
           </div>
           <button
             onClick={() => setShowDetailsModal(false)}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center"
           >
-            <FiX className="w-6 h-6 text-gray-600" />
+            <FiX className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
           </button>
         </div>
 
-        {/* Modal Content */}
-        <div className="p-6">
-          {/* General Info Section - Full Width */}
-          <div className="mb-6">
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Capacidad del Sistema</label>
-                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+        {/* Modal Content - Responsive padding */}
+        <div className="p-4 sm:p-6">
+          {/* General Info Section - Responsive grid */}
+          <div className="mb-4 sm:mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
+              <div className="flex flex-col">
+                <label className="block text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Capacidad del Sistema</label>
+                <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg text-xs sm:text-sm text-gray-600 flex-1 flex items-center">
                   {quotation.details.capacity || 'No especificada'}
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Producción Estimada</label>
-                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+              <div className="flex flex-col">
+                <label className="block text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Producción Estimada</label>
+                <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg text-xs sm:text-sm text-gray-600 flex-1 flex items-center">
                   {quotation.details.production || 'No calculada'}
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Precio Final</label>
-                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-gray-900">
+              <div className="flex flex-col">
+                <label className="block text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Precio Final</label>
+                <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg text-xs sm:text-sm font-bold text-gray-900 flex-1 flex items-center">
                   {quotation.totalAmount}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {/* Left Column */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
 
               {/* Paneles Section */}
               <div className="border-t border-gray-200 pt-4">
@@ -150,7 +150,7 @@ const QuotationDetailsModal = ({ quotation, setShowDetailsModal }) => {
             </div>
 
             {/* Right Column */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Estructura Section */}
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Estructura</h3>

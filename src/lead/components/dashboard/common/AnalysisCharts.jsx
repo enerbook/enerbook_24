@@ -18,7 +18,7 @@ const AnalysisCharts = () => {
     fullLabel: item.fullLabel
   }));
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <ChartCard
         title="Consumo Histórico"
         subtitle="Seguimiento mensual de tu consumo eléctrico"

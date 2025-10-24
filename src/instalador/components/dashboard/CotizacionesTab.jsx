@@ -119,54 +119,54 @@ const CotizacionesTab = ({ setSelectedProject, setShowProjectModal, setShowQuote
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {filteredProjects.map((project) => (
-            <div key={project.id} className="p-8 rounded-2xl border border-gray-100" style={{backgroundColor: '#fcfcfc'}}>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{project.name}</h3>
-              <p className="text-sm text-gray-600 mb-4">Potencia y Dimensionamiento sugerido</p>
-              <p className="text-sm text-gray-800 mb-6">{project.power}</p>
+            <div key={project.id} className="p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl border border-gray-100" style={{backgroundColor: '#fcfcfc'}}>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">{project.name}</h3>
+              <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-4">Potencia y Dimensionamiento sugerido</p>
+              <p className="text-sm text-gray-800 mb-4 sm:mb-6">{project.power}</p>
 
-              {/* Project Details */}
-              <div className="space-y-4 mb-8">
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-600">Consumo Anual Histórico</span>
-                  <span className="text-sm text-gray-900">{project.consumption}</span>
+              {/* Project Details - Responsive spacing */}
+              <div className="space-y-2 sm:space-y-3 lg:space-y-4 mb-4 sm:mb-6 lg:mb-8">
+                <div className="flex flex-col xs:flex-row xs:justify-between gap-1">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">Consumo Anual Histórico</span>
+                  <span className="text-xs sm:text-sm text-gray-900 font-semibold xs:text-right">{project.consumption}</span>
                 </div>
 
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-600">Tipo de Tarifa</span>
-                  <span className="text-sm text-gray-900">{project.tariff}</span>
+                <div className="flex flex-col xs:flex-row xs:justify-between gap-1">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">Tipo de Tarifa</span>
+                  <span className="text-xs sm:text-sm text-gray-900 font-semibold xs:text-right">{project.tariff}</span>
                 </div>
 
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-600">Irradiación Promedio</span>
-                  <span className="text-sm text-gray-900">{project.irradiation}</span>
+                <div className="flex flex-col xs:flex-row xs:justify-between gap-1">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">Irradiación Promedio</span>
+                  <span className="text-xs sm:text-sm text-gray-900 font-semibold xs:text-right">{project.irradiation}</span>
                 </div>
 
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-600">Fecha Límite para Cotizar</span>
-                  <span className="text-sm text-gray-900">{project.deadline}</span>
+                <div className="flex flex-col xs:flex-row xs:justify-between gap-1">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">Fecha Límite para Cotizar</span>
+                  <span className="text-xs sm:text-sm text-gray-900 font-semibold xs:text-right">{project.deadline}</span>
                 </div>
 
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-600">Producción Estimada</span>
-                  <span className="text-sm text-gray-900">{project.production}</span>
+                <div className="flex flex-col xs:flex-row xs:justify-between gap-1">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">Producción Estimada</span>
+                  <span className="text-xs sm:text-sm text-gray-900 font-semibold xs:text-right">{project.production}</span>
                 </div>
 
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-600">Región</span>
-                  <span className="text-sm text-gray-900">{project.region}</span>
+                <div className="flex flex-col xs:flex-row xs:justify-between gap-1">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">Región</span>
+                  <span className="text-xs sm:text-sm text-gray-900 font-semibold xs:text-right">{project.region}</span>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3">
+              {/* Action Buttons - Responsive and touch-friendly */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <button
                   onClick={() => {
                     setSelectedProject(project);
                     setShowProjectModal(true);
                   }}
-                  className="flex-1 py-3 px-4 text-white rounded-2xl text-sm font-medium transition-colors"
+                  className="flex-1 py-3 px-3 sm:px-4 text-white rounded-xl sm:rounded-2xl text-xs sm:text-sm font-medium transition-colors min-h-[44px]"
                   style={{backgroundColor: '#090e1a'}}
                 >
                   Ver Detalles
@@ -176,7 +176,7 @@ const CotizacionesTab = ({ setSelectedProject, setShowProjectModal, setShowQuote
                     setSelectedProject(project);
                     setShowQuoteModal(true);
                   }}
-                  className="flex-1 py-3 px-4 text-white rounded-2xl text-sm font-medium transition-colors"
+                  className="flex-1 py-3 px-3 sm:px-4 text-white rounded-xl sm:rounded-2xl text-xs sm:text-sm font-medium transition-colors min-h-[44px]"
                   style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
                 >
                   Enviar Cotización

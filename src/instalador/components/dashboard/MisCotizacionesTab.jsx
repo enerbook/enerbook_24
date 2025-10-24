@@ -126,47 +126,47 @@ const MisCotizacionesTab = ({ setSelectedQuotation, setShowQuotationModal }) => 
           {filteredQuotations.map((quotation) => (
             <div
               key={quotation.id}
-              className="p-6 rounded-2xl border border-gray-100 hover:border-gray-200 transition-all cursor-pointer"
+              className="p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-100 hover:border-gray-200 transition-all cursor-pointer"
               style={{backgroundColor: '#fcfcfc'}}
               onClick={() => {
                 setSelectedQuotation(quotation);
                 setShowQuotationModal(true);
               }}
             >
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-bold text-gray-900">{quotation.projectName}</h3>
+                  <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-3 mb-2">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900">{quotation.projectName}</h3>
                     <span
-                      className="inline-block px-3 py-1 rounded-full text-xs font-medium text-white"
+                      className="inline-block self-start xs:self-auto px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium text-white"
                       style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
                     >
                       {quotation.status}
                     </span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-600 mb-1">Monto Total</p>
-                  <p className="text-xl font-bold text-gray-900">{quotation.totalAmount}</p>
+                <div className="text-left sm:text-right">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">Monto Total</p>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900">{quotation.totalAmount}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-100">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-100">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Fecha de Envío</p>
-                  <p className="text-sm font-medium text-gray-900">{quotation.sentDate}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Fecha de Envío</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{quotation.sentDate}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Capacidad del Sistema</p>
-                  <p className="text-sm font-medium text-gray-900">{quotation.details.capacity}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Capacidad del Sistema</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{quotation.details.capacity}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Paneles</p>
-                  <p className="text-sm font-medium text-gray-900">{quotation.details.panelCount} unidades</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Paneles</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{quotation.details.panelCount} unidades</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Producción Estimada</p>
-                  <p className="text-sm font-medium text-gray-900">{quotation.details.production}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Producción Estimada</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{quotation.details.production}</p>
                 </div>
               </div>
             </div>

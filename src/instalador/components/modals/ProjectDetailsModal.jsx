@@ -5,10 +5,10 @@ const ProjectDetailsModal = ({ project, setShowProjectModal }) => {
   const [requiresTechnicalVisit, setRequiresTechnicalVisit] = useState(true);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
       <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-auto">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="sticky top-0 bg-white z-50 flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">Detalles del Proyecto</h2>
           <button
             onClick={() => setShowProjectModal(false)}
