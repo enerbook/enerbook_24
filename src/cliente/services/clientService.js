@@ -1,5 +1,4 @@
 import { supabase } from '../../lib/supabaseClient';
-import { clienteProjectService } from './api/clienteProjectService';
 import {
   sanitizeForLogging,
   sanitizeString,

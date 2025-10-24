@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { logger, analyticsLogger } from '../utils/logger';
+import logger, { analyticsLogger } from '../../utils/logger';
 
+// Force reload - v4.0 - logger.log() method added
 export function useOcr() {
   const [ocrData, setOcrData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleReceiptUpload = async (files) => {
+    console.log('🔧 [DEBUG] handleReceiptUpload called - Version 3.0 - UPDATED!');
+
     if (ocrData) {
       // Si ya tenemos datos OCR y temp_lead_id, redirigir con el ID
       if (ocrData.temp_lead_id) {
@@ -20,6 +23,8 @@ export function useOcr() {
     const webhookUrl = 'https://services.enerbook.mx/webhook/ocr-input';
     const formData = new FormData();
 
+    console.log('🔧 Files to process:', files);
+
     files.forEach((file) => {
       if (files.length === 1) {
         formData.append('data-frontal', file);
@@ -32,23 +37,39 @@ export function useOcr() {
       }
     });
 
+    console.log('🔧 Setting isLoading to true');
     setIsLoading(true);
 
     try {
+      console.log('🔧 Sending request to webhook...');
       const response = await fetch(webhookUrl, {
         method: 'POST',
         body: formData,
       });
 
+      console.log('🔧 Response received:', response);
+      console.log('🔧 response.ok:', response.ok);
+
       if (response.ok) {
+        console.log('🔧 Inside response.ok block');
         // Verificar que hay contenido antes de parsear JSON
         const contentType = response.headers.get('content-type');
+        console.log('🔧 contentType:', contentType);
+
         if (contentType && contentType.includes('application/json')) {
+          console.log('🔧 Content type is JSON, reading text...');
           const text = await response.text();
+          console.log('🔧 Text received:', text);
+
           if (text) {
+            console.log('🔧 Parsing JSON...');
             const result = JSON.parse(text);
+            console.log('🔧 Parsed result:', result);
+
             setOcrData(result);
+            console.log('🔧 About to call logger.log...');
             logger.log('OCR data received:', result);
+            console.log('🔧 About to call analyticsLogger.trackEvent...');
             analyticsLogger.trackEvent('OCR_SUCCESS', { hasLeadId: !!result.temp_lead_id });
 
             // Si el OCR devuelve temp_lead_id, redirigir inmediatamente al dashboard de lead

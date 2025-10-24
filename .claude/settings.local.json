@@ -1,31 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs sed:*)",
-      "Bash(\"s|from ''../../../../hooks/useSolicitarCotizaciones|from ''../../hooks/useSolicitarCotizaciones|g\" )",
-      "Bash(\"s|from ''../../../../context/LeadDashboardDataContext|from ''../../context/LeadDashboardDataContext|g\" )",
-      "Bash(find:*)",
-      "Bash({} +)",
-      "Bash(\"s|from ''../../context/|from ''../../../context/|g\" )",
-      "Bash(rm:*)",
-      "Bash(\"s|from ''../../context/Lead|from ''../../../context/Lead|g\" )",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git rm:*)",
-      "Bash(brew install:*)",
-      "Bash(supabase:*)",
-      "Bash(npm install:*)",
-      "Bash(npx supabase:*)",
-      "Bash(echo $?)",
-      "Bash(npm run start:*)",
-      "Bash(node:*)",
-      "Bash(npx expo start:*)",
-      "Bash(kill:*)",
-      "Bash(for:*)",
-      "Bash(do sed -i '' 's/border-gray-100/border-gray-200/g' \"$file\")",
-      "Bash(done)",
-      "Bash(cat:*)"
+      "Bash(taskkill:*)",
+      "Bash(del nul)"
     ],
     "deny": [],
     "ask": []

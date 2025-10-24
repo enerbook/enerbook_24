@@ -6,7 +6,7 @@ import {
   validateReciboCFE,
   checkRateLimit
 } from '../../utils/security';
-import { logger } from '../utils/logger';
+import { logger } from '../../utils/logger';
 
 /**
  * Lead Service

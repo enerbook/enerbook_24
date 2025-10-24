@@ -140,6 +140,16 @@ const logger = {
   },
 
   /**
+   * Log genérico (alias de info)
+   */
+  log: (message, ...args) => {
+    if (!isLevelEnabled(LogLevel.INFO)) return;
+
+    const processedArgs = processArgs(...args);
+    console.log(`📝 [LOG]`, message, ...processedArgs);
+  },
+
+  /**
    * Log de debug (solo en desarrollo)
    */
   debug: (message, ...args) => {
@@ -240,6 +250,38 @@ export const logSupabaseError = (tableName, operation, error) => {
     message: error.message,
     details: sanitizeForLogging(error.details)
   });
+};
+
+/**
+ * Analytics Logger
+ * Para tracking de eventos y conversiones
+ */
+export const analyticsLogger = {
+  /**
+   * Track un evento genérico
+   */
+  trackEvent: (eventName, data = {}) => {
+    if (!IS_DEVELOPMENT) return;
+    logger.info(`📊 [ANALYTICS] Event: ${eventName}`, sanitizeForLogging(data));
+  },
+
+  /**
+   * Track una conversión de lead
+   */
+  trackLeadConversion: (leadId, source) => {
+    if (!IS_DEVELOPMENT) return;
+    logger.info(`📊 [ANALYTICS] Lead Conversion`, { leadId, source });
+  },
+
+  /**
+   * Track un error
+   */
+  trackError: (error, context = {}) => {
+    logger.error(`📊 [ANALYTICS] Error tracked`, {
+      message: error?.message || 'Unknown error',
+      context: sanitizeForLogging(context)
+    });
+  }
 };
 
 export default logger;

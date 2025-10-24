@@ -40,7 +40,8 @@
           "photosPermission": "La aplicación accede a tus fotos para subir recibos CFE.",
           "cameraPermission": "La aplicación accede a tu cámara para tomar fotos de recibos CFE."
         }
-      ]
+      ],
+      "expo-router"
     ]
   }
 }

@@ -22,14 +22,14 @@ export default function PagosTab({ proyecto, onReload }) {
         .select('*, payment_milestones(*)')
         .eq('proyecto_id', proyecto.id)
         .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+        .limit(1);
 
       if (error && error.code !== 'PGRST116') {
         throw error;
       }
 
-      setPayment(data);
+      // data es un array, tomamos el primer elemento
+      setPayment(data && data.length > 0 ? data[0] : null);
     } catch (error) {
       console.error('Error loading payment:', error);
     } finally {
