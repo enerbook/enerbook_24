@@ -16,7 +16,7 @@ const DetallesTab = () => {
     <main className="flex-1 px-2 lg:px-4 pt-2 pb-8 bg-gray-50 overflow-y-auto">
       <div className="space-y-6 lg:space-y-8">
         {/* Top Section - Cotizar energía solar */}
-        <div className="w-full lg:w-1/2">
+        <div className="w-full">
           <div className="p-4 lg:p-6 rounded-lg border border-gray-100 flex flex-col lg:flex-row items-center justify-between gap-4" style={{ backgroundColor: '#fcfcfc' }}>
             <div className="flex-1 text-center lg:text-left">
               <h2 className="text-sm font-bold text-gray-900 mb-3">
@@ -43,10 +43,11 @@ const DetallesTab = () => {
           </div>
         </div>
 
-        {/* Datos del Recibo CFE Section */}
-        <div className="w-full lg:w-1/2">
+        {/* Grid de 2 columnas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+          {/* Datos del Recibo CFE */}
           <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
-            <h2 className="text-sm font-bold text-gray-900 mb-4">Datos del Recibo Cfe</h2>
+            <h2 className="text-sm font-bold text-gray-900 mb-4">Datos del Recibo CFE</h2>
             <div className="space-y-3">
               {hasData && reciboData ? (
                 <>
@@ -86,71 +87,69 @@ const DetallesTab = () => {
               )}
             </div>
           </div>
-        </div>
 
-        <div className="py-4"></div>
-
-        {/* Barras de Resumen */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
-          {/* Resumen Energético */}
-          <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
-            <h3 className="text-sm font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent mb-3">Resumen Energético</h3>
-            <div className="space-y-3">
-              {hasData && consumoData.length > 0 ? (
-                <>
-                  <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{resumenEnergetico?.consumo_max || Math.max(...consumoData.map(item => item.value))}</span>
-                    <span className="text-sm">Consumo Máximo (kWh)</span>
+          {/* Columna derecha con Resumen Energético y Dimensionamiento */}
+          <div className="space-y-4 lg:space-y-6">
+            {/* Resumen Energético */}
+            <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+              <h3 className="text-sm font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent mb-4">Resumen Energético</h3>
+              <div className="space-y-3">
+                {hasData && consumoData.length > 0 ? (
+                  <>
+                    <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
+                      <span className="text-sm">{resumenEnergetico?.consumo_max || Math.max(...consumoData.map(item => item.value))}</span>
+                      <span className="text-sm">Consumo Máximo (kWh)</span>
+                    </div>
+                    <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
+                      <span className="text-sm">{resumenEnergetico?.consumo_promedio || Math.round(consumoData.reduce((sum, item) => sum + item.value, 0) / consumoData.length)}</span>
+                      <span className="text-sm">Consumo Promedio (kWh)</span>
+                    </div>
+                    <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
+                      <span className="text-sm">{resumenEnergetico?.periodos_analizados || consumoData.length}</span>
+                      <span className="text-sm">Períodos Analizados</span>
+                    </div>
+                    <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
+                      <span className="text-sm">{((resumenEnergetico?.consumo_max || Math.max(...consumoData.map(item => item.value))) * 12).toLocaleString()}</span>
+                      <span className="text-sm">Consumo Anual Máx (kWh)</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-lg h-10 flex items-center justify-center px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
+                    <span className="text-sm">Cargando datos energéticos...</span>
                   </div>
-                  <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{resumenEnergetico?.consumo_promedio || Math.round(consumoData.reduce((sum, item) => sum + item.value, 0) / consumoData.length)}</span>
-                    <span className="text-sm">Consumo Promedio (kWh)</span>
-                  </div>
-                  <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{resumenEnergetico?.periodos_analizados || consumoData.length}</span>
-                    <span className="text-sm">Períodos Analizados</span>
-                  </div>
-                  <div className="rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                    <span className="text-sm">{((resumenEnergetico?.consumo_max || Math.max(...consumoData.map(item => item.value))) * 12).toLocaleString()}</span>
-                    <span className="text-sm">Consumo Anual Máx (kWh)</span>
-                  </div>
-                </>
-              ) : (
-                <div className="rounded-lg h-10 flex items-center justify-center px-4 text-white font-bold shadow-sm" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
-                  <span className="text-sm">Cargando datos energéticos...</span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Dimensionamiento del Sistema Solar */}
-          <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
-            <h3 className="text-sm font-bold text-gray-900 mb-3">Dimensionamiento del Sistema Solar</h3>
-            <div className="space-y-3">
-              {hasData && sistemaData ? (
-                <>
-                  <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
-                    <span className="text-sm">{sistemaData.results?.kWp_needed || '0'}</span>
-                    <span className="text-sm">kWp Requeridos</span>
+            {/* Dimensionamiento del Sistema Solar */}
+            <div className="p-6 rounded-lg border border-gray-100" style={{ backgroundColor: '#fcfcfc' }}>
+              <h3 className="text-sm font-bold text-gray-900 mb-4">Dimensionamiento del Sistema Solar</h3>
+              <div className="space-y-3">
+                {hasData && sistemaData ? (
+                  <>
+                    <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
+                      <span className="text-sm">{sistemaData.sistema?.capacidad_sistema_kw || sistemaData.results?.kWp_needed || '0'}</span>
+                      <span className="text-sm">kWp Requeridos</span>
+                    </div>
+                    <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
+                      <span className="text-sm">{sistemaData.inputs?.potencia_panel_wp || sistemaData.results?.panel_wp || '550'}</span>
+                      <span className="text-sm">Wp por Panel</span>
+                    </div>
+                    <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
+                      <span className="text-sm">{sistemaData.sistema?.numero_paneles || sistemaData.results?.n_panels || '0'}</span>
+                      <span className="text-sm">Número de Paneles</span>
+                    </div>
+                    <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
+                      <span className="text-sm">{(sistemaData.sistema?.produccion_anual_kwh || sistemaData.results?.yearly_prod || 0).toLocaleString()}</span>
+                      <span className="text-sm">Producción Anual (kWh)</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-center px-4 text-white font-bold shadow-sm">
+                    <span className="text-sm">Cargando dimensionamiento...</span>
                   </div>
-                  <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
-                    <span className="text-sm">{sistemaData.results?.panel_wp || '550'}</span>
-                    <span className="text-sm">Wp por Panel</span>
-                  </div>
-                  <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
-                    <span className="text-sm">{sistemaData.results?.n_panels || '0'}</span>
-                    <span className="text-sm">Número de Paneles</span>
-                  </div>
-                  <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-between px-4 text-white font-bold shadow-sm">
-                    <span className="text-sm">{(sistemaData.results?.yearly_prod || 0).toLocaleString()}</span>
-                    <span className="text-sm">Producción Anual (kWh)</span>
-                  </div>
-                </>
-              ) : (
-                <div className="bg-gray-900 rounded-lg h-10 flex items-center justify-center px-4 text-white font-bold shadow-sm">
-                  <span className="text-sm">Cargando dimensionamiento...</span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

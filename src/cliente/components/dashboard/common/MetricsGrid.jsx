@@ -78,14 +78,12 @@ const MetricsGrid = ({ cotizacionInicial = null }) => {
   }
 
   return (
-    <div className="w-full lg:flex-1">
-      <div className="grid grid-cols-2 gap-2 lg:gap-3">
-        <MetricTile title="Consumo Promedio" value={consumoPromedio} subtitle="Mensual" />
-        <MetricTile title="Sistema Requerido" value={sistemaRequerido} subtitle={nPaneles} />
-        <MetricTile title="Irradiación Promedio" value={irradiacionPromedio} subtitle={ubicacion} />
-        <MetricTile title="Producción Anual" value={produccionAnual} subtitle="Estimada" />
-      </div>
-    </div>
+    <>
+      <MetricTile title="Consumo Promedio" value={consumoPromedio} subtitle="Mensual" />
+      <MetricTile title="Sistema Requerido" value={sistemaRequerido} subtitle={nPaneles} />
+      <MetricTile title="Irradiación Promedio" value={irradiacionPromedio} subtitle={ubicacion} />
+      <MetricTile title="Producción Anual" value={produccionAnual} subtitle="Estimada" />
+    </>
   );
 };
 

@@ -7,6 +7,18 @@ const IrradiacionTab = () => {
   const { irradiacionData, hasData } = useLeadDashboardData();
   const router = useRouter();
 
+  // DEBUG: Log de datos recibidos en el componente
+  console.log('═══════════════════════════════════════════════════════════════');
+  console.log('🔍 [DEBUG IrradiacionTab] DATOS RECIBIDOS EN COMPONENTE');
+  console.log('🔍 [DEBUG IrradiacionTab] hasData:', hasData);
+  console.log('🔍 [DEBUG IrradiacionTab] irradiacionData:', irradiacionData);
+  console.log('🔍 [DEBUG IrradiacionTab] irradiacionData.length:', irradiacionData?.length);
+  if (irradiacionData && irradiacionData.length > 0) {
+    console.log('🔍 [DEBUG IrradiacionTab] Primer elemento:', irradiacionData[0]);
+    console.log('🔍 [DEBUG IrradiacionTab] Último elemento:', irradiacionData[irradiacionData.length - 1]);
+  }
+  console.log('═══════════════════════════════════════════════════════════════');
+
   const handleSolicitarCotizaciones = () => {
     // Leads siempre redirigen a signup
     router.push('/signup');

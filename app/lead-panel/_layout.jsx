@@ -53,7 +53,8 @@ export default function LeadPanelLayout() {
   }
 
   // Obtener el tab activo desde la URL
-  const currentSegment = segments[segments.length - 1] || 'dashboard';
+  const lastSegment = segments[segments.length - 1];
+  const currentSegment = lastSegment === 'lead-panel' ? 'dashboard' : (lastSegment || 'dashboard');
 
   return (
     <View style={{ flex: 1 }}>

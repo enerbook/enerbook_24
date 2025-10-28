@@ -33,11 +33,18 @@ export const LeadDashboardDataProvider = ({ children }) => {
 
     if (userType === 'lead' && leadData) {
       sourceData = leadData;
+      console.log('🔍 [DEBUG LeadDashboardDataContext] Lead mode - sourceData:', sourceData);
     } else if (userType === 'cliente' && clientData?.cotizacion) {
       sourceData = clientData.cotizacion;
+      console.log('🔍 [DEBUG LeadDashboardDataContext] Cliente mode - sourceData:', sourceData);
     }
 
+    console.log('🔍 [DEBUG LeadDashboardDataContext] userType:', userType);
+    console.log('🔍 [DEBUG LeadDashboardDataContext] leadData:', leadData);
+    console.log('🔍 [DEBUG LeadDashboardDataContext] sourceData:', sourceData);
+
     if (!sourceData) {
+      console.log('🔍 [DEBUG LeadDashboardDataContext] No sourceData - returning empty dashboard');
       return {
         consumoData: [],
         irradiacionData: [],
@@ -52,6 +59,7 @@ export const LeadDashboardDataProvider = ({ children }) => {
     }
 
     // Normalizar consumo_kwh_historico desde formato DB al formato esperado por componentes
+    console.log('🔍 [DEBUG LeadDashboardDataContext] consumo_kwh_historico raw:', sourceData.consumo_kwh_historico);
     const consumoData = sourceData.consumo_kwh_historico ?
       (() => {
         const rawData = sourceData.consumo_kwh_historico
@@ -98,11 +106,55 @@ export const LeadDashboardDataProvider = ({ children }) => {
       })()
       : [];
 
+    console.log('🔍 [DEBUG LeadDashboardDataContext] irradiacion_cache:', sourceData.irradiacion_cache);
+    console.log('🔍 [DEBUG LeadDashboardDataContext] sizing_results:', sourceData.sizing_results);
     const irradiacionData = sourceData.irradiacion_cache || sourceData.sizing_results ?
       (() => {
         const cacheData = sourceData.irradiacion_cache;
-        const sizingInputs = sourceData.sizing_results?.inputs;
 
+        // Prioridad 1: Usar datos_nasa_mensuales reales si existen
+        const nasaData = cacheData?.datos_nasa_mensuales?.irradiacion_promedio;
+        if (nasaData && Array.isArray(nasaData)) {
+          console.log('═══════════════════════════════════════════════════════════════');
+          console.log('🔍 [DEBUG LeadDashboardDataContext] PROCESANDO DATOS NASA');
+          console.log('🔍 [DEBUG LeadDashboardDataContext] irradiacion_promedio RAW:', nasaData);
+
+          // Primero ordenar por valor para calcular rankings
+          const sortedByValue = [...nasaData]
+            .sort((a, b) => b.irradiacion - a.irradiacion);
+
+          console.log('🔍 [DEBUG LeadDashboardDataContext] Ordenado por valor:', sortedByValue);
+
+          // Crear mapa de rankings (mes -> ranking)
+          const rankingMap = {};
+          sortedByValue.forEach((item, index) => {
+            rankingMap[item.mes] = index + 1;
+          });
+
+          console.log('🔍 [DEBUG LeadDashboardDataContext] Ranking map:', rankingMap);
+
+          // Retornar en orden cronológico original (usando campo orden)
+          const result = nasaData
+            .sort((a, b) => a.orden - b.orden)
+            .map(item => ({
+              mes: item.mes,
+              irradiacion: item.irradiacion.toFixed(2),
+              ranking: `#${rankingMap[item.mes]}`,
+              valor: parseFloat(item.irradiacion),
+              value: parseFloat(item.irradiacion),
+              label: item.mes.substring(0, 3),
+              fullLabel: item.mes,
+              orden: item.orden
+            }));
+
+          console.log('🔍 [DEBUG LeadDashboardDataContext] RESULTADO FINAL (orden cronológico):', result);
+          console.log('═══════════════════════════════════════════════════════════════');
+
+          return result;
+        }
+
+        // Fallback: Generar datos artificiales (código anterior)
+        const sizingInputs = sourceData.sizing_results?.inputs;
         const promedioAnual = cacheData?.irradiacion_promedio_anual
           || sizingInputs?.irr_avg_day
           || 5.5;
@@ -148,8 +200,10 @@ export const LeadDashboardDataProvider = ({ children }) => {
       ),
       consumoMaximo: Math.max(...consumoData.map(item => item.value)),
       irradiacionPromedio: parseFloat(irradiacionPromedio),
-      sistemaRequerido: sourceData.sizing_results?.kWp_needed || sourceData.sizing_results?.results?.kWp_needed || 0
+      sistemaRequerido: sourceData.sizing_results?.sistema?.capacidad_sistema_kw || sourceData.sizing_results?.results?.kWp_needed || sourceData.sizing_results?.kWp_needed || 0
     } : null;
+
+    console.log('🔍 [DEBUG LeadDashboardDataContext] metricsData calculated:', metricsData);
 
     return {
       consumoData,

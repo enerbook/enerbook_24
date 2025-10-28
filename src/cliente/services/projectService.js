@@ -87,7 +87,10 @@ export const projectService = {
       .from('proyectos')
       .select(`
         *,
-        cotizaciones_inicial (*),
+        cotizaciones_inicial (
+          *,
+          irradiacion_cache (*)
+        ),
         cotizaciones_final (
           *,
           proveedores (
@@ -149,7 +152,7 @@ export const projectService = {
       if (cotizacionInicial.sizing_results) {
         const sizing = cotizacionInicial.sizing_results;
 
-        // If data is nested under 'results', flatten it to top level as well
+        // ESTRUCTURA LEAD (workflow viejo): { results: {...}, inputs: {...} }
         if (sizing.results) {
           cotizacionInicial.sizing_results = {
             ...sizing,
@@ -158,6 +161,17 @@ export const projectService = {
             n_panels: sizing.results.n_panels,
             yearly_prod: sizing.results.yearly_prod,
             irr_avg_day: sizing.inputs?.irr_avg_day
+          };
+        }
+        // ESTRUCTURA CLIENTE (workflow nuevo): { inputs: {...}, sistema: {...}, calculos_intermedios: {...} }
+        else if (sizing.sistema) {
+          cotizacionInicial.sizing_results = {
+            ...sizing,
+            // Mapear campos de cliente a los nombres esperados por los componentes
+            kWp_needed: sizing.sistema.capacidad_sistema_kw,
+            n_panels: sizing.sistema.numero_paneles,
+            yearly_prod: sizing.sistema.produccion_anual_kwh,
+            irr_avg_day: sizing.inputs?.irradiacion_promedio_kwh_m2_dia
           };
         }
       }

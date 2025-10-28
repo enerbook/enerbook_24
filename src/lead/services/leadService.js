@@ -34,7 +34,7 @@ export const leadService = {
       throw new Error('Demasiados intentos de acceso. Por favor espera un momento.');
     }
 
-    // Query con campos específicos (no SELECT *)
+    // Query con campos específicos (no SELECT *) + JOIN con irradiacion_cache
     const { data, error } = await supabase
       .from('cotizaciones_leads_temp')
       .select(`
@@ -45,10 +45,25 @@ export const leadService = {
         consumo_kwh_historico,
         resumen_energetico,
         sizing_results,
-        irradiacion_cache_id
+        irradiacion_cache_id,
+        irradiacion_cache:irradiacion_cache_id (
+          id,
+          irradiacion_promedio_anual,
+          irradiacion_promedio_min,
+          irradiacion_promedio_max,
+          datos_nasa_mensuales
+        )
       `)
       .eq('temp_lead_id', sanitizedId)
       .single();
+
+    // DEBUG: Log completo de los datos recibidos
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('🔍 [DEBUG leadService.getLeadData] TEMP_LEAD_ID:', sanitizedId);
+    console.log('🔍 [DEBUG leadService.getLeadData] RAW DATA FROM DB:', JSON.stringify(data, null, 2));
+    console.log('🔍 [DEBUG leadService.getLeadData] irradiacion_cache object:', data?.irradiacion_cache);
+    console.log('🔍 [DEBUG leadService.getLeadData] datos_nasa_mensuales:', data?.irradiacion_cache?.datos_nasa_mensuales);
+    console.log('═══════════════════════════════════════════════════════════════');
 
     if (error) {
       // No revelar detalles del error al cliente

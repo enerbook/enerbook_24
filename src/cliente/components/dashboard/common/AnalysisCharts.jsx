@@ -26,7 +26,16 @@ const AnalysisCharts = ({ cotizacionInicial = null }) => {
 
   // Procesar datos de irradiación
   const irradiacionChartData = useMemo(() => {
-    // Si tenemos datos del dashboard, úsalos
+    // PRIORIDAD 1: Usar datos reales de NASA si existen en el cache
+    if (irradiacionCache?.datos_nasa_mensuales?.irradiacion_promedio) {
+      return irradiacionCache.datos_nasa_mensuales.irradiacion_promedio.map(item => ({
+        value: item.irradiacion,
+        label: item.mes.substring(0, 3),
+        fullLabel: item.mes
+      }));
+    }
+
+    // PRIORIDAD 2: Si tenemos datos del dashboard, úsalos
     if (!cotizacionInicial && dashboardData.irradiacionData?.length > 0) {
       return dashboardData.irradiacionData.map(item => ({
         value: item.value,
@@ -35,7 +44,7 @@ const AnalysisCharts = ({ cotizacionInicial = null }) => {
       }));
     }
 
-    // Si es del proyecto, generar datos de irradiación
+    // PRIORIDAD 3 (FALLBACK): Generar datos sintéticos basados en promedio anual
     const promedioAnual = irradiacionCache?.irradiacion_promedio_anual
       || sizingResults?.irr_avg_day
       || sizingResults?.inputs?.irr_avg_day

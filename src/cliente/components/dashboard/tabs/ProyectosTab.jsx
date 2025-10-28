@@ -165,10 +165,31 @@ const ProyectosTab = () => {
                   const diasRestantes = Math.ceil((new Date(proyecto.fecha_limite) - new Date()) / (1000 * 60 * 60 * 24));
 
                   // Extraer datos técnicos de cotizaciones_inicial
+                  // IMPORTANTE: sizing_results ya está normalizado si viene de getProjectWithDetails,
+                  // pero aquí viene de getClientProjects que NO normaliza. Necesitamos normalizar aquí.
                   const cotizacionInicial = proyecto.cotizaciones_inicial;
-                  const sizingResults = cotizacionInicial?.sizing_results?.results || {};
                   const reciboData = cotizacionInicial?.recibo_cfe || {};
                   const resumenEnergetico = cotizacionInicial?.resumen_energetico || {};
+
+                  // Normalizar sizing_results (ambas estructuras: leads y clientes)
+                  let sizingResults = {};
+                  if (cotizacionInicial?.sizing_results) {
+                    const sizing = cotizacionInicial.sizing_results;
+                    // Estructura LEAD: {results: {...}}
+                    if (sizing.results) {
+                      sizingResults = {
+                        kWp_needed: sizing.results.kWp_needed,
+                        n_panels: sizing.results.n_panels
+                      };
+                    }
+                    // Estructura CLIENTE: {sistema: {...}}
+                    else if (sizing.sistema) {
+                      sizingResults = {
+                        kWp_needed: sizing.sistema.capacidad_sistema_kw,
+                        n_panels: sizing.sistema.numero_paneles
+                      };
+                    }
+                  }
 
                   // Formatear datos con valores por defecto
                   const potenciaRecomendada = sizingResults?.kWp_needed

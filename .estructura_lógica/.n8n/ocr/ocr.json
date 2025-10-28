@@ -2,15 +2,68 @@
   "nodes": [
     {
       "parameters": {
-        "url": "=https://api.mistral.ai/v1/files/{{ $json.id }}/url",
+        "httpMethod": "POST",
+        "path": "ocr-input",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -5360,
+        268
+      ],
+      "id": "7e7e8909-d05b-453e-afca-8a4ffe5ea95f",
+      "name": "Input",
+      "webhookId": "ac352058-a428-4e50-b361-d7d62480c7e7"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nueva logica OCR-first: crear items genericos sin asumir tipo\nconst items = [];\nconst inputItem = $input.all()[0];\nconst tempLeadId = `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;\n\n// Propagamos temp_lead_id a todos los items generados\nconst binaryKeys = Object.keys(inputItem.binary || {});\n\nif (binaryKeys.length === 0) {\n  throw new Error('No se recibieron imágenes en la solicitud');\n}\n\n// Crear un item por cada imagen recibida\nbinaryKeys.forEach((key, index) => {\n  items.push({\n    json: { \n      temp_lead_id: tempLeadId,\n      index: index,\n      total_images: binaryKeys.length\n    },\n    binary: { \n      [`imagen_${index + 1}`]: inputItem.binary[key] \n    }\n  });\n});\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5136,
+        268
+      ],
+      "id": "695b91b8-cba4-4037-b061-0b8c10dbebea",
+      "name": "Split Images Generic"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ $json.index }}",
+        "looseTypeValidation": true
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -4912,
+        268
+      ],
+      "id": "e44a1942-b755-4480-9db2-4649a1d73361",
+      "name": "Route by Index"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/files",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "mistralCloudApi",
-        "sendQuery": true,
-        "queryParameters": {
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
           "parameters": [
             {
-              "name": "expiry",
-              "value": "24"
+              "name": "purpose",
+              "value": "ocr"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "imagen_1"
             }
           ]
         },
@@ -19,37 +72,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2384,
-        144
+        -4688,
+        172
       ],
-      "id": "1a1d3d63-fe29-422c-add9-b8e1b19366fa",
-      "name": "HTTP Request1",
-      "credentials": {
-        "mistralCloudApi": {
-          "id": "PSmKQQtzOTwdxGCi",
-          "name": "Mistral Cloud account varac"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.mistral.ai/v1/ocr",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "mistralCloudApi",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"mistral-ocr-latest\",\n  \"document\": {\n    \"type\": \"document_url\",\n    \"document_url\": \"{{ $json.url }}\"\n  },\n  \"include_image_base64\": false\n}\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        2608,
-        144
-      ],
-      "id": "39f83bfd-794e-4849-9f17-9073605d58a0",
-      "name": "HTTP Request2",
+      "id": "d520d651-fba6-4d87-9356-af876178f764",
+      "name": "Upload Image 1",
       "credentials": {
         "mistralCloudApi": {
           "id": "PSmKQQtzOTwdxGCi",
@@ -74,7 +101,7 @@
             {
               "parameterType": "formBinaryData",
               "name": "file",
-              "inputDataFieldName": "data-posterior"
+              "inputDataFieldName": "imagen_2"
             }
           ]
         },
@@ -83,17 +110,243 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2160,
-        144
+        -4688,
+        364
       ],
-      "id": "298934b4-0f62-47bb-b782-86ca561642ab",
-      "name": "Posterior",
+      "id": "21ab9771-2485-491e-8c36-3591b6c14611",
+      "name": "Upload Image 2",
       "credentials": {
         "mistralCloudApi": {
           "id": "PSmKQQtzOTwdxGCi",
           "name": "Mistral Cloud account varac"
         }
       }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/ocr",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"mistral-ocr-latest\",\n  \"document\": {\n    \"type\": \"document_url\",\n    \"document_url\": \"{{ $json.url }}\"\n  },\n  \"include_image_base64\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4240,
+        172
+      ],
+      "id": "4fa419d9-e5e7-47ed-beb3-d87d0ac5acea",
+      "name": "OCR Generic 1",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "PSmKQQtzOTwdxGCi",
+          "name": "Mistral Cloud account varac"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/ocr",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"mistral-ocr-latest\",\n  \"document\": {\n    \"type\": \"document_url\",\n    \"document_url\": \"{{ $json.url }}\"\n  },\n  \"include_image_base64\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4240,
+        364
+      ],
+      "id": "2c8954a5-b431-4e20-8617-8d6bbdfd6d27",
+      "name": "OCR Generic 2",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "PSmKQQtzOTwdxGCi",
+          "name": "Mistral Cloud account varac"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -4016,
+        268
+      ],
+      "id": "165f830d-f4de-4add-9ee3-d57014b03788",
+      "name": "Merge OCR Results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clasificador inteligente basado en contenido extraido\nconst items = $input.all();\n\n// Extraer el texto OCR de ambas imagenes\nconst ocr1 = items[0].json.pages?.[0]?.markdown || '';\nconst ocr2 = items[1].json.pages?.[0]?.markdown || '';\n\n// Funcion para detectar si es frontal (datos del cliente)\nfunction isFrontal(text) {\n  const frontalIndicators = [\n    /NO\\.?\\s*DE\\s*SERVICIO/i,\n    /RMU\\s*:/i,\n    /CUENTA\\s*:/i,\n    /CFE\\s*CUENTA/i,\n    /TARIFA\\s*:/i,\n    /NO\\.?\\s*MEDIDOR/i,\n    /MULTIPLICADOR/i,\n    /NOMBRE\\s*:/i,\n    /DIRECCION\\s*:/i,\n    /TOTAL\\s+A\\s+PAGAR/i,\n    /AVISO\\s+RECIBO/i\n  ];\n  \n  let score = 0;\n  for (const pattern of frontalIndicators) {\n    if (pattern.test(text)) score++;\n  }\n  return score;\n}\n\n// Funcion para detectar si es posterior (tabla de consumos)\nfunction isPosterior(text) {\n  const posteriorIndicators = [\n    /CONSUMO\\s+HISTORICO/i,\n    /kWh.*PERIODO/i,\n    /HISTORICO\\s+DE\\s+CONSUMO/i,\n    /CONSUMOS\\s+MENSUALES/i,\n    /del\\s+\\d+\\s+\\w+\\s+\\d+\\s+al\\s+\\d+\\s+\\w+\\s+\\d+/i\n  ];\n  \n  // Contar patrones de fechas y numeros tipicos de tabla\n  const hasDateRanges = (text.match(/del\\s+\\d+\\s+\\w+\\s+\\d+\\s+al/gi) || []).length > 3;\n  const hasKwhNumbers = (text.match(/\\d{2,4}\\s*kWh/gi) || []).length > 3;\n  \n  let score = 0;\n  for (const pattern of posteriorIndicators) {\n    if (pattern.test(text)) score += 2;\n  }\n  if (hasDateRanges) score += 3;\n  if (hasKwhNumbers) score += 3;\n  \n  return score;\n}\n\n// Clasificar\nconst score1_frontal = isFrontal(ocr1);\nconst score1_posterior = isPosterior(ocr1);\nconst score2_frontal = isFrontal(ocr2);\nconst score2_posterior = isPosterior(ocr2);\n\nconsole.log('Scores:', {\n  image1: { frontal: score1_frontal, posterior: score1_posterior },\n  image2: { frontal: score2_frontal, posterior: score2_posterior }\n});\n\nlet frontalOcr, posteriorOcr;\n\nif (score1_frontal > score1_posterior && score2_posterior > score2_frontal) {\n  // Imagen 1 es frontal, Imagen 2 es posterior\n  frontalOcr = items[0].json;\n  posteriorOcr = items[1].json;\n} else if (score2_frontal > score2_posterior && score1_posterior > score1_frontal) {\n  // Imagen 2 es frontal, Imagen 1 es posterior\n  frontalOcr = items[1].json;\n  posteriorOcr = items[0].json;\n} else if (score1_frontal >= score2_frontal) {\n  // Por eliminacion, asignar imagen 1 como frontal\n  frontalOcr = items[0].json;\n  posteriorOcr = items[1].json;\n} else {\n  // Por eliminacion, asignar imagen 2 como frontal\n  frontalOcr = items[1].json;\n  posteriorOcr = items[0].json;\n}\n\n// Retornar items clasificados correctamente\nreturn [\n  {\n    json: {\n      ...frontalOcr,\n      type: 'frontal',\n      temp_lead_id: items[0].json.temp_lead_id\n    }\n  },\n  {\n    json: {\n      ...posteriorOcr,\n      type: 'posterior',\n      temp_lead_id: items[0].json.temp_lead_id\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3792,
+        268
+      ],
+      "id": "e4334c4c-935d-48b9-a288-0ed9b45677b5",
+      "name": "Content Classifier"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "frontal",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3568,
+        268
+      ],
+      "id": "87257d90-0d3a-4822-8372-1088194736cd",
+      "name": "Route by Type"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -2992,
+        268
+      ],
+      "id": "b1261374-2aca-40a0-a8e4-08d0d9e2258e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const frontal = $input.all()[0].json.output || $input.all()[0].json;\nconst posterior = $input.all()[1].json.output || $input.all()[1].json;\nconst tempLeadId = $input.all()[0].json.temp_lead_id || `lead_${Date.now()}`;\n\nreturn [{\n  json: {\n    ...frontal,\n    ...posterior,\n    temp_lead_id: tempLeadId\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2768,
+        268
+      ],
+      "id": "66f5d34d-f154-469d-b272-0ccda4d71338",
+      "name": "Combine Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://maps.googleapis.com/maps/api/geocode/json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "address",
+              "value": "={{ $json.direccion_formatted }}"
+            },
+            {
+              "name": "key",
+              "value": "AIzaSyBI6Vup5IKvfvlyvdhV_9nipF5FXaVnZ04"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2544,
+        340
+      ],
+      "id": "2b511c96-4cdb-43ab-b608-aa70927d43e0",
+      "name": "Google Geocoding API"
+    },
+    {
+      "parameters": {
+        "jsCode": "const geocodeResult = $input.all()[0].json;\n\nif (geocodeResult.results && geocodeResult.results.length > 0) {\n  const location = geocodeResult.results[0].geometry.location;\n  return [{\n    json: {\n      ...($node[\"Combine Data\"].json),\n      latitud: location.lat,\n      longitud: location.lng,\n      direccion_geocoded: geocodeResult.results[0].formatted_address\n    }\n  }];\n} else {\n  return [{\n    json: {\n      ...($node[\"Combine Data\"].json),\n      latitud: 19.0414,\n      longitud: -98.2063,\n      direccion_geocoded: \"Puebla, Mexico (default)\"\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2320,
+        340
+      ],
+      "id": "71a2a820-6348-4e57-b276-fc09c736965c",
+      "name": "Process Geocoding"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Leer input\nconst data = $input.all()[0].json;\n\n// Parámetros del sistema\nconst PR = 0.80;\nconst oversizeFact = 1.05;\nconst DAYS_PER_MONTH = 30.4;\nconst panelWp = 550;\n\n// Inputs principales\nconst consumoMax = data.consumo_max || 250;\nconst irrDayAvg = parseFloat(data.nasa_irradiation?.annual_average) || 5.5;\n\n// Cálculos intermedios - Rendimientos específicos\nconst specYieldDay = irrDayAvg * PR;\nconst specYieldMonth = specYieldDay * DAYS_PER_MONTH;\nconst specYieldAnnual = specYieldDay * 365;\n\n// Cálculos intermedios - Potencia requerida (método dual)\nconst consumoAnual = consumoMax * 12;\nconst kWpByYear = consumoAnual / specYieldAnnual;\nconst kWpByPeak = consumoMax / specYieldMonth;\nconst kWpNeededRaw = Math.max(kWpByYear, kWpByPeak);\nconst kWpNeeded = kWpNeededRaw * oversizeFact;\n\n// Cálculos de paneles\nconst nPanels = Math.ceil((kWpNeeded * 1000) / panelWp);\n\n// Producción anual\nconst produccionAnual = specYieldAnnual * kWpNeeded;\n\nreturn [{\n  json: {\n    ...data,\n    sizing_results: {\n      // === INPUTS ===\n      inputs: {\n        consumo_max_kwh: consumoMax,\n        irradiacion_promedio_kwh_m2_dia: irrDayAvg,\n        performance_ratio: PR,\n        factor_sobredimensionamiento: oversizeFact,\n        dias_por_mes: DAYS_PER_MONTH,\n        potencia_panel_wp: panelWp\n      },\n      \n      // === CÁLCULOS INTERMEDIOS ===\n      calculos_intermedios: {\n        rendimiento_especifico_diario: +specYieldDay.toFixed(2),\n        rendimiento_especifico_mensual: +specYieldMonth.toFixed(2),\n        rendimiento_especifico_anual: +specYieldAnnual.toFixed(2),\n        consumo_anual_kwh: consumoAnual,\n        kWp_por_metodo_anual: +kWpByYear.toFixed(2),\n        kWp_por_metodo_mensual: +kWpByPeak.toFixed(2),\n        kWp_necesario_sin_oversize: +kWpNeededRaw.toFixed(2)\n      },\n      \n      // === RESULTADOS FINALES ===\n      sistema: {\n        capacidad_sistema_kw: +kWpNeeded.toFixed(2),\n        numero_paneles: nPanels,\n        produccion_anual_kwh: Math.round(produccionAnual)\n      }\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        244
+      ],
+      "id": "b3bd6e5f-6054-471b-a5a7-7ceba0aad2a2",
+      "name": "Solar Sizing Calculator"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-3-haiku-20240307",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 3"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -3272,
+        240
+      ],
+      "id": "c12ac550-69bf-4675-8687-4023e47ca887",
+      "name": "Anthropic Chat Model2",
+      "credentials": {
+        "anthropicApi": {
+          "id": "CoNkmjeMGzkDNaXN",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={\n  \"role\": \"Extractor Especializado de Recibos CFE\",\n  \"description\": \"Extrae información completa de recibos de la Comisión Federal de Electricidad (CFE) de México. Devuelve ÚNICAMENTE JSON válido sin explicaciones adicionales.\",\n  \"input_data\": \"{{ $json.pages[0].markdown }}\",\n  \"instrucciones\": \"Lee TODO el texto completo antes de extraer. NO cortes información parcial - extrae campos completos. Si un campo no existe, usa null. El resultado debe ser SOLO JSON válido, sin markdown, sin bloques de código, sin explicaciones.\",\n  \"campos_a_extraer\": {\n    \"no_servicio\": \"Busca 'NO. DE SERVICIO:' y extrae el número completo (generalmente 12 dígitos). Ejemplo: 219890418432\",\n    \"RMU\": \"Busca 'RMU:' y extrae el código completo incluyendo números, guiones y texto (incluye TODO hasta el siguiente campo). Ejemplo: 72270 89-04-01 XAXX-010101 061 CFE\",\n    \"cuenta\": \"Busca 'CUENTA:' o 'CFE CUENTA:' y extrae el código alfanumérico completo (generalmente 16 caracteres). Ejemplo: 12DV08C011231540\",\n    \"tarifa\": \"Busca 'TARIFA:' y extrae el código (puede ser numérico como 01 o alfanumérico como GDMTH). Ejemplo: 01\",\n    \"no_medidor\": \"Busca 'NO. MEDIDOR:' o 'NO MEDIDOR:' y extrae el identificador completo. Ejemplo: 0B48J7\",\n    \"multiplicador\": \"Busca 'MULTIPLICADOR:' y extrae el número. Ejemplo: 1\",\n    \"no_hilos\": \"Busca 'NO HILOS:' o 'NO. HILOS:' y extrae el número (generalmente 1, 2 o 3). Ejemplo: 1\",\n    \"nombre\": \"Busca el nombre del cliente al inicio del recibo, antes de la dirección (generalmente en MAYÚSCULAS después del logo CFE). Ejemplo: FELIPE CARRANZA R\",\n    \"direccion\": \"Extrae la dirección COMPLETA del cliente tal como aparece en el recibo, sin modificar. Incluye calle, número, colonia, código postal, ciudad y estado. Ejemplo: 42 NTE 2207 PROLG 22 PINO SUAREZ Y BLVD XONACA DIEZ DE MAYO 08JC.P.72270 PUEBLA,PUE.\",\n    \"direccion_formatted\": \"Reformatea la dirección: 1) Convierte a formato título (primera letra mayúscula). 2) Elimina referencias: NAVE, BODEGA, LOCAL, DEPTO, OFICINA, PISO, INTERIOR + números. 3) Estandariza: AV/AVE a Av., CALLE a Calle, BLVD a Blvd., COL a Col., FRACC a Fracc. 4) Convierte estados: PUE a Puebla, QRO a Querétaro, CDMX/DF a Ciudad de México. 5) Agrega ', México' al final. Formato: 'Calle Número, Colonia, CP Ciudad, Estado, México'\",\n    \"periodo_inicio\": \"Busca 'PERIODO FACTURADO:' y extrae la primera fecha. Convierte del formato 'DD MES AA' (ejemplo: 07 ABR 25) al formato ISO 8601 'YYYY-MM-DD' (ejemplo: 2025-04-07). Meses: ENE=01, FEB=02, MAR=03, ABR=04, MAY=05, JUN=06, JUL=07, AGO=08, SEP=09, OCT=10, NOV=11, DIC=12. Año: 25=2025, 24=2024.\",\n    \"periodo_fin\": \"Busca 'PERIODO FACTURADO:' y extrae la segunda fecha (después del guión o 'al'). Convierte del formato 'DD MES AA' (ejemplo: 06 JUN 25) al formato ISO 8601 'YYYY-MM-DD' (ejemplo: 2025-06-06).\",\n    \"kwh_total\": \"Busca en la tabla de consumo 'Energía (kWh)' la columna 'Total período' y suma TODOS los valores de kWh (Básico + Intermedio + Excedente). Devuelve como número entero sin decimales ni comas. Ejemplo: si Básico=150 e Intermedio=27, entonces 177\",\n    \"total_pagar_mxn\": \"Busca el monto total a pagar (aparece como 'TOTAL A PAGAR:' o 'Total' en tabla de desglose con símbolo $). Elimina símbolos de moneda y comas, convierte a número decimal con punto y 2 decimales. Ejemplo: $242 = 242.00 o 242.56 = 242.56\"\n  },\n  \"validaciones\": \"Verifica que no_servicio tenga al menos 10 dígitos, que cuenta sea alfanumérico, que fechas estén en formato YYYY-MM-DD, que kwh_total y total_pagar_mxn sean numéricos. Si algún campo no se encuentra, asigna null.\",\n  \"ejemplo_salida\": {\n    \"no_servicio\": \"219890418432\",\n    \"RMU\": \"72270 89-04-01 XAXX-010101 061 CFE\",\n    \"cuenta\": \"12DV08C011231540\",\n    \"tarifa\": \"01\",\n    \"no_medidor\": \"0B48J7\",\n    \"multiplicador\": \"1\",\n    \"no_hilos\": \"1\",\n    \"nombre\": \"FELIPE CARRANZA R\",\n    \"direccion\": \"42 NTE 2207 PROLG 22 PINO SUAREZ Y BLVD XONACA DIEZ DE MAYO 08JC.P.72270 PUEBLA,PUE.\",\n    \"direccion_formatted\": \"Calle 42 Nte 2207, Col. Pino Suárez y Blvd Xonaca, 72270 Puebla, Puebla, México\",\n    \"periodo_inicio\": \"2025-04-07\",\n    \"periodo_fin\": \"2025-06-06\",\n    \"kwh_total\": \"177\",\n    \"total_pagar_mxn\": \"242.00\"\n  },\n  \"formato_respuesta\": \"Devuelve ÚNICAMENTE el JSON con los datos extraídos, sin explicaciones, sin markdown, sin bloques de código.\"\n}",
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"no_servicio\": \"219890418432\",\n  \"RMU\": \"72270 89-04-01 XAXX-010101 061 CFE\",\n  \"cuenta\": \"12DV08C011231540\",\n  \"tarifa\": \"01\",\n  \"no_medidor\": \"0B48J7\",\n  \"multiplicador\": \"1\",\n  \"no_hilos\": \"1\",\n  \"nombre\": \"FELIPE CARRANZA R\",\n  \"direccion\": \"42 NTE 2207 PROLG 22 PINO SUAREZ Y BLVD XONACA DIEZ DE MAYO 08JC.P.72270 PUEBLA,PUE.\",\n  \"direccion_formatted\": \"Calle 42 Nte 2207, Col. Pino Suárez y Blvd Xonaca, 72270 Puebla, Puebla, México\",\n  \"periodo_inicio\": \"2025-04-07\",\n  \"periodo_fin\": \"2025-06-06\",\n  \"kwh_total\": \"177\",\n  \"total_pagar_mxn\": \"242.00\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -3344,
+        16
+      ],
+      "id": "c19796f3-8c87-417a-9308-bec30ba89062",
+      "name": "datos_recibo_frontal_cfe1"
     },
     {
       "parameters": {
@@ -105,116 +358,11 @@
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
       "position": [
-        2816,
-        144
+        -3344,
+        416
       ],
-      "id": "1c3c3d19-5071-45f5-9323-fa1ddb19e7d7",
+      "id": "158c2ff7-152c-4b80-a206-c7f03aa13e4e",
       "name": "datos_recibo_posterior_cfe"
-    },
-    {
-      "parameters": {
-        "functionCode": "// OPCIÓN 1: Hash simple sin crypto (RECOMENDADA)\n// Ahora accedemos correctamente a los datos del nodo anterior 'Set'\nconst lat = $json.latitude || 0;\nconst lng = $json.longitude || 0;\nconst radioKm = 5;\n\n// Verificar que tenemos coordenadas válidas\nif (!lat || !lng) {\n  throw new Error('No se encontraron coordenadas válidas. Latitude: ' + lat + ', Longitude: ' + lng);\n}\n\n// Crear grid redondeado para optimizar caché\nconst latGrid = Math.round(lat * 100) / 100;\nconst lngGrid = Math.round(lng * 100) / 100;\n\n// Hash simple pero efectivo\nfunction createLocationHash(lat, lng) {\n  const str = `${lat},${lng}`;\n  let hash = 0;\n  \n  for (let i = 0; i < str.length; i++) {\n    const char = str.charCodeAt(i);\n    hash = ((hash << 5) - hash) + char;\n    hash = hash & hash;\n  }\n  \n  return Math.abs(hash).toString(36);\n}\n\nconst hashUbicacion = createLocationHash(latGrid, lngGrid);\n\nreturn [{\n  json: {\n    latitude: lat,\n    longitude: lng,\n    lat_grid: latGrid,\n    lng_grid: lngGrid,\n    radio_km: radioKm,\n    hash_ubicacion: hashUbicacion\n  }\n}];"
-      },
-      "name": "Generate Cache Key",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        1504,
-        -176
-      ],
-      "id": "89d86363-f04e-4435-b990-91c6f35fa588"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT \n  id,\n  datos_nasa_mensuales,\n  irradiacion_promedio_min,\n  irradiacion_promedio_max,\n  irradiacion_promedio_anual,\n  fecha_obtencion,\n  vigente_hasta,\n  hash_ubicacion\nFROM irradiacion_cache \nWHERE hash_ubicacion = '{{ $json.hash_ubicacion }}'\nORDER BY created_at DESC \nLIMIT 1;",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [
-        1728,
-        -176
-      ],
-      "id": "732f3a16-8d84-448d-b75e-aa90881fcc3b",
-      "name": "Query Cache",
-      "alwaysOutputData": true,
-      "executeOnce": false,
-      "credentials": {
-        "postgres": {
-          "id": "jjHxTq8OTwLBl895",
-          "name": "Postgres account supabase enerbook"
-        }
-      },
-      "notes": "0"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 1
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json.hash_ubicacion }}",
-              "rightValue": 0,
-              "operator": {
-                "type": "string",
-                "operation": "exists",
-                "singleValue": true
-              },
-              "id": "5cf8b301-7de2-44da-a225-ff4e5e70b422"
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        1936,
-        -176
-      ],
-      "id": "7a23ba52-901f-4541-8277-fc80f9c0b12b",
-      "name": "Cache Exists?"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "-- INSERT COMPLETO - Todos los campos integrados\nINSERT INTO irradiacion_cache (\n  lat_grid,\n  lng_grid,\n  radio_km,\n  datos_nasa_mensuales,\n  irradiacion_promedio_min,\n  irradiacion_promedio_max,\n  irradiacion_promedio_anual,\n  fecha_obtencion,\n  vigente_hasta,\n  hash_ubicacion,\n  region_nombre\n) VALUES (\n  {{ $node[\"Generate Cache Key\"].json.lat_grid }},\n  {{ $node[\"Generate Cache Key\"].json.lng_grid }},\n  {{ $node[\"Generate Cache Key\"].json.radio_km }},\n  '{{ JSON.stringify($node[\"Calculate Annual Irradiation1\"].json.datos_nasa_mensuales) }}'::jsonb,\n  {{ $node[\"Calculate Annual Irradiation1\"].json.irradiacion_promedio_min }},\n  {{ $node[\"Calculate Annual Irradiation1\"].json.irradiacion_promedio_max }},\n  {{ $node[\"Calculate Annual Irradiation1\"].json.irradiacion_promedio_anual }},\n  NOW(),\n  NOW() + INTERVAL '6 months',\n  '{{ $node[\"Generate Cache Key\"].json.hash_ubicacion }}',\n  \n    '{{ \n    $node[\"Dirección a Pin1\"].json.results[0].address_components\n      .filter(component => component.types.includes(\"administrative_area_level_1\"))[0]\n      ?.long_name || \"Estado no encontrado\"\n  }}'\n)\nRETURNING id, hash_ubicacion;",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [
-        2640,
-        -144
-      ],
-      "id": "db8d2bf3-b7bb-41c1-89e8-90ba9dc910bb",
-      "name": "Save to Cache",
-      "credentials": {
-        "postgres": {
-          "id": "jjHxTq8OTwLBl895",
-          "name": "Postgres account supabase enerbook"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "functionCode": "// Fusionar los datos de irradiación con la información de caché guardado\nconst irradiacionData = $node[\"Calculate Annual Irradiation1\"].json;\n// Corregir acceso a datos de Postgres - no usar [0]\nconst cacheInfo = $json || {};\n\n// Obtener temp_lead_id desde el nodo Code1 donde se genera originalmente\nlet tempLeadId = 'unknown';\n\ntry {\n  // Acceder directamente al nodo Code1 que genera el temp_lead_id\n  const code1Items = $node[\"Code1\"].json;\n  if (Array.isArray(code1Items)) {\n    tempLeadId = code1Items[0]?.temp_lead_id || 'unknown';\n  } else if (code1Items?.temp_lead_id) {\n    tempLeadId = code1Items.temp_lead_id;\n  }\n} catch (error) {\n  console.error('Error getting temp_lead_id:', error);\n  tempLeadId = 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);\n}\n\nreturn [{\n  json: {\n    ...irradiacionData,\n    cache_saved: true,\n    cache_id: cacheInfo.id,\n    hash_ubicacion: cacheInfo.hash_ubicacion,\n    temp_lead_id: tempLeadId\n  }\n}];"
-      },
-      "name": "Merge Cache Info",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        2896,
-        -64
-      ],
-      "id": "62ef73dc-69a6-4fc4-b9f0-6c8d03be56dd"
     },
     {
       "parameters": {
@@ -235,11 +383,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        240,
-        -176
+        -4464,
+        172
       ],
-      "id": "118eb3e8-9bc2-4333-87d9-a8e17848a079",
-      "name": "HTTP Request",
+      "id": "df0f6949-4c08-4ed8-b39b-6726e72b05fb",
+      "name": "HTTP Request3",
       "credentials": {
         "mistralCloudApi": {
           "id": "PSmKQQtzOTwdxGCi",
@@ -249,136 +397,15 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://api.mistral.ai/v1/ocr",
+        "url": "=https://api.mistral.ai/v1/files/{{ $json.id }}/url",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "mistralCloudApi",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"mistral-ocr-latest\",\n  \"document\": {\n    \"type\": \"document_url\",\n    \"document_url\": \"{{ $json.url }}\"\n  },\n  \"include_image_base64\": false\n}\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        464,
-        -176
-      ],
-      "id": "69944a98-d18d-42d9-a48a-b756ffbbf1c0",
-      "name": "HTTP Request6",
-      "credentials": {
-        "mistralCloudApi": {
-          "id": "PSmKQQtzOTwdxGCi",
-          "name": "Mistral Cloud account varac"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "keepOnlySet": true,
-        "values": {
-          "number": [
-            {
-              "name": "latitude",
-              "value": "={{ $node[\"Dirección a Pin1\"].json[\"results\"][0][\"geometry\"][\"location\"][\"lat\"] }}"
-            },
-            {
-              "name": "longitude",
-              "value": "={{ $node[\"Dirección a Pin1\"].json[\"results\"][0][\"geometry\"][\"location\"][\"lng\"] }}"
-            }
-          ],
-          "string": [
-            {
-              "name": "place_id",
-              "value": "={{ $node[\"Dirección a Pin1\"].json[\"results\"][0][\"place_id\"] }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Set",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 1,
-      "position": [
-        1280,
-        -176
-      ],
-      "id": "2ae52357-695c-4ac8-8567-c8290da41ff0"
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ \n  {\n    \"success\": true,\n    \"temp_lead_id\": $node[\"Save Temp Quote\"].json.temp_lead_id || \"unknown\",\n    \"message\": \"Análisis energético completado\",\n    \"redirect_url\": \"/dashboard?temp_lead_id=\" + ($node[\"Save Temp Quote\"].json.temp_lead_id || \"unknown\"),\n    \"data\": {\n      \"consumo_max\": $json.output?.consumo_max || null,\n      \"sistema_requerido\": $json.sizing?.results?.kWp_needed || null,\n      \"paneles\": $json.sizing?.results?.n_panels || null,\n      \"produccion_anual\": $json.sizing?.results?.yearly_prod || null\n    }\n  }\n}}",
-        "options": {
-          "responseCode": 200
-        }
-      },
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.4,
-      "position": [
-        4016,
-        -176
-      ],
-      "id": "cabb439a-7d6c-4f90-affe-281554af323d",
-      "name": "Irradiación1"
-    },
-    {
-      "parameters": {
-        "url": "https://maps.googleapis.com/maps/api/geocode/json",
-        "options": {},
-        "queryParametersUi": {
-          "parameter": [
-            {
-              "name": "address",
-              "value": "={{ $json.output.direccion }}"
-            },
-            {
-              "name": "key",
-              "value": "AIzaSyBI6Vup5IKvfvlyvdhV_9nipF5FXaVnZ04"
-            }
-          ]
-        }
-      },
-      "name": "Dirección a Pin1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
-      "position": [
-        1056,
-        -176
-      ],
-      "id": "67c3fe86-3adf-48be-ab3f-b7bd1f7aa37c"
-    },
-    {
-      "parameters": {
-        "functionCode": "const data = $json?.properties?.parameter?.ALLSKY_SFC_SW_DWN ?? {};\nconst keys = Object.keys(data);\n\nif (keys.length === 0) {\n  return {\n    datos_nasa_mensuales: {\n      irradiacion_promedio: [],\n      unidad_medida: \"kWh/m²/día\",\n      resumen: {\n        mejor_mes: null,\n        peor_mes: null\n      }\n    },\n    irradiacion_promedio_min: null,\n    irradiacion_promedio_max: null,\n    irradiacion_promedio_anual: null\n  };\n}\n\n// Mapeo de meses con orden para mantener secuencia correcta\nconst monthsMap = [\n  { numero: \"01\", nombre: \"Enero\",      orden: 1 },\n  { numero: \"02\", nombre: \"Febrero\",    orden: 2 },\n  { numero: \"03\", nombre: \"Marzo\",      orden: 3 },\n  { numero: \"04\", nombre: \"Abril\",      orden: 4 },\n  { numero: \"05\", nombre: \"Mayo\",       orden: 5 },\n  { numero: \"06\", nombre: \"Junio\",      orden: 6 },\n  { numero: \"07\", nombre: \"Julio\",      orden: 7 },\n  { numero: \"08\", nombre: \"Agosto\",     orden: 8 },\n  { numero: \"09\", nombre: \"Septiembre\", orden: 9 },\n  { numero: \"10\", nombre: \"Octubre\",    orden: 10 },\n  { numero: \"11\", nombre: \"Noviembre\",  orden: 11 },\n  { numero: \"12\", nombre: \"Diciembre\",  orden: 12 }\n];\n\n// Acumuladores\nconst sumPerMonth = {};\nconst countPerMonth = {};\nlet totalSum = 0;\nlet totalCount = 0;\n\n// Procesar datos - excluir mes 13 (promedios anuales)\nfor (const k of keys) {\n  const v = +data[k];\n  if (!Number.isFinite(v)) continue;\n  \n  const month = k.slice(4, 6); // YYYYMM...\n  \n  // Saltar mes 13 (promedios anuales en los datos originales)\n  if (month === \"13\") continue;\n  \n  if (!sumPerMonth[month]) {\n    sumPerMonth[month] = 0;\n    countPerMonth[month] = 0;\n  }\n  \n  sumPerMonth[month] += v;\n  countPerMonth[month] += 1;\n  totalSum += v;\n  totalCount += 1;\n}\n\n// Calcular promedio anual\nconst promedioAnual = totalCount > 0 ? +(totalSum / totalCount).toFixed(2) : null;\n\n// Crear array de irradiación promedio (ordenado por mes)\nconst irradiacionPromedio = monthsMap\n  .filter(m => m.numero in sumPerMonth) // Solo meses con datos\n  .map(m => {\n    const avg = sumPerMonth[m.numero] / countPerMonth[m.numero];\n    return {\n      mes: m.nombre,\n      irradiacion: +avg.toFixed(2),\n      orden: m.orden,\n      mes_numero: m.numero\n    };\n  })\n  .sort((a, b) => a.orden - b.orden); // Ordenar por mes natural\n\n// Calcular min y max de los promedios mensuales\nconst irradiacionValues = irradiacionPromedio.map(x => x.irradiacion);\nconst minIrradiacion = irradiacionValues.length > 0 ? Math.min(...irradiacionValues) : null;\nconst maxIrradiacion = irradiacionValues.length > 0 ? Math.max(...irradiacionValues) : null;\n\n// Estructura para datos_nasa_mensuales (JSONB) - formato simplificado\nconst datosNasaMensuales = {\n  irradiacion_promedio: irradiacionPromedio,\n  unidad_medida: \"kWh/m²/día\",\n  resumen: {\n    mejor_mes: irradiacionPromedio.length > 0 \n      ? irradiacionPromedio.reduce((max, curr) => \n          curr.irradiacion > max.irradiacion ? curr : max\n        ).mes \n      : null,\n    peor_mes: irradiacionPromedio.length > 0 \n      ? irradiacionPromedio.reduce((min, curr) => \n          curr.irradiacion < min.irradiacion ? curr : min\n        ).mes \n      : null\n  }\n};\n\n// Retornar objeto con los campos exactos para la base de datos\nreturn {\n  datos_nasa_mensuales: datosNasaMensuales,\n  irradiacion_promedio_min: minIrradiacion,\n  irradiacion_promedio_max: maxIrradiacion,\n  irradiacion_promedio_anual: promedioAnual\n};"
-      },
-      "name": "Calculate Annual Irradiation1",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        2384,
-        -64
-      ],
-      "id": "fdb368a6-dcb7-41bc-a1ff-40c720f14113"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.mistral.ai/v1/files",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "mistralCloudApi",
-        "sendBody": true,
-        "contentType": "multipart-form-data",
-        "bodyParameters": {
+        "sendQuery": true,
+        "queryParameters": {
           "parameters": [
             {
-              "name": "purpose",
-              "value": "ocr"
-            },
-            {
-              "parameterType": "formBinaryData",
-              "name": "file",
-              "inputDataFieldName": "data-frontal"
+              "name": "expiry",
+              "value": "24"
             }
           ]
         },
@@ -387,125 +414,17 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        16,
-        -176
+        -4464,
+        364
       ],
-      "id": "22e1b6d4-ae52-400a-b22b-fed2df1d8276",
-      "name": "Frontal",
+      "id": "09770b4e-01f2-472c-b0a2-226a6bd50b5f",
+      "name": "HTTP Request4",
       "credentials": {
         "mistralCloudApi": {
           "id": "PSmKQQtzOTwdxGCi",
           "name": "Mistral Cloud account varac"
         }
       }
-    },
-    {
-      "parameters": {
-        "jsCode": "/*****************************************************\n * PV Sizing (mínimo-insumos, días/mes fijo = 30.4)\n * Usa SOLO:\n *   • output.consumo_max ............ kWh/mes (pico consumo histórico CFE)\n *   • irradiacion_promedio_anual ..... kWh/m²/día (NASA promedio)\n *****************************************************/\n\n//–––– Parámetros ajustables ––––\nconst PR            = 0.80;\nconst oversizeFact  = 1.05;\nconst panelWp_def   = 550;\nconst DAYS_PER_MONTH = 30.4;\n\n//–––– Entrada ––––\nconst j = items[0].json || {};\n\n// Preservar temp_lead_id\nconst tempLeadId = j.temp_lead_id || 'unknown';\n\n// $input.first().json.output.consumo_max\nconst kWhPeak = +j.output?.consumo_max || 0;\nif (!(kWhPeak > 0)) {\n  throw new Error('Falta output.consumo_max (>0).');\n}\nconst kWhYear = kWhPeak * 12;\n\n// $input.first().json.irradiacion_promedio_anual (CORREGIDO)\nconst irrDayAvg = +j.irradiacion_promedio_anual || NaN;\nif (!(irrDayAvg > 0)) {\n  throw new Error('Falta irradiacion_promedio_anual (>0).');\n}\n\n//–––– Rendimientos ––––\nconst specDayAvg = irrDayAvg * PR;\nconst specYieldMonth = specDayAvg * DAYS_PER_MONTH;\nconst specYieldAnnual = specDayAvg * 365;\n\n//–––– Potencia requerida ––––\nconst kWpByYear = kWhYear / specYieldAnnual;\nconst kWpByPeak = kWhPeak / specYieldMonth;\nconst kWpNeededRaw = Math.max(kWpByYear, kWpByPeak);\nconst kWpNeeded = +(kWpNeededRaw * oversizeFact).toFixed(2);\n\n//–––– Módulos ––––\nconst panelWp = +j.panel_wp > 0 ? +j.panel_wp : panelWp_def;\nconst nPanels = Math.ceil((kWpNeeded * 1000) / panelWp);\n\n//–––– Producción ––––\nconst yearlyProd = +(specYieldAnnual * kWpNeeded).toFixed(0);\n\n//–––– Salida ––––\nitems[0].json = {\n  ...j,\n  temp_lead_id: tempLeadId, // Asegurar que temp_lead_id se pasa\n  sizing: {\n    inputs: {\n      kWh_peak_month: kWhPeak,\n      kWh_year_assumed: kWhYear,\n      irr_avg_day: irrDayAvg,\n      days_per_month: DAYS_PER_MONTH,\n      PR,\n      oversize_fact: oversizeFact,\n      // Datos NASA disponibles\n      irr_min: +j.irradiacion_promedio_min || null,\n      irr_max: +j.irradiacion_promedio_max || null,\n      nasa_cache_id: j.id || null,\n      hash_ubicacion: j.hash_ubicacion || null\n    },\n    derived: {\n      spec_yield_avg_day: +specDayAvg.toFixed(2),\n      spec_yield_avg_month: +specYieldMonth.toFixed(2),\n      spec_yield_annual: +specYieldAnnual.toFixed(2),\n    },\n    results: {\n      kWp_needed: kWpNeeded,\n      panel_wp: panelWp,\n      n_panels: nPanels,\n      yearly_prod: yearlyProd,\n    },\n    method_notes:\n      \"Sizing basado en output.consumo_max (pico mensual) y irradiacion_promedio_anual (kWh/m²/día) de NASA; conversión con 30.4 d/mes fijo; anual = 365×promedio.\"\n  }\n};\n\nreturn items;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        3584,
-        -176
-      ],
-      "id": "b396c82c-d333-4f96-82d9-b63e4a53b320",
-      "name": "Code"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO cotizaciones_leads_temp (\n  temp_lead_id,\n  recibo_cfe,\n  consumo_kwh_historico,\n  resumen_energetico,\n  sizing_results,\n  irradiacion_cache_id\n) VALUES (\n  '{{ $json.temp_lead_id || \"unknown\" }}',\n  '{{ JSON.stringify($node[\"datos_recibo_frontal_cfe1\"].json.output || {}) }}'::jsonb,\n  '{{ JSON.stringify($node[\"datos_recibo_posterior_cfe\"].json.output?.consumo_historico || []) }}'::jsonb,\n  '{{ JSON.stringify({\n    consumo_max: $node[\"datos_recibo_posterior_cfe\"].json.output?.consumo_max || null,\n    consumo_promedio: Math.round(($node[\"datos_recibo_posterior_cfe\"].json.output?.consumo_historico || []).reduce((sum, item) => sum + item.kwh, 0) / ($node[\"datos_recibo_posterior_cfe\"].json.output?.consumo_historico?.length || 1)),\n    periodos_analizados: $node[\"datos_recibo_posterior_cfe\"].json.output?.consumo_historico?.length || 0\n  }) }}'::jsonb,\n  '{{ JSON.stringify($json.sizing || {}) }}'::jsonb,\n  {{ ($json.cache_id || $json.id) ? \"'\" + ($json.cache_id || $json.id) + \"'\" : 'NULL' }}\n) RETURNING id, temp_lead_id",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [
-        3808,
-        -176
-      ],
-      "id": "5f3e54dc-c83a-4d5a-bb9e-ba6f7ca635d3",
-      "name": "Save Temp Quote",
-      "credentials": {
-        "postgres": {
-          "id": "jjHxTq8OTwLBl895",
-          "name": "Postgres account supabase enerbook"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "mode": "combine",
-        "combineBy": "combineByPosition",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        3184,
-        -176
-      ],
-      "id": "d50068be-3969-4765-b06f-8dc1a922ae4f",
-      "name": "Merge"
-    },
-    {
-      "parameters": {
-        "functionCode": "// Asegurar que temp_lead_id se propague\nconst item = items[0];\n\n// Buscar temp_lead_id en varios lugares posibles\nlet tempLeadId = null;\n\n// Primero intentar desde el item actual\nif (item.json.temp_lead_id) {\n  tempLeadId = item.json.temp_lead_id;\n}\n\n// Si no está, generar uno nuevo\nif (!tempLeadId || tempLeadId === 'unknown') {\n  tempLeadId = 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);\n}\n\n// Asegurar que todos los datos se pasen con el temp_lead_id\nreturn [{\n  json: {\n    ...item.json,\n    temp_lead_id: tempLeadId\n  },\n  binary: item.binary\n}];"
-      },
-      "name": "Ensure TempLeadId",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        3392,
-        -176
-      ],
-      "id": "91dacb31-30cd-4d65-a585-2736fb80c02d"
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "ocr-input",
-        "responseMode": "responseNode",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2,
-      "position": [
-        -864,
-        128
-      ],
-      "id": "669e91b7-fa9b-4ccc-945b-92f111cb7d57",
-      "name": "Input",
-      "webhookId": "ac352058-a428-4e50-b361-d7d62480c7e7"
-    },
-    {
-      "parameters": {
-        "jsCode": "const items = [];\n\n// Obtener el item de entrada\nconst inputItem = $input.all()[0];\n\n// Generar temp_lead_id único\nconst tempLeadId = `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;\n\n// Crear item para data-frontal\nif (inputItem.binary['data-frontal']) {\n  items.push({\n    json: { type: 'frontal', temp_lead_id: tempLeadId },\n    binary: { 'data-frontal': inputItem.binary['data-frontal'] }\n  });\n}\n\n// Crear item para data-posterior  \nif (inputItem.binary['data-posterior']) {\n  items.push({\n    json: { type: 'posterior', temp_lead_id: tempLeadId },\n    binary: { 'data-posterior': inputItem.binary['data-posterior'] }\n  });\n}\n\n// Si no hay binarios, crear item básico con temp_lead_id\nif (items.length === 0) {\n  items.push({\n    json: { type: 'empty', temp_lead_id: tempLeadId }\n  });\n}\n\nreturn items;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -640,
-        128
-      ],
-      "id": "f06eb2c2-849a-4cb7-a123-49808460e40d",
-      "name": "Code1"
-    },
-    {
-      "parameters": {
-        "mode": "expression",
-        "numberOutputs": 2,
-        "output": "={{ $json.type === 'frontal' ? 0 : 1 }}",
-        "looseTypeValidation": true
-      },
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.2,
-      "position": [
-        -432,
-        128
-      ],
-      "id": "c7bfed0f-2ca0-4743-a16f-53145a28f42b",
-      "name": "Switch"
     },
     {
       "parameters": {
@@ -548,67 +467,358 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
       "position": [
-        2160,
-        -64
+        -1200,
+        436
       ],
-      "id": "a4e1b0f4-19e4-4853-8af6-49e974db9de0"
+      "id": "a4d82a16-1f90-41d2-9d5f-3071df3b5dda"
     },
     {
       "parameters": {
-        "model": {
-          "__rl": true,
-          "value": "claude-3-haiku-20240307",
-          "mode": "list",
-          "cachedResultName": "Claude Haiku 3"
+        "keepOnlySet": true,
+        "values": {
+          "number": [
+            {
+              "name": "latitude",
+              "value": "={{ $json.latitud }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ $json.longitud }}"
+            }
+          ]
         },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
-      "typeVersion": 1.3,
+      "name": "Set Location Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
       "position": [
-        1712,
-        512
+        -2096,
+        340
       ],
-      "id": "bf68fb42-0c4a-4bce-8162-4fc827ddbfa3",
-      "name": "Anthropic Chat Model",
+      "id": "1b29ef37-7c73-44ae-8dbd-2afa42752734",
+      "notes": "INSERTAR DESPUÉS DE 'Process Geocoding'"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Hash de ubicación para caché NASA\nconst lat = $json.latitude || 0;\nconst lng = $json.longitude || 0;\nconst radioKm = 5;\n\n// Verificar coordenadas válidas\nif (!lat || !lng) {\n  throw new Error('No se encontraron coordenadas válidas. Latitude: ' + lat + ', Longitude: ' + lng);\n}\n\n// Grid redondeado para optimizar caché (2 decimales)\nconst latGrid = Math.round(lat * 100) / 100;\nconst lngGrid = Math.round(lng * 100) / 100;\n\n// Hash simple pero efectivo\nfunction createLocationHash(lat, lng) {\n  const str = `${lat},${lng}`;\n  let hash = 0;\n  \n  for (let i = 0; i < str.length; i++) {\n    const char = str.charCodeAt(i);\n    hash = ((hash << 5) - hash) + char;\n    hash = hash & hash;\n  }\n  \n  return Math.abs(hash).toString(36);\n}\n\nconst hashUbicacion = createLocationHash(latGrid, lngGrid);\n\nreturn [{\n  json: {\n    latitude: lat,\n    longitude: lng,\n    lat_grid: latGrid,\n    lng_grid: lngGrid,\n    radio_km: radioKm,\n    hash_ubicacion: hashUbicacion\n  }\n}];"
+      },
+      "name": "Generate Cache Key",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1872,
+        340
+      ],
+      "id": "94abc462-9f9a-4038-8f7e-9c43ccbb6adc",
+      "notes": "Genera hash_ubicacion para sistema de caché"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  datos_nasa_mensuales,\n  irradiacion_promedio_min,\n  irradiacion_promedio_max,\n  irradiacion_promedio_anual,\n  fecha_obtencion,\n  vigente_hasta,\n  hash_ubicacion\nFROM irradiacion_cache \nWHERE hash_ubicacion = '{{ $json.hash_ubicacion }}'\n  AND vigente_hasta > NOW()\nORDER BY created_at DESC \nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1648,
+        340
+      ],
+      "id": "c0e98fe8-f88c-4188-b660-582c4e8447ad",
+      "name": "Query NASA Cache",
+      "alwaysOutputData": true,
+      "executeOnce": false,
       "credentials": {
-        "anthropicApi": {
-          "id": "CoNkmjeMGzkDNaXN",
-          "name": "Anthropic account"
+        "postgres": {
+          "id": "jjHxTq8OTwLBl895",
+          "name": "Postgres account supabase enerbook"
+        }
+      },
+      "notes": "Busca en caché si ya existe irradiación para esta ubicación"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hash_ubicacion }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "id": "b5511f66-8533-431d-bf76-6c5900451d46"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1424,
+        340
+      ],
+      "id": "9aa0791f-f487-4215-bf98-bc7f7b11520a",
+      "name": "Cache Exists?",
+      "notes": "Bifurcación: TRUE=usar caché, FALSE=llamar NASA API"
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = $json?.properties?.parameter?.ALLSKY_SFC_SW_DWN ?? {};\nconst keys = Object.keys(data);\n\nif (keys.length === 0) {\n  return {\n    datos_nasa_mensuales: {\n      irradiacion_promedio: [],\n      unidad_medida: \"kWh/m²/día\",\n      resumen: {\n        mejor_mes: null,\n        peor_mes: null\n      }\n    },\n    irradiacion_promedio_min: null,\n    irradiacion_promedio_max: null,\n    irradiacion_promedio_anual: null\n  };\n}\n\n// Mapeo de meses con orden para mantener secuencia correcta\nconst monthsMap = [\n  { numero: \"01\", nombre: \"Enero\",      orden: 1 },\n  { numero: \"02\", nombre: \"Febrero\",    orden: 2 },\n  { numero: \"03\", nombre: \"Marzo\",      orden: 3 },\n  { numero: \"04\", nombre: \"Abril\",      orden: 4 },\n  { numero: \"05\", nombre: \"Mayo\",       orden: 5 },\n  { numero: \"06\", nombre: \"Junio\",      orden: 6 },\n  { numero: \"07\", nombre: \"Julio\",      orden: 7 },\n  { numero: \"08\", nombre: \"Agosto\",     orden: 8 },\n  { numero: \"09\", nombre: \"Septiembre\", orden: 9 },\n  { numero: \"10\", nombre: \"Octubre\",    orden: 10 },\n  { numero: \"11\", nombre: \"Noviembre\",  orden: 11 },\n  { numero: \"12\", nombre: \"Diciembre\",  orden: 12 }\n];\n\n// Acumuladores\nconst sumPerMonth = {};\nconst countPerMonth = {};\nlet totalSum = 0;\nlet totalCount = 0;\n\n// Procesar datos - excluir mes 13 (promedios anuales)\nfor (const k of keys) {\n  const v = +data[k];\n  if (!Number.isFinite(v)) continue;\n  \n  const month = k.slice(4, 6); // YYYYMM...\n  \n  // Saltar mes 13 (promedios anuales en los datos originales)\n  if (month === \"13\") continue;\n  \n  if (!sumPerMonth[month]) {\n    sumPerMonth[month] = 0;\n    countPerMonth[month] = 0;\n  }\n  \n  sumPerMonth[month] += v;\n  countPerMonth[month] += 1;\n  totalSum += v;\n  totalCount += 1;\n}\n\n// Calcular promedio anual\nconst promedioAnual = totalCount > 0 ? +(totalSum / totalCount).toFixed(2) : null;\n\n// Crear array de irradiación promedio (ordenado por mes)\nconst irradiacionPromedio = monthsMap\n  .filter(m => m.numero in sumPerMonth) // Solo meses con datos\n  .map(m => {\n    const avg = sumPerMonth[m.numero] / countPerMonth[m.numero];\n    return {\n      mes: m.nombre,\n      irradiacion: +avg.toFixed(2),\n      orden: m.orden,\n      mes_numero: m.numero\n    };\n  })\n  .sort((a, b) => a.orden - b.orden); // Ordenar por mes natural\n\n// Calcular min y max de los promedios mensuales\nconst irradiacionValues = irradiacionPromedio.map(x => x.irradiacion);\nconst minIrradiacion = irradiacionValues.length > 0 ? Math.min(...irradiacionValues) : null;\nconst maxIrradiacion = irradiacionValues.length > 0 ? Math.max(...irradiacionValues) : null;\n\n// Estructura para datos_nasa_mensuales (JSONB) - formato simplificado\nconst datosNasaMensuales = {\n  irradiacion_promedio: irradiacionPromedio,\n  unidad_medida: \"kWh/m²/día\",\n  resumen: {\n    mejor_mes: irradiacionPromedio.length > 0 \n      ? irradiacionPromedio.reduce((max, curr) => \n          curr.irradiacion > max.irradiacion ? curr : max\n        ).mes \n      : null,\n    peor_mes: irradiacionPromedio.length > 0 \n      ? irradiacionPromedio.reduce((min, curr) => \n          curr.irradiacion < min.irradiacion ? curr : min\n        ).mes \n      : null\n  }\n};\n\n// Retornar objeto con los campos exactos para la base de datos\nreturn {\n  datos_nasa_mensuales: datosNasaMensuales,\n  irradiacion_promedio_min: minIrradiacion,\n  irradiacion_promedio_max: maxIrradiacion,\n  irradiacion_promedio_anual: promedioAnual\n};"
+      },
+      "name": "Calculate Annual Irradiation",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        436
+      ],
+      "id": "9473cba5-8db3-4116-858d-d6de814da53d",
+      "notes": "REEMPLAZA a 'Process NASA Data' - Procesa respuesta de NASA API"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- INSERT COMPLETO - Todos los campos integrados\nINSERT INTO irradiacion_cache (\n  lat_grid,\n  lng_grid,\n  radio_km,\n  datos_nasa_mensuales,\n  irradiacion_promedio_min,\n  irradiacion_promedio_max,\n  irradiacion_promedio_anual,\n  fecha_obtencion,\n  vigente_hasta,\n  hash_ubicacion,\n  region_nombre\n) VALUES (\n  {{ $node[\"Generate Cache Key\"].json.lat_grid }},\n  {{ $node[\"Generate Cache Key\"].json.lng_grid }},\n  {{ $node[\"Generate Cache Key\"].json.radio_km }},\n  '{{ JSON.stringify($node[\"Calculate Annual Irradiation\"].json.datos_nasa_mensuales) }}'::jsonb,\n  {{ $node[\"Calculate Annual Irradiation\"].json.irradiacion_promedio_min }},\n  {{ $node[\"Calculate Annual Irradiation\"].json.irradiacion_promedio_max }},\n  {{ $node[\"Calculate Annual Irradiation\"].json.irradiacion_promedio_anual }},\n  NOW(),\n  NOW() + INTERVAL '6 months',\n  '{{ $node[\"Generate Cache Key\"].json.hash_ubicacion }}',\n  \n    '{{ \n    $node[\"Get Annual Solar\"].json.results[0].address_components\n      .filter(component => component.types.includes(\"administrative_area_level_1\"))[0]\n      ?.long_name || \"Estado no encontrado\"\n  }}'\n)\nRETURNING id, hash_ubicacion;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -752,
+        436
+      ],
+      "id": "9ca8034f-1dbc-4d06-a319-21aa43e8125d",
+      "name": "Save to NASA Cache",
+      "credentials": {
+        "postgres": {
+          "id": "jjHxTq8OTwLBl895",
+          "name": "Postgres account supabase enerbook"
+        }
+      },
+      "notes": "Guarda datos NASA en caché para futuras consultas"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Fusionar los datos de irradiación con la información de caché guardado\nconst irradiacionData = $node[\"Calculate Annual Irradiation\"].json;\nconst cacheInfo = $json || {};\n\n// Obtener temp_lead_id desde el nodo Split Images Generic donde se genera originalmente\nlet tempLeadId = 'unknown';\n\ntry {\n  // Acceder directamente al nodo Split Images Generic que propaga el temp_lead_id\n  const splitImagesItems = $node[\"Split Images Generic\"].json;\n  \n  if (Array.isArray(splitImagesItems) && splitImagesItems.length > 0) {\n    tempLeadId = splitImagesItems[0]?.temp_lead_id || 'unknown';\n  } else if (splitImagesItems && typeof splitImagesItems === 'object') {\n    tempLeadId = splitImagesItems.temp_lead_id || 'unknown';\n  }\n} catch (error) {\n  console.error('Error getting temp_lead_id from Split Images Generic:', error);\n  tempLeadId = 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);\n}\n\nconsole.log('Merge Cache Info - tempLeadId:', tempLeadId);\n\nreturn [{\n  json: {\n    ...irradiacionData,\n    cache_saved: true,\n    cache_id: cacheInfo.id,\n    hash_ubicacion: cacheInfo.hash_ubicacion,\n    temp_lead_id: tempLeadId\n  }\n}];"
+      },
+      "name": "Merge Cache Info",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        436
+      ],
+      "id": "3cb28631-76e2-4639-abd1-c144c512a9c0",
+      "notes": "Combina datos NASA procesados con metadata de caché"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -304,
+        244
+      ],
+      "id": "d479403a-8b96-49e0-85ba-533d1d6de254",
+      "name": "Merge Cached and New Data",
+      "notes": "Une rama de caché (TRUE) con rama nueva (FALSE)"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Asegurar que temp_lead_id se propague\nconst item = items[0];\n\n// Buscar temp_lead_id en varios lugares posibles\nlet tempLeadId = null;\n\n// Primero intentar desde el item actual\nif (item.json.temp_lead_id) {\n  tempLeadId = item.json.temp_lead_id;\n}\n\n// Si no está, buscar en el nodo Split Images Generic\nif (!tempLeadId || tempLeadId === 'unknown') {\n  try {\n    const splitImagesData = $node['Split Images Generic'].json;\n    if (Array.isArray(splitImagesData) && splitImagesData.length > 0) {\n      tempLeadId = tempLeadId || splitImagesData[0].temp_lead_id;\n    } else if (splitImagesData && typeof splitImagesData === 'object') {\n      tempLeadId = tempLeadId || splitImagesData.temp_lead_id;\n    }\n  } catch (error) {\n    console.log('Could not access Split Images Generic data:', error.message);\n  }\n}\n\n// Si aún no está, generar uno nuevo\nif (!tempLeadId || tempLeadId === 'unknown') {\n  tempLeadId = 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);\n}\n\nconsole.log('Ensure Project Data - tempLeadId:', tempLeadId);\n\n// Asegurar que todos los datos se pasen con el temp_lead_id\nreturn [{\n  json: {\n    ...item.json,\n    temp_lead_id: tempLeadId\n  },\n  binary: item.binary\n}];"
+      },
+      "name": "Ensure Project Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        244
+      ],
+      "id": "5cd2c8ae-a313-40bd-a2f1-857d279e6ee9"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Usar datos desde caché cuando existe\nconst cacheData = $input.all()[0].json;\n\nconsole.log('Using cached NASA data');\nconsole.log('Cache hash:', cacheData.hash_ubicacion);\n\nreturn [{\n  json: {\n    datos_nasa_mensuales: cacheData.datos_nasa_mensuales,\n    irradiacion_promedio_min: cacheData.irradiacion_promedio_min,\n    irradiacion_promedio_max: cacheData.irradiacion_promedio_max,\n    irradiacion_promedio_anual: cacheData.irradiacion_promedio_anual,\n    cache_saved: false,  // No se guardó, se usó existente\n    cache_id: cacheData.id,\n    hash_ubicacion: cacheData.hash_ubicacion,\n    temp_lead_id: 'unknown'  // Se actualizará en nodos posteriores\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        244
+      ],
+      "id": "5bc0bd64-7a34-413f-b636-a201f6477357",
+      "name": "Use Cached Data"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO cotizaciones_leads_temp (\n  temp_lead_id,\n  recibo_cfe,\n  consumo_kwh_historico,\n  resumen_energetico,\n  sizing_results,\n  irradiacion_cache_id\n) VALUES (\n  '{{ $json.temp_lead_id || \"unknown\" }}',\n  '{{ JSON.stringify($node[\"Combine Data\"].json || {}) }}'::jsonb,\n  '{{ JSON.stringify($node[\"Combine Data\"].json.consumo_historico || []) }}'::jsonb,\n  '{{ JSON.stringify({\n    consumo_max: $node[\"Combine Data\"].json.consumo_max || null,\n    consumo_promedio: Math.round(($node[\"Combine Data\"].json.consumo_historico || []).reduce((sum, item) => sum + item.kwh, 0) / ($node[\"Combine Data\"].json.consumo_historico?.length || 1)),\n    periodos_analizados: $node[\"Combine Data\"].json.consumo_historico?.length || 0\n  }) }}'::jsonb,\n  '{{ JSON.stringify($json.sizing_results || {}) }}'::jsonb,\n  {{ ($json.cache_id || $json.id) ? \"'\" + ($json.cache_id || $json.id) + \"'\" : 'NULL' }}\n) RETURNING id, temp_lead_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        368,
+        244
+      ],
+      "id": "06f2f205-03f2-4074-91a2-23265cc3e907",
+      "name": "Save Temp Quote",
+      "credentials": {
+        "postgres": {
+          "id": "jjHxTq8OTwLBl895",
+          "name": "Postgres account supabase enerbook"
         }
       }
     },
     {
       "parameters": {
-        "text": "={\n  \"role\": \"Extractor Especializado de Recibos CFE\",\n  \"description\": \"Extrae información completa de recibos de la Comisión Federal de Electricidad (CFE) de México. Devuelve ÚNICAMENTE JSON válido sin explicaciones adicionales.\",\n  \"input_data\": \"{{ $json.pages[0].markdown }}\",\n  \"instrucciones\": \"Lee TODO el texto completo antes de extraer. NO cortes información parcial - extrae campos completos. Si un campo no existe, usa null. El resultado debe ser SOLO JSON válido, sin markdown, sin bloques de código, sin explicaciones.\",\n  \"campos_a_extraer\": {\n    \"no_servicio\": \"Busca 'NO. DE SERVICIO:' y extrae el número completo (generalmente 12 dígitos). Ejemplo: 219890418432\",\n    \"RMU\": \"Busca 'RMU:' y extrae el código completo incluyendo números, guiones y texto (incluye TODO hasta el siguiente campo). Ejemplo: 72270 89-04-01 XAXX-010101 061 CFE\",\n    \"cuenta\": \"Busca 'CUENTA:' o 'CFE CUENTA:' y extrae el código alfanumérico completo (generalmente 16 caracteres). Ejemplo: 12DV08C011231540\",\n    \"tarifa\": \"Busca 'TARIFA:' y extrae el código (puede ser numérico como 01 o alfanumérico como GDMTH). Ejemplo: 01\",\n    \"no_medidor\": \"Busca 'NO. MEDIDOR:' o 'NO MEDIDOR:' y extrae el identificador completo. Ejemplo: 0B48J7\",\n    \"multiplicador\": \"Busca 'MULTIPLICADOR:' y extrae el número. Ejemplo: 1\",\n    \"no_hilos\": \"Busca 'NO HILOS:' o 'NO. HILOS:' y extrae el número (generalmente 1, 2 o 3). Ejemplo: 1\",\n    \"nombre\": \"Busca el nombre del cliente al inicio del recibo, antes de la dirección (generalmente en MAYÚSCULAS después del logo CFE). Ejemplo: FELIPE CARRANZA R\",\n    \"direccion\": \"Extrae la dirección COMPLETA del cliente tal como aparece en el recibo, sin modificar. Incluye calle, número, colonia, código postal, ciudad y estado. Ejemplo: 42 NTE 2207 PROLG 22 PINO SUAREZ Y BLVD XONACA DIEZ DE MAYO 08JC.P.72270 PUEBLA,PUE.\",\n    \"direccion_formatted\": \"Reformatea la dirección: 1) Convierte a formato título (primera letra mayúscula). 2) Elimina referencias: NAVE, BODEGA, LOCAL, DEPTO, OFICINA, PISO, INTERIOR + números. 3) Estandariza: AV/AVE a Av., CALLE a Calle, BLVD a Blvd., COL a Col., FRACC a Fracc. 4) Convierte estados: PUE a Puebla, QRO a Querétaro, CDMX/DF a Ciudad de México. 5) Agrega ', México' al final. Formato: 'Calle Número, Colonia, CP Ciudad, Estado, México'\",\n    \"periodo_inicio\": \"Busca 'PERIODO FACTURADO:' y extrae la primera fecha. Convierte del formato 'DD MES AA' (ejemplo: 07 ABR 25) al formato ISO 8601 'YYYY-MM-DD' (ejemplo: 2025-04-07). Meses: ENE=01, FEB=02, MAR=03, ABR=04, MAY=05, JUN=06, JUL=07, AGO=08, SEP=09, OCT=10, NOV=11, DIC=12. Año: 25=2025, 24=2024.\",\n    \"periodo_fin\": \"Busca 'PERIODO FACTURADO:' y extrae la segunda fecha (después del guión o 'al'). Convierte del formato 'DD MES AA' (ejemplo: 06 JUN 25) al formato ISO 8601 'YYYY-MM-DD' (ejemplo: 2025-06-06).\",\n    \"kwh_total\": \"Busca en la tabla de consumo 'Energía (kWh)' la columna 'Total período' y suma TODOS los valores de kWh (Básico + Intermedio + Excedente). Devuelve como número entero sin decimales ni comas. Ejemplo: si Básico=150 e Intermedio=27, entonces 177\",\n    \"total_pagar_mxn\": \"Busca el monto total a pagar (aparece como 'TOTAL A PAGAR:' o 'Total' en tabla de desglose con símbolo $). Elimina símbolos de moneda y comas, convierte a número decimal con punto y 2 decimales. Ejemplo: $242 = 242.00 o 242.56 = 242.56\"\n  },\n  \"validaciones\": \"Verifica que no_servicio tenga al menos 10 dígitos, que cuenta sea alfanumérico, que fechas estén en formato YYYY-MM-DD, que kwh_total y total_pagar_mxn sean numéricos. Si algún campo no se encuentra, asigna null.\",\n  \"ejemplo_salida\": {\n    \"no_servicio\": \"219890418432\",\n    \"RMU\": \"72270 89-04-01 XAXX-010101 061 CFE\",\n    \"cuenta\": \"12DV08C011231540\",\n    \"tarifa\": \"01\",\n    \"no_medidor\": \"0B48J7\",\n    \"multiplicador\": \"1\",\n    \"no_hilos\": \"1\",\n    \"nombre\": \"FELIPE CARRANZA R\",\n    \"direccion\": \"42 NTE 2207 PROLG 22 PINO SUAREZ Y BLVD XONACA DIEZ DE MAYO 08JC.P.72270 PUEBLA,PUE.\",\n    \"direccion_formatted\": \"Calle 42 Nte 2207, Col. Pino Suárez y Blvd Xonaca, 72270 Puebla, Puebla, México\",\n    \"periodo_inicio\": \"2025-04-07\",\n    \"periodo_fin\": \"2025-06-06\",\n    \"kwh_total\": \"177\",\n    \"total_pagar_mxn\": \"242.00\"\n  },\n  \"formato_respuesta\": \"Devuelve ÚNICAMENTE el JSON con los datos extraídos, sin explicaciones, sin markdown, sin bloques de código.\"\n}",
-        "schemaType": "fromJson",
-        "jsonSchemaExample": "{\n  \"no_servicio\": \"219890418432\",\n  \"RMU\": \"72270 89-04-01 XAXX-010101 061 CFE\",\n  \"cuenta\": \"12DV08C011231540\",\n  \"tarifa\": \"01\",\n  \"no_medidor\": \"0B48J7\",\n  \"multiplicador\": \"1\",\n  \"no_hilos\": \"1\",\n  \"nombre\": \"FELIPE CARRANZA R\",\n  \"direccion\": \"42 NTE 2207 PROLG 22 PINO SUAREZ Y BLVD XONACA DIEZ DE MAYO 08JC.P.72270 PUEBLA,PUE.\",\n  \"direccion_formatted\": \"Calle 42 Nte 2207, Col. Pino Suárez y Blvd Xonaca, 72270 Puebla, Puebla, México\",\n  \"periodo_inicio\": \"2025-04-07\",\n  \"periodo_fin\": \"2025-06-06\",\n  \"kwh_total\": \"177\",\n  \"total_pagar_mxn\": \"242.00\"\n}",
-        "options": {}
+        "respondWith": "json",
+        "responseBody": "={{ \n  {\n    \"success\": true,\n    \"temp_lead_id\": $node[\"Save Temp Quote\"].json.temp_lead_id || \"unknown\",\n    \"message\": \"Análisis energético completado\",\n    \"redirect_url\": \"/dashboard?temp_lead_id=\" + ($node[\"Save Temp Quote\"].json.temp_lead_id || \"unknown\"),\n    \"data\": {\n      \"consumo_max\": $json.output?.consumo_max || null,\n      \"sistema_requerido\": $json.sizing?.results?.kWp_needed || null,\n      \"paneles\": $json.sizing?.results?.n_panels || null,\n      \"produccion_anual\": $json.sizing?.results?.yearly_prod || null\n    }\n  }\n}}",
+        "options": {
+          "responseCode": 200
+        }
       },
-      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
-      "typeVersion": 1.2,
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
       "position": [
-        688,
-        -176
+        592,
+        244
       ],
-      "id": "59e4679d-456b-4740-99f4-692cc7132d47",
-      "name": "datos_recibo_frontal_cfe1"
+      "id": "968d5cef-00a1-49bb-ab46-25e6a33815f1",
+      "name": "Respond to Webhook"
     }
   ],
   "connections": {
-    "HTTP Request1": {
+    "Input": {
       "main": [
         [
           {
-            "node": "HTTP Request2",
+            "node": "Split Images Generic",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request2": {
+    "Split Images Generic": {
       "main": [
+        [
+          {
+            "node": "Route by Index",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Index": {
+      "main": [
+        [
+          {
+            "node": "Upload Image 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload Image 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image 1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image 2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OCR Generic 1": {
+      "main": [
+        [
+          {
+            "node": "Merge OCR Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OCR Generic 2": {
+      "main": [
+        [
+          {
+            "node": "Merge OCR Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge OCR Results": {
+      "main": [
+        [
+          {
+            "node": "Content Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Classifier": {
+      "main": [
+        [
+          {
+            "node": "Route by Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Type": {
+      "main": [
+        [
+          {
+            "node": "datos_recibo_frontal_cfe1",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "datos_recibo_posterior_cfe",
@@ -618,11 +828,87 @@
         ]
       ]
     },
-    "Posterior": {
+    "Merge": {
       "main": [
         [
           {
-            "node": "HTTP Request1",
+            "node": "Combine Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Data": {
+      "main": [
+        [
+          {
+            "node": "Google Geocoding API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Cached and New Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Geocoding API": {
+      "main": [
+        [
+          {
+            "node": "Process Geocoding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Geocoding": {
+      "main": [
+        [
+          {
+            "node": "Set Location Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solar Sizing Calculator": {
+      "main": [
+        [
+          {
+            "node": "Save Temp Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "datos_recibo_frontal_cfe1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "datos_recibo_posterior_cfe",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "datos_recibo_frontal_cfe1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
             "type": "main",
             "index": 0
           }
@@ -640,18 +926,62 @@
         ]
       ]
     },
-    "Generate Cache Key": {
+    "HTTP Request3": {
       "main": [
         [
           {
-            "node": "Query Cache",
+            "node": "OCR Generic 1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Query Cache": {
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "OCR Generic 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Annual Solar": {
+      "main": [
+        [
+          {
+            "node": "Calculate Annual Irradiation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Location Data": {
+      "main": [
+        [
+          {
+            "node": "Generate Cache Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Cache Key": {
+      "main": [
+        [
+          {
+            "node": "Query NASA Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query NASA Cache": {
       "main": [
         [
           {
@@ -666,7 +996,7 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Use Cached Data",
             "type": "main",
             "index": 0
           }
@@ -680,7 +1010,18 @@
         ]
       ]
     },
-    "Save to Cache": {
+    "Calculate Annual Irradiation": {
+      "main": [
+        [
+          {
+            "node": "Save to NASA Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to NASA Cache": {
       "main": [
         [
           {
@@ -695,91 +1036,42 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Merge Cached and New Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Cached and New Data": {
+      "main": [
+        [
+          {
+            "node": "Ensure Project Data",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request": {
+    "Ensure Project Data": {
       "main": [
         [
           {
-            "node": "HTTP Request6",
+            "node": "Solar Sizing Calculator",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request6": {
+    "Use Cached Data": {
       "main": [
         [
           {
-            "node": "datos_recibo_frontal_cfe1",
+            "node": "Merge Cached and New Data",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Set": {
-      "main": [
-        [
-          {
-            "node": "Generate Cache Key",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Dirección a Pin1": {
-      "main": [
-        [
-          {
-            "node": "Set",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Calculate Annual Irradiation1": {
-      "main": [
-        [
-          {
-            "node": "Save to Cache",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge Cache Info",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Frontal": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code": {
-      "main": [
-        [
-          {
-            "node": "Save Temp Quote",
-            "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -788,107 +1080,7 @@
       "main": [
         [
           {
-            "node": "Irradiación1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge": {
-      "main": [
-        [
-          {
-            "node": "Ensure TempLeadId",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ensure TempLeadId": {
-      "main": [
-        [
-          {
-            "node": "Code",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Input": {
-      "main": [
-        [
-          {
-            "node": "Code1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code1": {
-      "main": [
-        [
-          {
-            "node": "Switch",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Switch": {
-      "main": [
-        [
-          {
-            "node": "Frontal",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Posterior",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get Annual Solar": {
-      "main": [
-        [
-          {
-            "node": "Calculate Annual Irradiation1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Anthropic Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "datos_recibo_posterior_cfe",
-            "type": "ai_languageModel",
-            "index": 0
-          },
-          {
-            "node": "datos_recibo_frontal_cfe1",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "datos_recibo_frontal_cfe1": {
-      "main": [
-        [
-          {
-            "node": "Dirección a Pin1",
+            "node": "Respond to Webhook",
             "type": "main",
             "index": 0
           }

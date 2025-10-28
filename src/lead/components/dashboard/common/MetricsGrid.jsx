@@ -7,10 +7,10 @@ const MetricsGrid = () => {
 
   // Datos por defecto o calculados
   const consumoPromedio = hasData && metricsData ? `${metricsData.consumoPromedio} kWh` : '272 kWh';
-  const sistemaRequerido = hasData && sistemaData ? `${sistemaData.results?.kWp_needed || 0} kWp` : '3.73 kWp';
-  const nPaneles = hasData && sistemaData ? `${sistemaData.results?.n_panels || 0} paneles` : '7 paneles';
+  const sistemaRequerido = hasData && sistemaData ? `${sistemaData.sistema?.capacidad_sistema_kw || sistemaData.results?.kWp_needed || 0} kWp` : '3.73 kWp';
+  const nPaneles = hasData && sistemaData ? `${sistemaData.sistema?.numero_paneles || sistemaData.results?.n_panels || 0} paneles` : '7 paneles';
   const irradiacionPromedio = hasData && metricsData ? `${metricsData.irradiacionPromedio} kWh/m²/día` : '3.85 kWh/m²/día';
-  const produccionAnual = hasData && sistemaData ? `${sistemaData.results?.yearly_prod?.toLocaleString() || 0} kWh` : '4,023 kWh';
+  const produccionAnual = hasData && sistemaData ? `${(sistemaData.sistema?.produccion_anual_kwh || sistemaData.results?.yearly_prod || 0).toLocaleString()} kWh` : '4,023 kWh';
 
   // Ubicación desde el recibo CFE
   let ubicacion = 'Ciudad de México Centro';

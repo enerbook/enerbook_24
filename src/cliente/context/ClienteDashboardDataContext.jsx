@@ -48,13 +48,43 @@ export const ClienteDashboardDataProvider = ({ children }) => {
       : [];
 
     // Procesar datos de irradiación
-    // Prioridad: 1) irradiacion_cache, 2) sizing_results.inputs, 3) valores por defecto
+    // Prioridad: 1) datos_nasa_mensuales reales, 2) cálculo artificial con promedios
     const irradiacionData = sourceData.irradiacion_cache || sourceData.sizing_results ?
       (() => {
-        // Usar datos del cache de irradiación si están disponibles
         const cacheData = sourceData.irradiacion_cache;
-        const sizingInputs = sourceData.sizing_results?.inputs;
 
+        // Prioridad 1: Usar datos_nasa_mensuales reales si existen
+        const nasaData = cacheData?.datos_nasa_mensuales?.irradiacion_promedio;
+        if (nasaData && Array.isArray(nasaData)) {
+          console.log('🔍 [DEBUG Cliente] Usando datos_nasa_mensuales reales:', nasaData);
+
+          // Primero ordenar por valor para calcular rankings
+          const sortedByValue = [...nasaData]
+            .sort((a, b) => b.irradiacion - a.irradiacion);
+
+          // Crear mapa de rankings (mes -> ranking)
+          const rankingMap = {};
+          sortedByValue.forEach((item, index) => {
+            rankingMap[item.mes] = index + 1;
+          });
+
+          // Retornar en orden cronológico original (usando campo orden)
+          return nasaData
+            .sort((a, b) => a.orden - b.orden)
+            .map(item => ({
+              mes: item.mes,
+              irradiacion: item.irradiacion.toFixed(2),
+              ranking: `#${rankingMap[item.mes]}`,
+              valor: parseFloat(item.irradiacion),
+              value: parseFloat(item.irradiacion),
+              label: item.mes.substring(0, 3),
+              fullLabel: item.mes,
+              orden: item.orden
+            }));
+        }
+
+        // Fallback: Generar datos artificiales (código anterior)
+        const sizingInputs = sourceData.sizing_results?.inputs;
         const promedioAnual = cacheData?.irradiacion_promedio_anual
           || sizingInputs?.irr_avg_day
           || 5.5;

@@ -62,19 +62,8 @@ const ConsumoTab = () => {
                       <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-2 lg:py-3 px-2 lg:px-4 font-medium text-gray-900 text-xs lg:text-sm">{item.periodo}</td>
                         <td className="py-2 lg:py-3 px-2 lg:px-4 text-gray-900 text-xs lg:text-sm">{item.consumo}</td>
-                        <td className="py-2 lg:py-3 px-2 lg:px-4">
-                          <span
-                            className="inline-block px-2 lg:px-3 py-0.5 lg:py-1 rounded-full text-white text-xs lg:text-sm font-medium"
-                            style={{
-                              background: item.color === 'gradient'
-                                ? 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'
-                                : item.color === 'red'
-                                  ? '#DC2626'
-                                  : '#16A34A'
-                            }}
-                          >
-                            {item.porcentaje}
-                          </span>
+                        <td className="py-2 lg:py-3 px-2 lg:px-4 text-gray-900 text-xs lg:text-sm">
+                          {item.porcentaje}
                         </td>
                       </tr>
                     ))
