@@ -295,15 +295,18 @@ export const clientService = {
     if (cotizacionError) throw cotizacionError;
 
     // Step 2: Create initial project automatically
-    // Generate project details from lead data
+    // Use AI-generated titles if available, otherwise fallback to generated ones
     const sizingResults = leadData.sizing_results || {};
     const capacidadSistema = sizingResults.capacidad_sistema_kw || 0;
     const ahorro = sizingResults.ahorro_promedio_mensual || 0;
 
-    const projectTitle = `Sistema Solar ${capacidadSistema > 0 ? `${capacidadSistema.toFixed(1)} kW` : 'Residencial'}`;
-    const projectDescription = `Proyecto generado automáticamente desde tu análisis de recibo CFE. ${
-      ahorro > 0 ? `Ahorro estimado: $${ahorro.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} MXN/mes.` : ''
-    } Sistema dimensionado para tu consumo energético.`.trim();
+    const projectTitle = leadData.project_title ||
+      `Sistema Solar ${capacidadSistema > 0 ? `${capacidadSistema.toFixed(1)} kW` : 'Residencial'}`;
+
+    const projectDescription = leadData.project_description ||
+      `Proyecto generado automáticamente desde tu análisis de recibo CFE. ${
+        ahorro > 0 ? `Ahorro estimado: $${ahorro.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} MXN/mes.` : ''
+      } Sistema dimensionado para tu consumo energético.`.trim();
 
     // Calculate deadline: 30 days from now
     const fechaLimite = new Date();

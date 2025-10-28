@@ -46,6 +46,8 @@ export const leadService = {
         resumen_energetico,
         sizing_results,
         irradiacion_cache_id,
+        project_title,
+        project_description,
         irradiacion_cache:irradiacion_cache_id (
           id,
           irradiacion_promedio_anual,
