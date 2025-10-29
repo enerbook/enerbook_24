@@ -2,7 +2,20 @@
   "permissions": {
     "allow": [
       "Bash(taskkill:*)",
-      "Bash(del nul)"
+      "Bash(del nul)",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run web:*)",
+      "Bash(test:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Read(//private/tmp/**)",
+      "Bash(python3:*)",
+      "Bash(pkill:*)",
+      "Bash(killall:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

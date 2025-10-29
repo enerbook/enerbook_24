@@ -1,42 +1,7 @@
 import React from 'react';
 import { FiFileText, FiDollarSign, FiActivity, FiArrowLeft, FiClipboard, FiCreditCard } from 'react-icons/fi';
 import { useRouter } from 'expo-router';
-
-// Navigation button component
-const NavButton = ({ item, activeTab, onTabChange, onClose }) => {
-  const Icon = item.icon;
-  const isActive = activeTab === item.id;
-
-  const handleClick = () => {
-    if (item.action) {
-      item.action();
-    } else {
-      onTabChange(item.id);
-      if (onClose) onClose();
-    }
-  };
-
-  return (
-    <button
-      key={item.id}
-      onClick={handleClick}
-      className={`w-full flex items-center px-2 py-1.5 text-left rounded-md transition-colors ${
-        isActive
-          ? 'bg-white text-gray-900 shadow-sm'
-          : 'text-gray-400 hover:bg-white hover:text-gray-700'
-      }`}>
-      <div className={`w-5 h-5 rounded-md flex items-center justify-center mr-2 ${
-          isActive ? 'bg-gray-800' : 'bg-transparent'
-        }`}>
-        <Icon
-          className={`w-2.5 h-2.5 ${isActive ? 'text-white' : ''}`}
-          style={isActive ? {} : { color: '#F59E0B' }}
-        />
-      </div>
-      <span className="text-sm font-medium">{item.label}</span>
-    </button>
-  );
-};
+import NavButton from '../common/NavButton';
 
 const ProyectoSidebar = ({ activeTab, onTabChange, onClose, proyecto }) => {
   const router = useRouter();
@@ -75,15 +40,26 @@ const ProyectoSidebar = ({ activeTab, onTabChange, onClose, proyecto }) => {
 
       <nav className="flex-1 px-2 mt-4 overflow-y-auto">
         <div className="space-y-1">
-          {sidebarItems.map((item) => (
-            <NavButton
-              key={item.id}
-              item={item}
-              activeTab={activeTab}
-              onTabChange={onTabChange}
-              onClose={onClose}
-            />
-          ))}
+          {sidebarItems.map((item) => {
+            const isActive = activeTab === item.id;
+            const handleClick = () => {
+              if (item.action) {
+                item.action();
+              } else {
+                onTabChange(item.id);
+                if (onClose) onClose();
+              }
+            };
+
+            return (
+              <NavButton
+                key={item.id}
+                item={item}
+                isActive={isActive}
+                onClick={handleClick}
+              />
+            );
+          })}
         </div>
       </nav>
 
