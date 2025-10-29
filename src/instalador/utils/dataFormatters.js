@@ -25,8 +25,8 @@ export const formatProjectData = (proyecto) => {
   }
 
   // Usar datos de dimensionamiento ya calculados desde n8n/backend
-  const powerInfo = sizingResults?.kWp_needed && sizingResults?.n_panels
-    ? `${sizingResults.kWp_needed} kW (${sizingResults.n_panels} paneles)`
+  const powerInfo = sizingResults?.sistema?.capacidad_sistema_kw && sizingResults?.sistema?.numero_paneles
+    ? `${sizingResults.sistema.capacidad_sistema_kw} kW (${sizingResults.sistema.numero_paneles} paneles)`
     : 'Información no disponible';
 
   return {
@@ -48,20 +48,24 @@ export const formatProjectData = (proyecto) => {
           year: 'numeric'
         })
       : 'Sin fecha límite',
-    capacity: sizingResults?.kWp_needed ? `${sizingResults.kWp_needed} kWp` : 'N/A',
-    production: sizingResults?.yearly_prod
-      ? `${sizingResults.yearly_prod.toLocaleString()} kWh/año`
+    capacity: sizingResults?.sistema?.capacidad_sistema_kw ? `${sizingResults.sistema.capacidad_sistema_kw} kWp` : 'N/A',
+    production: sizingResults?.sistema?.produccion_anual_kwh
+      ? `${sizingResults.sistema.produccion_anual_kwh.toLocaleString()} kWh/año`
       : 'No calculada',
     description: proyecto.descripcion || 'Sin descripción',
     clientName: proyecto.usuarios?.nombre || reciboData?.nombre || 'Cliente no especificado',
     clientEmail: proyecto.usuarios?.correo_electronico,
-    region: reciboData?.region || irradiacionData?.region_nombre || 'México',
+    region: (irradiacionData?.region_nombre && irradiacionData.region_nombre !== 'undefined')
+      ? irradiacionData.region_nombre
+      : reciboData?.region || 'No especificada',
     rawData: proyecto
   };
 };
 
 /**
  * Formatea datos de cotización
+ * NOTA: proyecto puede ser null si el proyecto cambió de estado (ej: 'abierto' → 'adjudicado')
+ * debido a políticas RLS que limitan visibilidad de proyectos no abiertos
  */
 export const formatQuotationData = (cotizacion) => {
   const proyecto = cotizacion.proyectos;
@@ -98,7 +102,7 @@ export const formatQuotationData = (cotizacion) => {
 
   return {
     id: cotizacion.id,
-    projectName: proyecto?.titulo || `Proyecto ${proyecto?.id?.slice(0, 8)}`,
+    projectName: proyecto?.titulo || `Proyecto ${cotizacion.proyectos_id?.slice(0, 8) || 'sin ID'}`,
     clientName: 'Cliente',
     clientEmail: null,
     sentDate: new Date(cotizacion.created_at).toLocaleDateString('es-MX'),

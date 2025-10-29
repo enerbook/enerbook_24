@@ -7,13 +7,16 @@ import { supabase } from '../../lib/supabaseClient';
 
 export const quotationService = {
   // Get quotations for an installer with full project details
-  getInstallerQuotations: async (installerId) => {
-    const { data, error } = await supabase
+  // estado: 'pendiente' | 'aceptada' | 'rechazada' | null (todas)
+  getInstallerQuotations: async (installerId, estado = null) => {
+    let query = supabase
       .from('cotizaciones_final')
       .select(`
         *,
         proyectos:proyectos_id (
+          id,
           titulo,
+          descripcion,
           usuarios:usuarios_id (
             nombre,
             correo_electronico
@@ -23,8 +26,14 @@ export const quotationService = {
           )
         )
       `)
-      .eq('proveedores_id', installerId)
-      .order('created_at', { ascending: false });
+      .eq('proveedores_id', installerId);
+
+    // Filtrar por estado si se especifica
+    if (estado) {
+      query = query.eq('estado', estado);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) throw error;
     return data;

@@ -18,6 +18,7 @@ export default function ContratoDetailPage() {
   const [proyecto, setProyecto] = useState(null);
   const [cotizacion, setCotizacion] = useState(null);
   const [cliente, setCliente] = useState(null);
+  const [installerData, setInstallerData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,36 +30,22 @@ export default function ContratoDetailPage() {
   const loadContratoData = async () => {
     setLoading(true);
     try {
+      // Obtener el contrato con su proyecto directamente vinculado
       const { data: contratoData, error } = await supabase
         .from('contratos')
         .select(`
           *,
-          proyectos:cotizaciones_final_id (
-            proyectos_id,
-            proyectos:proyectos_id (
-              id,
-              titulo,
-              descripcion,
-              estado,
-              fecha_limite,
-              created_at,
-              updated_at,
-              cotizaciones_inicial:cotizaciones_inicial_id (
-                recibo_cfe,
-                consumo_kwh_historico,
-                resumen_energetico,
-                sizing_results,
-                irradiacion_cache:irradiacion_cache_id (
-                  irradiacion_promedio_anual,
-                  region_nombre
-                )
-              )
-            )
+          cotizacion:cotizaciones_final_id (*),
+          proyecto:proyectos_id (
+            id,
+            titulo,
+            descripcion,
+            estado,
+            fecha_limite,
+            created_at,
+            updated_at
           ),
-          cotizaciones_final:cotizaciones_final_id (
-            *
-          ),
-          usuarios:usuarios_id (
+          cliente:usuarios_id (
             id,
             nombre,
             correo_electronico,
@@ -76,15 +63,83 @@ export default function ContratoDetailPage() {
         return;
       }
 
+      console.log('🔍 DEBUG - Datos del contrato completo:', {
+        contratoId: contratoData.id,
+        proyectos_id: contratoData.proyectos_id,
+        cotizacion_proyectos_id: contratoData.cotizacion?.proyectos_id,
+        hasProyecto: !!contratoData.proyecto,
+        proyectoData: contratoData.proyecto,
+        contratoKeys: Object.keys(contratoData)
+      });
+
+      // Si el contrato no tiene proyectos_id, intentar obtenerlo de la cotización
+      let proyectoFinal = contratoData.proyecto;
+
+      if (!proyectoFinal && contratoData.proyectos_id) {
+        console.log('⚠️ Proyecto null pero contrato tiene proyectos_id, buscando con maybeSingle:', contratoData.proyectos_id);
+
+        const { data: proyectoFromId, error: proyectoError } = await supabase
+          .from('proyectos')
+          .select('*')
+          .eq('id', contratoData.proyectos_id)
+          .maybeSingle();
+
+        if (proyectoFromId) {
+          console.log('✅ Proyecto encontrado desde contrato.proyectos_id:', proyectoFromId.titulo);
+          proyectoFinal = proyectoFromId;
+        } else {
+          console.log('❌ Proyecto no existe en BD con ID:', contratoData.proyectos_id, 'Error:', proyectoError);
+
+          // Verificar si existe en la cotización
+          if (contratoData.cotizacion?.proyectos_id) {
+            console.log('🔄 Intentando desde cotización:', contratoData.cotizacion.proyectos_id);
+            const { data: proyectoFromCotizacion, error: cotError } = await supabase
+              .from('proyectos')
+              .select('*')
+              .eq('id', contratoData.cotizacion.proyectos_id)
+              .maybeSingle();
+
+            if (proyectoFromCotizacion) {
+              console.log('✅ Proyecto encontrado desde cotización:', proyectoFromCotizacion.titulo);
+              proyectoFinal = proyectoFromCotizacion;
+            } else {
+              console.log('❌ Proyecto tampoco existe con ID de cotización:', cotError);
+            }
+          }
+        }
+      }
+
       setContrato(contratoData);
-      setProyecto(contratoData.proyectos?.proyectos || null);
-      setCotizacion(contratoData.cotizaciones_final || null);
-      setCliente(contratoData.usuarios || null);
+      setProyecto(proyectoFinal || null);
+      setCotizacion(contratoData.cotizacion || null);
+      setCliente(contratoData.cliente || null);
+
+      // Cargar datos del instalador (proveedor)
+      const { data: proveedorData, error: proveedorError } = await supabase
+        .from('proveedores')
+        .select('*')
+        .eq('id', installer.id)
+        .single();
+
+      if (!proveedorError && proveedorData) {
+        setInstallerData(proveedorData);
+      }
 
       console.log('✅ Contract data loaded:', {
         contrato: contratoData.numero_contrato,
-        proyecto: contratoData.proyectos?.proyectos?.titulo,
-        cliente: contratoData.usuarios?.nombre
+        proyecto: contratoData.proyecto?.titulo,
+        proyectoId: contratoData.proyectos_id,
+        cliente: contratoData.cliente?.nombre,
+        instalador: proveedorData?.nombre_empresa
+      });
+
+      console.log('🔍 Full contract data structure:', {
+        hasCliente: !!contratoData.cliente,
+        hasCotizacion: !!contratoData.cotizacion,
+        hasProyecto: !!contratoData.proyecto,
+        clienteKeys: contratoData.cliente ? Object.keys(contratoData.cliente) : null,
+        cotizacionKeys: contratoData.cotizacion ? Object.keys(contratoData.cotizacion) : null,
+        proyectoKeys: contratoData.proyecto ? Object.keys(contratoData.proyecto) : null
       });
     } catch (error) {
       console.error('Error loading contract data:', error);
@@ -98,7 +153,7 @@ export default function ContratoDetailPage() {
       return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto mb-4"></div>
             <p className="text-sm text-gray-600">Cargando contrato...</p>
           </div>
         </div>
@@ -123,6 +178,7 @@ export default function ContratoDetailPage() {
             proyecto={proyecto}
             cotizacion={cotizacion}
             cliente={cliente}
+            instalador={installerData}
             onReload={loadContratoData}
           />
         );

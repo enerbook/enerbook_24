@@ -29,8 +29,7 @@ const NavButton = ({ item, activeTab, onTabChange, onClose }) => {
           isActive ? 'bg-gray-800' : 'bg-transparent'
         }`}>
         <Icon
-          className={`w-2.5 h-2.5 ${isActive ? 'text-white' : ''}`}
-          style={isActive ? {} : { color: '#F59E0B' }}
+          className={`w-2.5 h-2.5 ${isActive ? 'text-white' : 'text-brand'}`}
         />
       </div>
       <span className="text-sm font-medium">{item.label}</span>
@@ -54,16 +53,13 @@ const ContratoSidebar = ({ activeTab, onTabChange, onClose, contrato, proyecto }
   ];
 
   const getEstadoBadgeColor = (estado) => {
-    switch (estado) {
-      case 'activo':
-        return 'bg-green-100 text-green-800';
-      case 'completado':
-        return 'bg-blue-100 text-blue-800';
-      case 'cancelado':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+    // Todos los estados usan el degradado naranja Enerbook con letras blancas
+    return 'bg-gradient-to-br from-brand to-brandLight text-white';
+  };
+
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
   return (
@@ -88,7 +84,7 @@ const ContratoSidebar = ({ activeTab, onTabChange, onClose, contrato, proyecto }
             )}
             {contrato?.estado && (
               <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${getEstadoBadgeColor(contrato.estado)}`}>
-                {contrato.estado}
+                {capitalizeFirstLetter(contrato.estado)}
               </span>
             )}
           </div>
@@ -116,7 +112,7 @@ const ContratoSidebar = ({ activeTab, onTabChange, onClose, contrato, proyecto }
           className="w-full flex items-center px-2 py-1.5 text-left rounded-md transition-colors text-gray-600 hover:bg-white hover:text-gray-900"
         >
           <div className="w-5 h-5 rounded-md flex items-center justify-center mr-2 bg-transparent">
-            <FiArrowLeft className="w-2.5 h-2.5" style={{ color: '#F59E0B' }} />
+            <FiArrowLeft className="w-2.5 h-2.5 text-brand" />
           </div>
           <span className="text-sm font-medium">Volver a Proyectos</span>
         </button>

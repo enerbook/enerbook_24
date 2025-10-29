@@ -175,15 +175,17 @@ export const InstallerProvider = ({ children }) => {
 
   /**
    * Cargar cotizaciones del instalador
+   * Por defecto solo carga cotizaciones pendientes (en revisión por el cliente)
+   * Las cotizaciones aceptadas se muestran en "Proyectos" como contratos
    */
-  const loadQuotations = useCallback(async () => {
+  const loadQuotations = useCallback(async (estado = 'pendiente') => {
     if (!installer?.id) return [];
 
     try {
       setQuotationsLoading(true);
       setQuotationsError(null);
 
-      const cotizaciones = await quotationService.getInstallerQuotations(installer.id);
+      const cotizaciones = await quotationService.getInstallerQuotations(installer.id, estado);
       setQuotations(cotizaciones || []);
       return cotizaciones;
     } catch (error) {
@@ -239,7 +241,7 @@ export const InstallerProvider = ({ children }) => {
 
   /**
    * Cargar mis proyectos (proyectos con contratos activos)
-   * OPTIMIZADO: Query simplificada sin joins profundos
+   * Incluye información completa de cotizaciones para mostrar en cards
    */
   const loadMyProjects = useCallback(async () => {
     if (!installer?.id) return [];
@@ -248,30 +250,10 @@ export const InstallerProvider = ({ children }) => {
       setMyProjectsLoading(true);
       setMyProjectsError(null);
 
-      // Query simplificada - solo datos esenciales
-      const { data: contratos, error } = await supabase
-        .from('contratos')
-        .select(`
-          id,
-          numero_contrato,
-          precio_total_sistema,
-          tipo_pago_seleccionado,
-          estado,
-          fecha_firma,
-          fecha_inicio_instalacion,
-          fecha_completado,
-          estado_pago,
-          created_at,
-          cotizaciones_final_id,
-          usuarios_id
-        `)
-        .eq('proveedores_id', installer.id)
-        .order('created_at', { ascending: false })
-        .limit(20); // Limitar resultados iniciales
+      // Usar contractService para obtener contratos con toda la información
+      const contratos = await contractService.getInstallerContracts(installer.id);
 
-      if (error) throw error;
-
-      // Transformar datos de forma simple
+      // Transformar datos para formato consistente
       const proyectosConContratos = contratos?.map(contrato => ({
         contrato: {
           id: contrato.id,
@@ -283,11 +265,12 @@ export const InstallerProvider = ({ children }) => {
           fecha_inicio_instalacion: contrato.fecha_inicio_instalacion,
           fecha_completado: contrato.fecha_completado,
           estado_pago: contrato.estado_pago,
+          created_at: contrato.created_at,
         },
-        // Los datos de proyecto y cliente se cargarán bajo demanda cuando se necesiten
-        proyecto: null,
-        cotizacion: null,
-        cliente: null,
+        proyecto: contrato.cotizaciones_final?.proyectos || null,
+        cotizacion: contrato.cotizaciones_final || null,
+        cliente: contrato.usuarios || null,
+        resenas: contrato.resenas || [],
       })) || [];
 
       setMyProjects(proyectosConContratos);

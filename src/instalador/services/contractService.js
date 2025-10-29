@@ -22,7 +22,9 @@ export const contractService = {
           inversores,
           estructura,
           sistema_electrico,
+          precio_final,
           proyectos:proyectos_id (
+            id,
             titulo,
             descripcion,
             cotizaciones_inicial:cotizaciones_inicial_id (

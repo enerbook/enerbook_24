@@ -105,6 +105,7 @@ export const contractService = {
       .from('contratos')
       .insert([{
         cotizaciones_final_id: quotationId,
+        proyectos_id: quotation.proyectos_id,
         usuarios_id: userId,
         proveedores_id: quotation.proveedores_id,
         numero_contrato: contractNumber,

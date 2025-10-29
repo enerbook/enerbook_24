@@ -20,6 +20,9 @@ const InstaladorPanelLayout = () => {
     }
   }, [segments]);
 
+  // Detectar si estamos en una ruta de contrato (no debe usar InstallerAppLayout)
+  const isContratoRoute = segments.includes('contrato');
+
   // Protección de ruta: verificar que sea instalador
   useEffect(() => {
     if (loading) return;
@@ -47,6 +50,17 @@ const InstaladorPanelLayout = () => {
     return null;
   }
 
+  // Si estamos en ruta de contrato, NO usar InstallerAppLayout
+  // El layout de contrato manejará su propia UI con doble sidebar
+  if (isContratoRoute) {
+    return (
+      <InstallerProvider>
+        <Stack screenOptions={{ headerShown: false }} />
+      </InstallerProvider>
+    );
+  }
+
+  // Para todas las demás rutas, usar el layout normal
   return (
     <InstallerProvider>
       <InstallerAppLayout activeTab={activeTab}>

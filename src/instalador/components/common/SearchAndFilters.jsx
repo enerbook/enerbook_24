@@ -101,7 +101,7 @@ const SearchAndFilters = ({
         {/* Contador de filtros activos y botón limpiar */}
         {activeFiltersCount > 0 && (
           <div className="flex items-center gap-2 ml-auto">
-            <span className="px-3 py-1 rounded-full bg-orange-100 text-orange-600 text-xs font-medium">
+            <span className="px-3 py-1 rounded-full bg-gradient-to-br from-brand to-brandLight text-white text-xs font-medium">
               {activeFiltersCount} {activeFiltersCount === 1 ? 'filtro activo' : 'filtros activos'}
             </span>
             <button

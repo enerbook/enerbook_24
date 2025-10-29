@@ -68,16 +68,13 @@ const ProjectsTab = () => {
   };
 
   const getEstadoBadgeColor = (estado) => {
-    switch (estado) {
-      case 'activo':
-        return 'bg-green-100 text-green-800';
-      case 'completado':
-        return 'bg-blue-100 text-blue-800';
-      case 'cancelado':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+    // Todos los estados usan el degradado naranja Enerbook con letras blancas
+    return 'bg-gradient-to-br from-brand to-brandLight text-white';
+  };
+
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
   const getEstadoPagoColor = (estadoPago) => {
@@ -166,82 +163,85 @@ const ProjectsTab = () => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
           {filteredProjects.map((item) => {
-            const { contrato, proyecto, cliente } = item;
+            const { contrato, proyecto, cotizacion, cliente } = item;
+
+            // Calcular datos de la cotización
+            const paneles = cotizacion?.paneles;
+            const precioFinal = cotizacion?.precio_final;
+            const sizingResults = proyecto?.cotizaciones_inicial?.sizing_results;
+
+            // Capacidad del sistema
+            let systemCapacity = 'No especificada';
+            if (precioFinal?.capacidad_sistema_kwp) {
+              systemCapacity = `${precioFinal.capacidad_sistema_kwp.toFixed(2)} kWp`;
+            } else if (paneles?.cantidad && paneles?.potencia_wp) {
+              const capacityKw = (paneles.cantidad * paneles.potencia_wp) / 1000;
+              systemCapacity = `${capacityKw.toFixed(2)} kWp`;
+            } else if (sizingResults?.sistema?.capacidad_sistema_kw) {
+              systemCapacity = `${sizingResults.sistema.capacidad_sistema_kw} kWp`;
+            }
+
+            // Producción estimada
+            let production = 'No calculada';
+            if (precioFinal?.produccion_anual_kwh) {
+              production = `${precioFinal.produccion_anual_kwh.toLocaleString()} kWh/año`;
+            } else if (sizingResults?.sistema?.produccion_anual_kwh) {
+              production = `${sizingResults.sistema.produccion_anual_kwh.toLocaleString()} kWh/año`;
+            }
 
             return (
-              <div key={contrato.id} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow">
-                {/* Header */}
-                <div className="mb-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-lg font-bold text-gray-900">
-                      Contrato {contrato.numero_contrato}
-                    </h3>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEstadoBadgeColor(contrato.estado)}`}>
-                      {contrato.estado}
-                    </span>
+              <div
+                key={contrato.id}
+                className="p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-100 hover:border-gray-200 transition-all"
+                style={{backgroundColor: '#fcfcfc'}}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                  <div className="flex-1">
+                    <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-3 mb-2">
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                        {proyecto?.titulo || `Contrato ${contrato.numero_contrato}`}
+                      </h3>
+                      <span
+                        className={`inline-block self-start xs:self-auto px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium ${getEstadoBadgeColor(contrato.estado)}`}
+                      >
+                        {capitalizeFirstLetter(contrato.estado)}
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-gray-600">
+                      Cliente: {contrato?.estado_pago === 'succeeded' ? (cliente?.nombre || 'N/A') : 'Se mostrará cuando el cliente realice el pago'}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-600">
-                    {proyecto?.titulo || 'Ver detalles para más información'}
-                  </p>
-                </div>
-
-                {/* Cliente Info - Optimizado */}
-                <div className="mb-4 pb-4 border-b border-gray-100">
-                  <p className="text-sm text-gray-600 mb-1">Cliente</p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {cliente?.nombre || 'Cargando...'}
-                  </p>
-                </div>
-
-                {/* Contract Details */}
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Monto Total</span>
-                    <span className="text-sm font-semibold text-gray-900">
+                  <div className="text-left sm:text-right">
+                    <p className="text-xs sm:text-sm text-gray-600 mb-1">Monto Total</p>
+                    <p className="text-lg sm:text-xl font-bold text-gray-900">
                       {formatCurrency(contrato.precio_total_sistema)}
-                    </span>
+                    </p>
                   </div>
+                </div>
 
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Tipo de Pago</span>
-                    <span className="text-sm text-gray-900 capitalize">
-                      {contrato.tipo_pago_seleccionado}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Estado de Pago</span>
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${getEstadoPagoColor(contrato.estado_pago)}`}>
-                      {contrato.estado_pago}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Fecha de Firma</span>
-                    <span className="text-sm text-gray-900">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-100 mb-4">
+                  <div>
+                    <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Fecha de Firma</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                       {formatDate(contrato.fecha_firma)}
-                    </span>
+                    </p>
                   </div>
-
-                  {contrato.fecha_inicio_instalacion && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Inicio de Instalación</span>
-                      <span className="text-sm text-gray-900">
-                        {formatDate(contrato.fecha_inicio_instalacion)}
-                      </span>
-                    </div>
-                  )}
-
-                  {contrato.fecha_completado && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Fecha de Completado</span>
-                      <span className="text-sm text-gray-900">
-                        {formatDate(contrato.fecha_completado)}
-                      </span>
-                    </div>
-                  )}
+                  <div>
+                    <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Capacidad del Sistema</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{systemCapacity}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Paneles</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                      {paneles?.cantidad || 'N/A'} unidades
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Producción Estimada</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{production}</p>
+                  </div>
                 </div>
 
                 {/* Actions */}

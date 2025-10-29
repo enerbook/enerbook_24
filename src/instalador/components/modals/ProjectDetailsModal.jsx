@@ -57,6 +57,11 @@ const ProjectDetailsModal = ({ project, setShowProjectModal }) => {
               </div>
 
               <div>
+                <h3 className="text-sm font-medium text-gray-600 mb-2">Producción Estimada</h3>
+                <p className="text-sm text-gray-900">{project.production || 'No calculada'}</p>
+              </div>
+
+              <div>
                 <h3 className="text-sm font-medium text-gray-600 mb-2">Región</h3>
                 <p className="text-sm text-gray-900">
                   {project.region || 'N/A'}

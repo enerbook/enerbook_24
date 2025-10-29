@@ -9,6 +9,7 @@ module.exports = {
       colors: {
         ink: "#090e1a",
         brand: "#f59e0b",
+        brandLight: "#FFCB45", // Color secundario del degradado naranja Enerbook
         cardBg: "#fcfcfc",
         cardBorder: "#e5e7eb"  // gray-200 - Borde estándar para todas las cards
       },

@@ -1,21 +1,51 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useInstaller } from '../../context/InstallerContext';
 import { formatQuotationData } from '../../utils/dataFormatters';
 import { SkeletonGrid } from '../common/SkeletonLoader';
 import SearchAndFilters from '../common/SearchAndFilters';
 import usePersistedFilters from '../../hooks/usePersistedFilters';
+import { quotationService } from '../../services/quotationService';
 
 const MisCotizacionesTab = ({ setSelectedQuotation, setShowQuotationModal }) => {
   // Usar filtros persistidos
   const { filters, updateFilters, clearFilters } = usePersistedFilters('mis_cotizaciones');
 
-  // Usar context para cotizaciones
-  const { quotations: rawQuotations, quotationsLoading, quotationsError } = useInstaller();
+  // Estado para alternar entre cotizaciones pendientes y rechazadas
+  const [showRejected, setShowRejected] = useState(false);
+  const [rejectedQuotations, setRejectedQuotations] = useState([]);
+  const [loadingRejected, setLoadingRejected] = useState(false);
+
+  // Usar context para cotizaciones (solo pendientes por defecto)
+  const { quotations: rawQuotations, quotationsLoading, quotationsError, installer } = useInstaller();
+
+  // Cargar cotizaciones rechazadas cuando se solicite
+  const loadRejectedQuotations = async () => {
+    if (!installer?.id) return;
+
+    setLoadingRejected(true);
+    try {
+      const rejected = await quotationService.getInstallerQuotations(installer.id, 'rechazada');
+      setRejectedQuotations(rejected || []);
+    } catch (error) {
+      console.error('Error loading rejected quotations:', error);
+    } finally {
+      setLoadingRejected(false);
+    }
+  };
+
+  // Handler para toggle entre pendientes y rechazadas
+  const handleToggleRejected = async () => {
+    if (!showRejected && rejectedQuotations.length === 0) {
+      await loadRejectedQuotations();
+    }
+    setShowRejected(!showRejected);
+  };
 
   // Formatear cotizaciones usando utilidad compartida
   const quotations = useMemo(() => {
-    return rawQuotations?.map(formatQuotationData) || [];
-  }, [rawQuotations]);
+    const dataToFormat = showRejected ? rejectedQuotations : rawQuotations;
+    return dataToFormat?.map(formatQuotationData) || [];
+  }, [rawQuotations, rejectedQuotations, showRejected]);
 
   // Aplicar filtros y búsqueda
   const filteredQuotations = useMemo(() => {
@@ -55,16 +85,34 @@ const MisCotizacionesTab = ({ setSelectedQuotation, setShowQuotationModal }) => 
   }, [quotations, filters]);
 
 
+  const isLoading = showRejected ? loadingRejected : quotationsLoading;
+
   return (
     <div className="w-full mx-auto">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Mis Cotizaciones Enviadas</h2>
-        <p className="text-sm text-gray-600">
-          Revisa el estado de las cotizaciones que has enviado
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Mis Cotizaciones Enviadas</h2>
+            <p className="text-sm text-gray-600">
+              Revisa el estado de las cotizaciones que has enviado
+            </p>
+          </div>
+
+          {/* Toggle para ver historial de rechazadas */}
+          <button
+            onClick={handleToggleRejected}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              showRejected
+                ? 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+                : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+            }`}
+          >
+            {showRejected ? 'Ver Pendientes' : 'Ver Historial de Rechazadas'}
+          </button>
+        </div>
       </div>
 
-      {!quotationsLoading && !quotationsError && quotations.length > 0 && (
+      {!isLoading && !quotationsError && quotations.length > 0 && (
         <SearchAndFilters
           filters={filters}
           onFiltersChange={updateFilters}
@@ -83,7 +131,7 @@ const MisCotizacionesTab = ({ setSelectedQuotation, setShowQuotationModal }) => 
         />
       )}
 
-      {quotationsLoading ? (
+      {isLoading ? (
         <SkeletonGrid type="quotation" count={6} columns={1} />
       ) : quotationsError ? (
         <div className="text-center py-12">
