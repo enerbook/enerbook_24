@@ -2,6 +2,15 @@ import { supabase } from '../../lib/supabaseClient';
 import { checkAdminAccess, hasAdminLevel } from './auth';
 import { calculateDaysDifference, calculateHoursDifference } from '../utils/formatters';
 import logger from '../utils/logger';
+import {
+  STRIPE_FEES,
+  PROJECT_STATUS_COLORS,
+  STRIPE_ACCOUNT_COLORS,
+  PAYMENT_TYPE_COLORS,
+  MILESTONE_STATUS_COLORS,
+  ALERT_THRESHOLDS,
+  CHART_COLORS
+} from '../config/constants';
 
 export const adminQueries = {
   // Validar acceso admin antes de ejecutar queries
@@ -277,14 +286,14 @@ export const adminQueries = {
 
         alertasList.push({
           id: `milestone-${milestone.id}`,
-          tipo: diasVencido > 7 ? 'critica' : 'advertencia',
+          tipo: diasVencido > ALERT_THRESHOLDS.MILESTONE_CRITICAL_DAYS ? 'critica' : 'advertencia',
           categoria: 'Milestone',
           titulo: 'Milestone Vencido',
           descripcion: `${milestone.descripcion || 'Milestone'} vencido hace ${diasVencido} días`,
           fecha: milestone.fecha_objetivo,
           accion: 'Contactar al proveedor',
           icono: 'calendar',
-          color: diasVencido > 7 ? '#090e1a' : '#f59e0b'
+          color: diasVencido > ALERT_THRESHOLDS.MILESTONE_CRITICAL_DAYS ? CHART_COLORS.dark : CHART_COLORS.warning
         });
       });
 
@@ -301,14 +310,14 @@ export const adminQueries = {
 
         alertasList.push({
           id: `webhook-${webhook.id}`,
-          tipo: horasDesde > 24 ? 'critica' : 'advertencia',
+          tipo: horasDesde > ALERT_THRESHOLDS.WEBHOOK_CRITICAL_HOURS ? 'critica' : 'advertencia',
           categoria: 'Webhook',
           titulo: 'Webhook No Procesado',
           descripcion: `Webhook tipo ${webhook.event_type} sin procesar desde hace ${horasDesde} horas`,
           fecha: webhook.created_at,
           accion: 'Revisar logs de Stripe',
           icono: 'alert-circle',
-          color: horasDesde > 24 ? '#090e1a' : '#f59e0b'
+          color: horasDesde > ALERT_THRESHOLDS.WEBHOOK_CRITICAL_HOURS ? CHART_COLORS.dark : CHART_COLORS.warning
         });
       });
 
@@ -325,14 +334,14 @@ export const adminQueries = {
         if (diasDesde > 3) {
           alertasList.push({
             id: `onboarding-${proveedor.id}`,
-            tipo: diasDesde > 7 ? 'advertencia' : 'info',
+            tipo: diasDesde > ALERT_THRESHOLDS.ONBOARDING_WARNING_DAYS ? 'advertencia' : 'info',
             categoria: 'Onboarding',
             titulo: 'Onboarding Pendiente',
             descripcion: `${proveedor.nombre_empresa} sin completar Stripe desde hace ${diasDesde} días`,
             fecha: proveedor.created_at,
             accion: 'Enviar recordatorio',
             icono: 'person-add',
-            color: diasDesde > 7 ? '#f59e0b' : '#090e1a'
+            color: diasDesde > ALERT_THRESHOLDS.ONBOARDING_WARNING_DAYS ? CHART_COLORS.warning : CHART_COLORS.dark
           });
         }
       });
@@ -353,7 +362,7 @@ export const adminQueries = {
           fecha: dispute.created,
           accion: 'Responder en Stripe',
           icono: 'warning',
-          color: '#090e1a'
+          color: CHART_COLORS.danger
         });
       });
 
@@ -370,14 +379,14 @@ export const adminQueries = {
         if (diasDesde > 2) {
           alertasList.push({
             id: `pago-${contrato.id}`,
-            tipo: diasDesde > 5 ? 'advertencia' : 'info',
+            tipo: diasDesde > ALERT_THRESHOLDS.PAYMENT_WARNING_DAYS ? 'advertencia' : 'info',
             categoria: 'Pago',
             titulo: 'Pago Inicial Pendiente',
             descripcion: `Contrato ${contrato.id.slice(0, 8)} sin pago inicial desde hace ${diasDesde} días`,
             fecha: contrato.created_at,
             accion: 'Enviar recordatorio de pago',
             icono: 'card',
-            color: diasDesde > 5 ? '#f59e0b' : '#090e1a'
+            color: diasDesde > ALERT_THRESHOLDS.PAYMENT_WARNING_DAYS ? CHART_COLORS.warning : CHART_COLORS.dark
           });
         }
       });
@@ -401,7 +410,7 @@ export const adminQueries = {
             fecha: proyecto.updated_at,
             accion: 'Contactar proveedor',
             icono: 'time',
-            color: '#090e1a'
+            color: CHART_COLORS.gray
           });
         }
       });
@@ -675,10 +684,10 @@ function processTiposCuenta(proveedores) {
   });
 
   return [
-    { name: 'Express', value: tipos.express, color: '#f59e0b' },
-    { name: 'Standard', value: tipos.standard, color: '#090e1a' },
-    { name: 'Custom', value: tipos.custom, color: '#090e1a' },
-    { name: 'Pendiente', value: tipos.pendiente, color: '#090e1a' }
+    { name: 'Express', value: tipos.express, color: STRIPE_ACCOUNT_COLORS.express },
+    { name: 'Standard', value: tipos.standard, color: STRIPE_ACCOUNT_COLORS.standard },
+    { name: 'Custom', value: tipos.custom, color: STRIPE_ACCOUNT_COLORS.custom },
+    { name: 'Pendiente', value: tipos.pendiente, color: STRIPE_ACCOUNT_COLORS.pendiente }
   ].filter(t => t.value > 0);
 }
 
@@ -712,18 +721,18 @@ function calculatePorEstado(proyectos) {
   });
 
   return [
-    { name: 'Cotización', value: estados['Cotización'], color: '#090e1a' },
-    { name: 'En Progreso', value: estados['En Progreso'], color: '#f59e0b' },
-    { name: 'Completado', value: estados['Completado'], color: '#f59e0b' },
-    { name: 'Cancelado', value: estados['Cancelado'], color: '#090e1a' },
-    { name: 'En Espera', value: estados['En Espera'], color: '#090e1a' }
+    { name: 'Cotización', value: estados['Cotización'], color: PROJECT_STATUS_COLORS.cotizacion },
+    { name: 'En Progreso', value: estados['En Progreso'], color: PROJECT_STATUS_COLORS.en_progreso },
+    { name: 'Completado', value: estados['Completado'], color: PROJECT_STATUS_COLORS.completado },
+    { name: 'Cancelado', value: estados['Cancelado'], color: PROJECT_STATUS_COLORS.cancelado },
+    { name: 'En Espera', value: estados['En Espera'], color: PROJECT_STATUS_COLORS.en_espera }
   ].filter(e => e.value > 0);
 }
 
 function calculateServiceFees(comisiones) {
   if (!comisiones) return 0;
   return comisiones.reduce((sum, c) => {
-    const serviceFee = (parseFloat(c.monto_comision) || 0) * 0.029 + 3;
+    const serviceFee = (parseFloat(c.monto_comision) || 0) * STRIPE_FEES.PERCENTAGE + STRIPE_FEES.FIXED_USD;
     return sum + serviceFee;
   }, 0);
 }
@@ -745,10 +754,10 @@ function processComisionesData(comisiones) {
 function processTiposPagoData(contratos) {
   if (!contratos) return [];
   const tipos = {
-    contado: { name: 'Contado', value: 0, color: '#f59e0b' },
-    financiamiento: { name: 'Financiamiento', value: 0, color: '#090e1a' },
-    tarjeta: { name: 'Tarjeta', value: 0, color: '#f59e0b' },
-    transferencia: { name: 'Transferencia', value: 0, color: '#090e1a' }
+    contado: { name: 'Contado', value: 0, color: PAYMENT_TYPE_COLORS.contado },
+    financiamiento: { name: 'Financiamiento', value: 0, color: PAYMENT_TYPE_COLORS.financiamiento },
+    tarjeta: { name: 'Tarjeta', value: 0, color: PAYMENT_TYPE_COLORS.tarjeta },
+    transferencia: { name: 'Transferencia', value: 0, color: PAYMENT_TYPE_COLORS.transferencia }
   };
 
   contratos.forEach(c => {
@@ -781,9 +790,9 @@ function processMilestonesData(milestones) {
   });
 
   return [
-    { name: 'Pendientes', value: estados.pendiente, color: '#f59e0b' },
-    { name: 'Pagados', value: estados.pagado, color: '#f59e0b' },
-    { name: 'Vencidos', value: estados.vencido, color: '#090e1a' }
+    { name: 'Pendientes', value: estados.pendiente, color: MILESTONE_STATUS_COLORS.pendiente },
+    { name: 'Pagados', value: estados.pagado, color: MILESTONE_STATUS_COLORS.pagado },
+    { name: 'Vencidos', value: estados.vencido, color: MILESTONE_STATUS_COLORS.vencido }
   ];
 }
 

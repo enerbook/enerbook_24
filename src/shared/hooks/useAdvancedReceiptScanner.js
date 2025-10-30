@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { CAMERA_CONFIG } from '../config/constants';
 
 export function useAdvancedReceiptScanner() {
   // Solo función de captura - sin estados innecesarios
@@ -15,7 +16,7 @@ export function useAdvancedReceiptScanner() {
     return new Promise((resolve) => {
       canvas.toBlob((blob) => {
         resolve(blob);
-      }, 'image/jpeg', 0.95);
+      }, CAMERA_CONFIG.mimeType, CAMERA_CONFIG.jpegQuality);
     });
   }, []);
 

@@ -1,22 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import {
+  CORS_HEADERS,
+  HTTP_METHODS,
+  HTTP_STATUS,
+  STRIPE_CONFIG,
+  DEEP_LINKS,
+  ERROR_MESSAGES,
+} from '../_shared/constants.ts'
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+  if (req.method === HTTP_METHODS.OPTIONS) {
+    return new Response('ok', { headers: CORS_HEADERS })
   }
 
   try {
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-      apiVersion: '2023-10-16',
+      apiVersion: STRIPE_CONFIG.apiVersion,
     })
 
     // Initialize Supabase client
@@ -31,10 +34,10 @@ serve(async (req) => {
     // Validate required fields
     if (!instalador_id || !email) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: instalador_id, email' }),
+        JSON.stringify({ error: ERROR_MESSAGES.missingStripeFields }),
         {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: HTTP_STATUS.BAD_REQUEST,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         }
       )
     }
@@ -49,10 +52,10 @@ serve(async (req) => {
     if (fetchError) {
       console.error('Error fetching proveedor:', fetchError)
       return new Response(
-        JSON.stringify({ error: 'Proveedor not found' }),
+        JSON.stringify({ error: ERROR_MESSAGES.proveedorNotFound }),
         {
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: HTTP_STATUS.NOT_FOUND,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         }
       )
     }
@@ -67,9 +70,9 @@ serve(async (req) => {
       // Create new account link for re-onboarding or completing onboarding
       const accountLink = await stripe.accountLinks.create({
         account: existingProveedor.stripe_account_id,
-        refresh_url: 'enerbook://stripe-refresh',
-        return_url: 'enerbook://stripe-success',
-        type: 'account_onboarding',
+        refresh_url: DEEP_LINKS.stripeRefresh,
+        return_url: DEEP_LINKS.stripeSuccess,
+        type: STRIPE_CONFIG.onboarding.type,
       })
 
       return new Response(
@@ -80,8 +83,8 @@ serve(async (req) => {
           account_status: account.charges_enabled ? 'active' : 'pending',
         }),
         {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: HTTP_STATUS.OK,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         }
       )
     }
@@ -89,19 +92,14 @@ serve(async (req) => {
     // Create new Stripe Connect account
     console.log('Creating new Stripe Connect account for:', email)
     const account = await stripe.accounts.create({
-      type: 'standard',
-      country: 'MX',
+      type: STRIPE_CONFIG.connect.type,
+      country: STRIPE_CONFIG.connect.country,
       email: email,
-      capabilities: {
-        card_payments: { requested: true },
-        transfers: { requested: true },
-      },
-      business_type: 'individual',
+      capabilities: STRIPE_CONFIG.connect.capabilities,
+      business_type: STRIPE_CONFIG.connect.businessType,
       settings: {
         payouts: {
-          schedule: {
-            interval: 'manual', // Manual payouts for better control
-          },
+          schedule: STRIPE_CONFIG.connect.payoutSchedule,
         },
       },
     })
@@ -123,13 +121,13 @@ serve(async (req) => {
       // This should be logged and handled manually
       return new Response(
         JSON.stringify({
-          error: 'Failed to update database',
+          error: ERROR_MESSAGES.databaseUpdateFailed,
           account_id: account.id,
           details: updateError.message
         }),
         {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         }
       )
     }
@@ -137,9 +135,9 @@ serve(async (req) => {
     // Create account link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: 'enerbook://stripe-refresh',
-      return_url: 'enerbook://stripe-success',
-      type: 'account_onboarding',
+      refresh_url: DEEP_LINKS.stripeRefresh,
+      return_url: DEEP_LINKS.stripeSuccess,
+      type: STRIPE_CONFIG.onboarding.type,
     })
 
     console.log('Account link created:', accountLink.url)
@@ -152,8 +150,8 @@ serve(async (req) => {
         message: 'Stripe Connect account created successfully'
       }),
       {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: HTTP_STATUS.OK,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       }
     )
 
@@ -161,12 +159,12 @@ serve(async (req) => {
     console.error('Error in stripe_connect_onboard:', error)
     return new Response(
       JSON.stringify({
-        error: error.message || 'Internal server error',
+        error: error.message || ERROR_MESSAGES.internalServerError,
         details: error.toString()
       }),
       {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       }
     )
   }

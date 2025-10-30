@@ -5,17 +5,14 @@ import MetricCard from '../common/MetricCard';
 
 const ProyectosTab = () => {
   const [loading, setLoading] = useState(true);
-  const [selectedRegion, setSelectedRegion] = useState('todas');
   const [proyectosData, setProyectosData] = useState({
     resumen: {},
-    porEstado: [],
-    porRegion: [],
-    irradiacionPromedio: []
+    porEstado: []
   });
 
   useEffect(() => {
     loadProyectosData();
-  }, [selectedRegion]);
+  }, []);
 
   const loadProyectosData = async () => {
     setLoading(true);
@@ -30,9 +27,7 @@ const ProyectosTab = () => {
 
       setProyectosData({
         resumen,
-        porEstado,
-        porRegion: [], // Simplificado por ahora
-        irradiacionPromedio: [] // Simplificado por ahora
+        porEstado
       });
     } catch (error) {
       console.error('Error loading proyectos data:', error);
@@ -110,8 +105,6 @@ const ProyectosTab = () => {
     }).format(value);
   };
 
-  const regiones = ['todas', 'Norte', 'Centro', 'Sur', 'Bajío', 'Occidente'];
-
   if (loading) {
     return (
       <div className="flex-1 items-center justify-center py-12">
@@ -124,33 +117,10 @@ const ProyectosTab = () => {
   return (
     <div>
       <div className="pb-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="mb-6">
           <p className="text-lg font-semibold text-gray-900">
             Análisis de Proyectos
           </p>
-          <div horizontal showsHorizontalScrollIndicator={false}>
-            <div className="flex">
-              {regiones.map(region => (
-                <button
-                  key={region}
-                  onClick={() => setSelectedRegion(region)}
-                  className={`px-4 py-2 rounded-lg mr-2 ${
-                    selectedRegion === region
-                      ? 'bg-orange-500'
-                      : 'bg-gray-100'
-                  }`}
-                >
-                  <p className={`text-sm font-medium ${
-                    selectedRegion === region
-                      ? 'text-white'
-                      : 'text-gray-700'
-                  }`}>
-                    {region.charAt(0).toUpperCase() + region.slice(1)}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

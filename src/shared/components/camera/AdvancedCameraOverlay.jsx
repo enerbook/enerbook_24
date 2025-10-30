@@ -1,4 +1,5 @@
 import React from 'react';
+import { COLORS, UI_TEXT, SCAN_STEPS } from '../../config/constants';
 
 export default function AdvancedCameraOverlay({
   currentStep,
@@ -6,15 +7,15 @@ export default function AdvancedCameraOverlay({
 }) {
 
   const getInstructionText = () => {
-    if (currentStep === 'frontal') {
-      return 'Todo el recibo en el marco\nLogo CFE arriba izquierda';
+    if (currentStep === SCAN_STEPS.frontal) {
+      return UI_TEXT.instructionFrontal;
     } else {
-      return 'Solo la tabla de consumo\nCentra los números claramente';
+      return UI_TEXT.instructionPosterior;
     }
   };
 
   const getFrameColor = () => {
-    return '#f59f0b'; // Color brand de Enerbook
+    return COLORS.primary;
   };
 
   return (
@@ -30,22 +31,22 @@ export default function AdvancedCameraOverlay({
       </div>
 
       {/* Cuadro específico para logo CFE (solo frontal) */}
-      {currentStep === 'frontal' && (
+      {currentStep === SCAN_STEPS.frontal && (
         <div style={styles.logoGuide}>
-          <div style={{ ...styles.logoFrame, borderColor: '#090e1a' }}>
+          <div style={{ ...styles.logoFrame, borderColor: COLORS.dark }}>
             <div style={styles.logoLabel}>
-              <span style={styles.logoLabelText}>LOGO CFE</span>
+              <span style={styles.logoLabelText}>{UI_TEXT.logoCFE}</span>
             </div>
           </div>
         </div>
       )}
 
       {/* Cuadro específico para tabla de consumo (solo posterior) */}
-      {currentStep === 'posterior' && (
+      {currentStep === SCAN_STEPS.posterior && (
         <div style={styles.tableGuide}>
-          <div style={{ ...styles.tableFrame, borderColor: '#090e1a' }}>
+          <div style={{ ...styles.tableFrame, borderColor: COLORS.dark }}>
             <div style={styles.tableLabel}>
-              <span style={styles.tableLabelText}>TABLA DE CONSUMO - SOLO ESTA ÁREA</span>
+              <span style={styles.tableLabelText}>{UI_TEXT.tablaConsumo}</span>
             </div>
           </div>
         </div>

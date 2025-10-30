@@ -3,13 +3,14 @@ import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import AdvancedCameraOverlay from './AdvancedCameraOverlay';
 import { useAdvancedReceiptScanner } from '../../hooks/useAdvancedReceiptScanner';
+import { CAMERA_CONFIG, FILE_NAMES, SCAN_STEPS, UI_TEXT, TIMEOUTS, COLORS } from '../../config/constants';
 
 export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [stream, setStream] = useState(null);
   const [capturedPhotos, setCapturedPhotos] = useState([]);
-  const [currentStep, setCurrentStep] = useState('frontal');
+  const [currentStep, setCurrentStep] = useState(SCAN_STEPS.frontal);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
@@ -31,9 +32,9 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
     try {
       const constraints = {
         video: {
-          facingMode: 'environment',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          facingMode: CAMERA_CONFIG.facingMode,
+          width: { ideal: CAMERA_CONFIG.idealWidth },
+          height: { ideal: CAMERA_CONFIG.idealHeight }
         },
         audio: false
       };
@@ -54,7 +55,7 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
     } catch (error) {
       console.error('Error accessing camera:', error);
       setHasPermission(false);
-      alert('No se pudo acceder a la cámara. Por favor, verifica los permisos.');
+      alert(UI_TEXT.cameraError);
     }
   };
 
@@ -78,18 +79,18 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
       }
 
       const blob = await capturePhoto(videoRef.current);
-      const fileName = currentStep === 'frontal' ? 'receipt-frontal.jpg' : 'receipt-posterior.jpg';
-      const file = new File([blob], fileName, { type: 'image/jpeg' });
+      const fileName = currentStep === SCAN_STEPS.frontal ? FILE_NAMES.receiptFrontal : FILE_NAMES.receiptPosterior;
+      const file = new File([blob], fileName, { type: CAMERA_CONFIG.mimeType });
 
       const newPhotos = [...capturedPhotos, file];
       setCapturedPhotos(newPhotos);
 
-      if (currentStep === 'frontal') {
-        setCurrentStep('posterior');
+      if (currentStep === SCAN_STEPS.frontal) {
+        setCurrentStep(SCAN_STEPS.posterior);
         setIsProcessing(false);
         // Mostrar mensaje de éxito brevemente
         setShowSuccessMessage(true);
-        setTimeout(() => setShowSuccessMessage(false), 2000);
+        setTimeout(() => setShowSuccessMessage(false), TIMEOUTS.successMessage);
       } else {
         onCapture(newPhotos);
         handleClose();
@@ -109,7 +110,7 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
   useEffect(() => {
     if (!isOpen) {
       setCapturedPhotos([]);
-      setCurrentStep('frontal');
+      setCurrentStep(SCAN_STEPS.frontal);
       setShowSuccessMessage(false);
     }
   }, [isOpen]);
@@ -121,8 +122,8 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
     return (
       <div style={styles.modal}>
         <div style={styles.container}>
-          <p style={styles.messageText}>No hay acceso a la cámara</p>
-          <button style={styles.closeButton} onClick={handleClose}>Cerrar</button>
+          <p style={styles.messageText}>{UI_TEXT.noAccess}</p>
+          <button style={styles.closeButton} onClick={handleClose}>{UI_TEXT.close}</button>
         </div>
       </div>
     );
@@ -142,17 +143,17 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
           <div style={styles.stepIndicator}>
             <div style={styles.stepBadge}>
               <div style={styles.stepNumber}>
-                {currentStep === 'frontal' ? '1' : '2'}
+                {currentStep === SCAN_STEPS.frontal ? '1' : '2'}
               </div>
               <span style={styles.stepText}>
-                {currentStep === 'frontal' ? 'Página FRONTAL del recibo CFE' : 'Página POSTERIOR del recibo CFE'}
+                {currentStep === SCAN_STEPS.frontal ? UI_TEXT.stepFrontal : UI_TEXT.stepPosterior}
               </span>
             </div>
             <div style={styles.progressBar}>
               <div
                 style={{
                   ...styles.progressFill,
-                  width: currentStep === 'frontal' ? '50%' : '100%'
+                  width: currentStep === SCAN_STEPS.frontal ? '50%' : '100%'
                 }}
               />
             </div>
@@ -179,13 +180,13 @@ export default function SimpleWebCamera({ isOpen, onClose, onCapture }) {
 
             {!isProcessing && !showSuccessMessage && (
               <p style={styles.manualCaptureHint}>
-                Toca para capturar foto
+                {UI_TEXT.captureHint}
               </p>
             )}
 
             {showSuccessMessage && (
               <p style={styles.successMessage}>
-                ¡Frontal capturada! Ahora muestra la parte posterior
+                {UI_TEXT.successFrontal}
               </p>
             )}
           </div>
@@ -247,8 +248,8 @@ const styles = {
     width: '30px',
     height: '30px',
     borderRadius: '15px',
-    backgroundColor: '#F59E0B',
-    color: 'white',
+    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+    color: COLORS.white,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -269,7 +270,7 @@ const styles = {
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#F59E0B',
+    background: `linear-gradient(90deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
     transition: 'width 0.3s ease',
   },
   controls: {
@@ -349,7 +350,7 @@ const styles = {
     margin: 0,
   },
   successMessage: {
-    color: '#f59f0b',
+    color: COLORS.primary,
     fontSize: '14px',
     fontWeight: 'bold',
     textShadow: '0 1px 3px rgba(0,0,0,0.5)',

@@ -2,6 +2,7 @@
 
 #Supabase
 .mcp.json
+/supabase/.temp/
 
 # dependencies
 node_modules/

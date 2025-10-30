@@ -1,15 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import {
+  CORS_HEADERS,
+  HTTP_METHODS,
+  HTTP_STATUS,
+  STRIPE_CONFIG,
+  STRIPE_STATUS_MAP,
+  ERROR_MESSAGES,
+} from '../_shared/constants.ts'
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+  if (req.method === HTTP_METHODS.OPTIONS) {
+    return new Response('ok', { headers: CORS_HEADERS })
   }
 
   try {
@@ -39,25 +42,15 @@ serve(async (req) => {
     const stripe_status = body.status?.toString().trim()
 
     // Map Stripe status to our database status (payment_status enum)
-    const statusMap: Record<string, string> = {
-      'requires_payment_method': 'processing',
-      'requires_confirmation': 'processing',
-      'requires_action': 'processing',
-      'processing': 'processing',
-      'requires_capture': 'processing',
-      'canceled': 'failed',
-      'succeeded': 'completed',
-    }
-
-    const status = statusMap[stripe_status] || 'pending'
+    const status = STRIPE_STATUS_MAP[stripe_status] || 'pending'
 
     // Validate required fields
     if (!proyecto_id || !cliente_id || !instalador_input || !total_amount) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ error: ERROR_MESSAGES.missingRequiredFields }),
         {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          status: HTTP_STATUS.BAD_REQUEST,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
         }
       )
     }
@@ -66,7 +59,7 @@ serve(async (req) => {
     let instalador_id = instalador_input
 
     // If it starts with "acct_", it's a stripe_account_id, lookup the UUID
-    if (instalador_input.startsWith('acct_')) {
+    if (instalador_input.startsWith(STRIPE_CONFIG.accountPrefix)) {
       const { data: instalador, error: instaladorError } = await supabaseClient
         .from('proveedores')
         .select('id')
@@ -77,12 +70,12 @@ serve(async (req) => {
         console.error('Error finding instalador:', instaladorError)
         return new Response(
           JSON.stringify({
-            error: 'Instalador not found with stripe_account_id: ' + instalador_input,
+            error: `${ERROR_MESSAGES.instaladorNotFound}: ${instalador_input}`,
             details: instaladorError?.message
           }),
           {
-            status: 404,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            status: HTTP_STATUS.NOT_FOUND,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
           }
         )
       }
@@ -114,8 +107,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: error.message }),
         {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
         }
       )
     }
@@ -123,8 +116,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ success: true, data }),
       {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: HTTP_STATUS.OK,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
       }
     )
 
@@ -133,8 +126,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
       }
     )
   }

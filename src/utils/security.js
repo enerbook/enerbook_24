@@ -1,7 +1,18 @@
 /**
  * Security Utilities
- * Funciones para validación y sanitización de datos
+ * Funciones para validaci��n y sanitización de datos
  */
+
+import {
+  MEXICO_BOUNDARIES,
+  LEAD_EXPIRATION_DAYS,
+  RATE_LIMITS,
+  SECURITY,
+  SENSITIVE_KEYS,
+  VALIDATION_REGEX,
+  CFE_RECEIPT_FIELDS,
+  TIME_MS
+} from './config/constants';
 
 /**
  * Valida formato de UUID v4
@@ -11,8 +22,7 @@
 export const isValidUUID = (uuid) => {
   if (!uuid || typeof uuid !== 'string') return false;
 
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
+  return VALIDATION_REGEX.uuid.test(uuid);
 };
 
 /**
@@ -34,8 +44,7 @@ export const validateTempLeadId = (tempLeadId) => {
 
   // Formato 2: lead_timestamp_randomstring (formato actual de N8N)
   // Ejemplo: lead_1759432944463_4ohw3cmg8
-  const leadIdRegex = /^lead_\d{13}_[a-z0-9]{8,12}$/i;
-  if (leadIdRegex.test(tempLeadId)) {
+  if (VALIDATION_REGEX.tempLeadId.test(tempLeadId)) {
     return true;
   }
 
@@ -68,9 +77,9 @@ export const isLeadExpired = (createdAt) => {
 
   const created = new Date(createdAt);
   const now = new Date();
-  const daysDiff = (now - created) / (1000 * 60 * 60 * 24);
+  const daysDiff = (now - created) / TIME_MS.day;
 
-  return daysDiff > 7;
+  return daysDiff > LEAD_EXPIRATION_DAYS;
 };
 
 /**
@@ -84,8 +93,7 @@ export const validateReciboCFE = (reciboCFE) => {
   }
 
   // Validar campos requeridos
-  const requiredFields = ['nombre', 'direccion', 'consumo_kwh'];
-  for (const field of requiredFields) {
+  for (const field of CFE_RECEIPT_FIELDS.required) {
     if (!(field in reciboCFE)) {
       return false;
     }
@@ -105,11 +113,11 @@ export const validateReciboCFE = (reciboCFE) => {
     const lat = parseFloat(reciboCFE.lat);
     const lng = parseFloat(reciboCFE.lng);
 
-    // México: lat entre 14° y 33°, lng entre -118° y -86°
-    if (isNaN(lat) || lat < 14 || lat > 33) {
+    // México: validar límites geográficos
+    if (isNaN(lat) || lat < MEXICO_BOUNDARIES.lat.min || lat > MEXICO_BOUNDARIES.lat.max) {
       return false;
     }
-    if (isNaN(lng) || lng < -118 || lng > -86) {
+    if (isNaN(lng) || lng < MEXICO_BOUNDARIES.lng.min || lng > MEXICO_BOUNDARIES.lng.max) {
       return false;
     }
   }
@@ -124,13 +132,17 @@ export const validateReciboCFE = (reciboCFE) => {
  * @param {number} windowMs - Ventana de tiempo en ms
  * @returns {Object} - { allowed: boolean, remainingAttempts: number }
  */
-export const checkRateLimit = (key, maxAttempts = 5, windowMs = 60000) => {
+export const checkRateLimit = (
+  key,
+  maxAttempts = RATE_LIMITS.default.maxAttempts,
+  windowMs = RATE_LIMITS.default.windowMs
+) => {
   if (typeof window === 'undefined' || !window.localStorage) {
     // En servidor o sin localStorage, permitir
     return { allowed: true, remainingAttempts: maxAttempts };
   }
 
-  const rateLimitKey = `rateLimit_${key}`;
+  const rateLimitKey = `${SECURITY.localStorageKeys.rateLimitPrefix}${key}`;
   const now = Date.now();
 
   // Obtener datos actuales
@@ -177,8 +189,7 @@ export const sanitizeString = (str) => {
 export const isValidEmail = (email) => {
   if (!email || typeof email !== 'string') return false;
 
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-  return emailRegex.test(email) && email.length <= 254;
+  return VALIDATION_REGEX.email.test(email) && email.length <= SECURITY.maxEmailLength;
 };
 
 /**
@@ -193,8 +204,7 @@ export const isValidMexicanPhone = (phone) => {
   const cleaned = phone.replace(/[\s\-()]/g, '');
 
   // Formatos válidos: 10 dígitos o +52 + 10 dígitos
-  const phoneRegex = /^(\+?52)?[0-9]{10}$/;
-  return phoneRegex.test(cleaned);
+  return VALIDATION_REGEX.mexicanPhone.test(cleaned);
 };
 
 /**
@@ -208,7 +218,7 @@ export const generateCSRFToken = () => {
            Math.random().toString(36).substring(2, 15);
   }
 
-  const array = new Uint8Array(32);
+  const array = new Uint8Array(SECURITY.csrfTokenBytes);
   window.crypto.getRandomValues(array);
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 };
@@ -223,7 +233,7 @@ export const verifyCSRFToken = (token) => {
     return false;
   }
 
-  const storedToken = sessionStorage.getItem('csrf_token');
+  const storedToken = sessionStorage.getItem(SECURITY.sessionStorageKeys.csrfToken);
   return storedToken === token;
 };
 
@@ -235,24 +245,12 @@ export const verifyCSRFToken = (token) => {
 export const sanitizeForLogging = (obj) => {
   if (!obj || typeof obj !== 'object') return obj;
 
-  const sensitiveKeys = [
-    'password',
-    'token',
-    'api_key',
-    'apiKey',
-    'secret',
-    'authorization',
-    'credit_card',
-    'ssn',
-    'rfc'
-  ];
-
   const sanitized = { ...obj };
 
   for (const key of Object.keys(sanitized)) {
     const lowerKey = key.toLowerCase();
 
-    if (sensitiveKeys.some(sk => lowerKey.includes(sk))) {
+    if (SENSITIVE_KEYS.some(sk => lowerKey.includes(sk))) {
       sanitized[key] = '***REDACTED***';
     } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
       sanitized[key] = sanitizeForLogging(sanitized[key]);

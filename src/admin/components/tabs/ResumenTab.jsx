@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import MetricCard from '../common/MetricCard';
 import { supabase } from '../../../lib/supabaseClient';
+import TrendChart from '../charts/TrendChart';
+import DistributionChart from '../charts/DistributionChart';
 
 const ResumenTab = ({ metrics }) => {
   const [loading, setLoading] = useState(true);
@@ -12,7 +14,8 @@ const ResumenTab = ({ metrics }) => {
     comisionesStats: { total: 0, pendientes: 0 },
     milestonesStats: { vencidos: 0 },
     proveedoresStats: { activos: 0, conStripe: 0 },
-    tendencias: []
+    tendencias: [],
+    distribucion: []
   });
 
   useEffect(() => {
@@ -23,6 +26,12 @@ const ResumenTab = ({ metrics }) => {
     try {
       // Use metrics passed from parent if available
       if (metrics) {
+        // Generate trend data (últimos 6 meses de proyectos creados)
+        const tendencias = generateTrendData(metrics.proyectos || []);
+
+        // Generate distribution data (estados de proyectos)
+        const distribucion = generateDistributionData(metrics.proyectos || []);
+
         setDashboardData({
           usuariosStats: { total: metrics.totalUsuarios || 0, nuevosUltimos30Dias: 0 },
           proyectosStats: {
@@ -39,7 +48,8 @@ const ResumenTab = ({ metrics }) => {
           },
           milestonesStats: { vencidos: 0 },
           proveedoresStats: { activos: 0, conStripe: 0 },
-          tendencias: []
+          tendencias,
+          distribucion
         });
       }
     } catch (error) {
@@ -47,6 +57,48 @@ const ResumenTab = ({ metrics }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateTrendData = (proyectos) => {
+    // Agrupar proyectos por mes (últimos 6 meses)
+    const now = new Date();
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+    const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      return {
+        month: date.getMonth(),
+        year: date.getFullYear(),
+        label: meses[date.getMonth()]
+      };
+    });
+
+    return last6Months.map(({ month, year, label }) => {
+      const count = proyectos.filter(p => {
+        const created = new Date(p.created_at);
+        return created.getMonth() === month && created.getFullYear() === year;
+      }).length;
+
+      return { value: count, label };
+    });
+  };
+
+  const generateDistributionData = (proyectos) => {
+    const estados = {
+      'cotizacion': { name: 'Cotización', value: 0, color: '#090e1a' },
+      'en_progreso': { name: 'En Progreso', value: 0, color: '#f59e0b' },
+      'completado': { name: 'Completado', value: 0, color: '#10b981' },
+      'cancelado': { name: 'Cancelado', value: 0, color: '#6b7280' },
+      'en_espera': { name: 'En Espera', value: 0, color: '#FFCB45' }
+    };
+
+    proyectos.forEach(p => {
+      if (estados[p.estado]) {
+        estados[p.estado].value++;
+      }
+    });
+
+    return Object.values(estados).filter(e => e.value > 0);
   };
 
   const formatCurrency = (value) => {
@@ -98,9 +150,7 @@ const ResumenTab = ({ metrics }) => {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Tendencias Mensuales
           </h3>
-          <div className="h-64 flex items-center justify-center">
-            <p className="text-gray-500">Gráfico de tendencias en desarrollo</p>
-          </div>
+          <TrendChart data={dashboardData.tendencias} />
         </div>
 
         {/* Distribution Chart */}
@@ -108,9 +158,10 @@ const ResumenTab = ({ metrics }) => {
           <p className="text-lg font-semibold text-gray-900 mb-4">
             Distribución de Proyectos
           </p>
-          <div className="h-64 flex items-center justify-center">
-            <p className="text-gray-500">Gráfico de distribución en desarrollo</p>
-          </div>
+          <DistributionChart
+            data={dashboardData.distribucion}
+            title="Total"
+          />
         </div>
       </div>
 
