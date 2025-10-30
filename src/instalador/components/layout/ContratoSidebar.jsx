@@ -1,6 +1,7 @@
 import React from 'react';
 import { FiFileText, FiFolder, FiDollarSign, FiMessageSquare, FiActivity, FiArrowLeft } from 'react-icons/fi';
 import { useRouter } from 'expo-router';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 // Navigation button component
 const NavButton = ({ item, activeTab, onTabChange, onClose }) => {
@@ -54,7 +55,7 @@ const ContratoSidebar = ({ activeTab, onTabChange, onClose, contrato, proyecto }
 
   const getEstadoBadgeColor = (estado) => {
     // Todos los estados usan el degradado naranja Enerbook con letras blancas
-    return 'bg-gradient-to-br from-brand to-brandLight text-white';
+    return { background: GRADIENTS.primary };
   };
 
   const capitalizeFirstLetter = (str) => {
@@ -83,7 +84,7 @@ const ContratoSidebar = ({ activeTab, onTabChange, onClose, contrato, proyecto }
               </p>
             )}
             {contrato?.estado && (
-              <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${getEstadoBadgeColor(contrato.estado)}`}>
+              <span className="inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium text-white" style={getEstadoBadgeColor(contrato.estado)}>
                 {capitalizeFirstLetter(contrato.estado)}
               </span>
             )}

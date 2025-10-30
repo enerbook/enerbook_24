@@ -1,35 +1,36 @@
 import React from 'react';
+import { GRADIENTS } from '../../../../shared/config/gradients';
 
 const ProyectoHeader = ({ proyecto, onClose, diasRestantes, cotizacionesCount }) => {
   const getEstadoBadge = (estado) => {
     const badges = {
       'abierto': {
-        gradient: 'linear-gradient(135deg, #10B981 0%, #34D399 100%)',
+        gradient: GRADIENTS.abierto,
         text: 'Abierto',
         icon: '🟢'
       },
       'cerrado': {
-        gradient: 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)',
+        gradient: GRADIENTS.cerrado,
         text: 'Cerrado',
         icon: '⚫'
       },
       'adjudicado': {
-        gradient: 'linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)',
+        gradient: GRADIENTS.adjudicado,
         text: 'Adjudicado',
         icon: '🏆'
       },
       'en_progreso': {
-        gradient: 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
+        gradient: GRADIENTS.en_progreso,
         text: 'En Progreso',
         icon: '⚙️'
       },
       'completado': {
-        gradient: 'linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%)',
+        gradient: GRADIENTS.completado,
         text: 'Completado',
         icon: '✅'
       },
       'cancelado': {
-        gradient: 'linear-gradient(135deg, #EF4444 0%, #F87171 100%)',
+        gradient: GRADIENTS.cancelado,
         text: 'Cancelado',
         icon: '❌'
       }
@@ -80,7 +81,7 @@ const ProyectoHeader = ({ proyecto, onClose, diasRestantes, cotizacionesCount })
             </div>
             <div
               className="w-9 h-9 rounded-full grid place-items-center"
-              style={{ background: "linear-gradient(135deg,#F59E0B 0%,#FFCB45 100%)" }}
+              style={{ background: GRADIENTS.primary }}
             >
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -97,7 +98,7 @@ const ProyectoHeader = ({ proyecto, onClose, diasRestantes, cotizacionesCount })
             </div>
             <div
               className="w-9 h-9 rounded-full grid place-items-center"
-              style={{ background: "linear-gradient(135deg,#F59E0B 0%,#FFCB45 100%)" }}
+              style={{ background: GRADIENTS.primary }}
             >
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -112,7 +113,7 @@ const ProyectoHeader = ({ proyecto, onClose, diasRestantes, cotizacionesCount })
             </div>
             <div
               className="w-9 h-9 rounded-full grid place-items-center"
-              style={{ background: "linear-gradient(135deg,#F59E0B 0%,#FFCB45 100%)" }}
+              style={{ background: GRADIENTS.primary }}
             >
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

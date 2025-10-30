@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiX } from 'react-icons/fi';
 import { quotationService } from '../../services/quotationService';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -242,7 +243,7 @@ const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
                     <label key={option} className="flex items-center cursor-pointer">
                       <div
                         className="w-5 h-5 rounded-full flex items-center justify-center transition-colors"
-                        style={paymentOptions[option] ? {background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'} : {backgroundColor: '#d1d5db'}}
+                        style={paymentOptions[option] ? {background: GRADIENTS.primary} : {backgroundColor: '#d1d5db'}}
                         onClick={() => setPaymentOptions(prev => ({...prev, [option]: !prev[option]}))}
                       >
                         {paymentOptions[option] && (
@@ -269,7 +270,7 @@ const SendQuoteModal = ({ project, setShowQuoteModal, onSuccess }) => {
                 onClick={handleSubmitQuote}
                 disabled={loading}
                 className="w-full py-4 px-6 text-white rounded-2xl text-sm font-medium transition-colors"
-                style={{background: loading ? '#9CA3AF' : 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
+                style={{background: loading ? '#9CA3AF' : GRADIENTS.primary}}
               >
                 {loading ? 'Enviando cotización...' : 'Enviar Cotización'}
               </button>

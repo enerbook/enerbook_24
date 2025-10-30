@@ -1,26 +1,27 @@
 import React from 'react';
 import CotizacionDetalles from './CotizacionDetalles';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { GRADIENTS } from '../../../../shared/config/gradients';
 
 const CotizacionCard = ({ cotizacion, cotizacionIndex, isExpanded, onToggle, onAcceptQuotation }) => {
   const getCotizacionEstadoBadge = (estado) => {
     const badges = {
       'pendiente': {
-        gradient: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)',
+        gradient: GRADIENTS.pendiente,
         text: 'Pendiente',
         bgColor: 'bg-orange-50',
         borderColor: 'border-orange-200',
         textColor: 'text-orange-700'
       },
       'aceptada': {
-        gradient: 'linear-gradient(135deg, #10B981 0%, #34D399 100%)',
+        gradient: GRADIENTS.aceptada,
         text: 'Aceptada',
         bgColor: 'bg-green-50',
         borderColor: 'border-green-200',
         textColor: 'text-green-700'
       },
       'rechazada': {
-        gradient: 'linear-gradient(135deg, #EF4444 0%, #F87171 100%)',
+        gradient: GRADIENTS.rechazada,
         text: 'Rechazada',
         bgColor: 'bg-red-50',
         borderColor: 'border-red-200',
@@ -44,7 +45,7 @@ const CotizacionCard = ({ cotizacion, cotizacionIndex, isExpanded, onToggle, onA
         <div className="flex items-center gap-3">
           <div
             className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg"
-            style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+            style={{ background: GRADIENTS.primary }}
           >
             {cotizacionIndex}
           </div>
@@ -77,7 +78,7 @@ const CotizacionCard = ({ cotizacion, cotizacionIndex, isExpanded, onToggle, onA
       <div className="grid grid-cols-2 gap-3 mb-4">
         {cotizacion.paneles?.marca && (
           <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: GRADIENTS.primary }}>
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
@@ -92,7 +93,7 @@ const CotizacionCard = ({ cotizacion, cotizacionIndex, isExpanded, onToggle, onA
         )}
         {cotizacion.inversores?.marca && (
           <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: GRADIENTS.primary }}>
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>

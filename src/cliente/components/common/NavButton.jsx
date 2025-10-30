@@ -1,4 +1,5 @@
 import React from 'react';
+import { COLORS } from '../../../shared/config/colors';
 
 const NavButton = ({ item, isActive, onClick }) => {
   const Icon = item.icon;
@@ -17,7 +18,7 @@ const NavButton = ({ item, isActive, onClick }) => {
         }`}>
         <Icon
           className={`w-2.5 h-2.5 ${isActive ? 'text-white' : ''}`}
-          style={isActive ? {} : { color: '#F59E0B' }}
+          style={isActive ? {} : { color: COLORS.primary }}
         />
       </div>
       <span className="text-sm font-medium">{item.label}</span>

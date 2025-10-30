@@ -1,4 +1,5 @@
 import React from 'react';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const ResumenTab = ({ contrato, proyecto, cotizacion, cliente, instalador, onReload }) => {
   // Debug: Ver qué datos llegan
@@ -23,7 +24,7 @@ const ResumenTab = ({ contrato, proyecto, cotizacion, cliente, instalador, onRel
 
   const getEstadoBadgeColor = (estado) => {
     // Todos los estados usan el degradado naranja Enerbook con letras blancas
-    return 'bg-gradient-to-br from-brand to-brandLight text-white';
+    return { background: GRADIENTS.primary };
   };
 
   const capitalizeFirstLetter = (str) => {
@@ -33,7 +34,7 @@ const ResumenTab = ({ contrato, proyecto, cotizacion, cliente, instalador, onRel
 
   const getEstadoPagoColor = (estadoPago) => {
     // Todos los estados de pago usan el degradado naranja Enerbook con letras blancas
-    return 'bg-gradient-to-br from-brand to-brandLight text-white';
+    return { background: GRADIENTS.primary };
   };
 
   return (
@@ -49,7 +50,7 @@ const ResumenTab = ({ contrato, proyecto, cotizacion, cliente, instalador, onRel
               Contrato: {contrato?.numero_contrato || 'N/A'}
             </p>
           </div>
-          <span className={`px-4 py-2 rounded-full text-sm font-medium ${getEstadoBadgeColor(contrato?.estado)}`}>
+          <span className="px-4 py-2 rounded-full text-sm font-medium text-white" style={getEstadoBadgeColor(contrato?.estado)}>
             {capitalizeFirstLetter(contrato?.estado) || 'N/A'}
           </span>
         </div>
@@ -112,7 +113,7 @@ const ResumenTab = ({ contrato, proyecto, cotizacion, cliente, instalador, onRel
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Estado de Pago</p>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getEstadoPagoColor(contrato?.estado_pago)}`}>
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-medium text-white" style={getEstadoPagoColor(contrato?.estado_pago)}>
                 {capitalizeFirstLetter(contrato?.estado_pago) || 'N/A'}
               </span>
             </div>

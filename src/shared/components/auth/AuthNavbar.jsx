@@ -1,16 +1,32 @@
 import React, { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 import { router } from "expo-router";
+import { GRADIENTS } from '../../config/gradients';
 
-export default function InstallerNavbar({ currentPage }) {
+export default function AuthNavbar({ currentPage, userType = 'cliente' }) {
   const [open, setOpen] = useState(false);
+
+  // Determinar qué botón mostrar según userType y currentPage
+  const getOppositeTypeButton = () => {
+    if (userType === 'cliente') {
+      return {
+        label: "¿Eres Instalador?",
+        href: currentPage === 'login' ? '/installer-login' : '/installer-signup'
+      };
+    } else {
+      return {
+        label: "¿Eres Cliente?",
+        href: currentPage === 'login' ? '/login' : '/signup'
+      };
+    }
+  };
+
+  const oppositeTypeBtn = getOppositeTypeButton();
 
   const menus = [
     { label: "Inicio", href: "/" },
-    { label: "Cómo funciona", href: "/" },
-    { label: "Conoce más", href: "/" },
-    { label: currentPage === "login" ? "Registrarse" : "Iniciar Sesión",
-      href: currentPage === "login" ? "/installer-signup" : "/installer-login" }
+    { label: "Cómo funciona", href: "/#how" },
+    { label: "Conoce más", href: "/#about" }
   ];
 
   return (
@@ -37,7 +53,7 @@ export default function InstallerNavbar({ currentPage }) {
 
           {/* Menu */}
           <nav className="relative z-10 flex items-center gap-8">
-            {menus.slice(0, -1).map((m) => (
+            {menus.map((m) => (
               <a
                 key={m.label}
                 href="#"
@@ -50,25 +66,15 @@ export default function InstallerNavbar({ currentPage }) {
                 {m.label}
               </a>
             ))}
-            <a
-              href="#"
-              className="text-gray-700 hover:text-gray-900 text-sm font-medium transition-colors"
-              onClick={(e) => {
-                e.preventDefault();
-                router.push(menus[menus.length - 1].href);
-              }}
-            >
-              {menus[menus.length - 1].label}
-            </a>
           </nav>
 
-          {/* CTA Button */}
+          {/* CTA Button - Cambiar entre Cliente/Instalador */}
           <button
             className="relative z-10 text-white px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 hover:opacity-90"
-            style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
-            onClick={() => router.push('/login')}
+            style={{background: GRADIENTS.primary}}
+            onClick={() => router.push(oppositeTypeBtn.href)}
           >
-            ¿Eres cliente?
+            {oppositeTypeBtn.label}
           </button>
 
         </div>
@@ -112,6 +118,7 @@ export default function InstallerNavbar({ currentPage }) {
                     onClick={(e) => {
                       e.preventDefault();
                       router.push(m.href);
+                      setOpen(false);
                     }}
                   >
                     {m.label}
@@ -122,10 +129,13 @@ export default function InstallerNavbar({ currentPage }) {
               <div className="pt-3 mt-3 border-t border-gray-200/30">
                 <button
                   className="w-full text-white px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200 hover:opacity-90"
-                  style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
-                  onClick={() => router.push('/login')}
+                  style={{background: GRADIENTS.primary}}
+                  onClick={() => {
+                    router.push(oppositeTypeBtn.href);
+                    setOpen(false);
+                  }}
                 >
-                  ¿Eres cliente?
+                  {oppositeTypeBtn.label}
                 </button>
               </div>
 

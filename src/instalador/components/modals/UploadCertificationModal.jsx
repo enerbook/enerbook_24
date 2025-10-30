@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiX } from 'react-icons/fi';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const UploadCertificationModal = ({ certificationAction, setShowCertificationModal, handleCertificationUpload }) => {
   return (
@@ -45,7 +46,7 @@ const UploadCertificationModal = ({ certificationAction, setShowCertificationMod
           <button
             onClick={handleCertificationUpload}
             className="px-6 py-2 text-white rounded-lg font-medium transition-colors"
-            style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
+            style={{background: GRADIENTS.primary}}
           >
             {certificationAction === 'Agregar' ? 'AGREGAR' : certificationAction.toUpperCase()}
           </button>

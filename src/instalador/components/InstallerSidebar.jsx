@@ -2,6 +2,7 @@ import React from 'react';
 import { FiFileText, FiFolder, FiUser, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
+import { COLORS } from '../../shared/config/colors';
 
 // Navigation button component
 const NavButton = ({ item, activeTab, onClose, router }) => {
@@ -32,7 +33,7 @@ const NavButton = ({ item, activeTab, onClose, router }) => {
         }`}>
         <Icon
           className={`w-2.5 h-2.5 ${isActive ? 'text-white' : ''}`}
-          style={isActive ? {} : { color: '#F59E0B' }}
+          style={isActive ? {} : { color: COLORS.primary }}
         />
       </div>
       <span className="text-sm font-medium">{item.label}</span>

@@ -6,6 +6,7 @@ import MetricsGrid from '../common/MetricsGrid';
 import AnalysisCharts from '../common/AnalysisCharts';
 import HistorialConsumoTable from '../proyecto-details/HistorialConsumoTable';
 import ProyectoHeader from '../proyecto-details/ProyectoHeader';
+import { GRADIENTS } from '../../../../shared/config/gradients';
 
 const ResumenTab = ({ proyecto, cotizacionInicial, cotizaciones, onReload }) => {
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
@@ -66,7 +67,7 @@ const ResumenTab = ({ proyecto, cotizacionInicial, cotizaciones, onReload }) => 
           </div>
           <span
             className="px-3 py-1 rounded-full text-xs font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+            style={{ background: GRADIENTS.primary }}
           >
             {proyecto.estado === 'abierto' ? 'Abierto' : 'Pausado'}
           </span>
@@ -107,7 +108,7 @@ const ResumenTab = ({ proyecto, cotizacionInicial, cotizaciones, onReload }) => 
           className={`w-full px-3 py-2 rounded-lg text-white text-sm font-medium transition-opacity ${
             isTogglingStatus ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
           }`}
-          style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+          style={{ background: GRADIENTS.primary }}
         >
           {isTogglingStatus ? 'Procesando...' : proyecto.estado === 'abierto' ? 'Pausar Proyecto' : 'Publicar Proyecto'}
         </button>

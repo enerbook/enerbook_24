@@ -8,6 +8,7 @@ import SolicitarCotizacionesModal from '../../modals/SolicitarCotizacionesModal'
 import ReceiptUploadModal from '../../modals/ReceiptUploadModal';
 import { authService } from '../../../services/authService';
 import { projectService } from '../../../services/projectService';
+import { GRADIENTS } from '../../../../shared/config/gradients';
 
 const ProyectosTab = () => {
   const {
@@ -127,7 +128,7 @@ const ProyectosTab = () => {
           <button
             onClick={() => setShowNuevoProyectoModal(true)}
             className="px-4 py-2 rounded-lg text-white text-sm font-medium"
-            style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+            style={{ background: GRADIENTS.primary }}
           >
             + Nuevo Proyecto
           </button>
@@ -151,7 +152,7 @@ const ProyectosTab = () => {
             <button
               onClick={handleSolicitarCotizaciones}
               className="px-4 py-2 rounded-lg text-white text-sm font-medium"
-              style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+              style={{ background: GRADIENTS.primary }}
             >
               Solicitar Cotizaciones
             </button>
@@ -213,7 +214,7 @@ const ProyectosTab = () => {
                           <h3 className="text-sm font-semibold text-gray-900">{proyecto.titulo}</h3>
                           <span
                             className="px-3 py-1 rounded-full text-xs font-semibold text-white"
-                            style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+                            style={{ background: GRADIENTS.primary }}
                           >
                             {proyecto.estado === 'abierto' ? 'Abierto' : proyecto.estado === 'cerrado' ? 'Cerrado' : 'Pausado'}
                           </span>
@@ -289,7 +290,7 @@ const ProyectosTab = () => {
                         <button
                           onClick={(e) => handleToggleProjectStatus(proyecto.id, proyecto.estado, e)}
                           className="w-full px-3 py-2 rounded-lg text-white text-xs font-medium transition-opacity hover:opacity-90"
-                          style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+                          style={{ background: GRADIENTS.primary }}
                         >
                           {proyecto.estado === 'abierto' ? 'Pausar Proyecto' : 'Publicar Proyecto'}
                         </button>

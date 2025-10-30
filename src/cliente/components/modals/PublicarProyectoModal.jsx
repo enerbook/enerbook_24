@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { projectService } from '../../services/projectService';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const PublicarProyectoModal = ({ isOpen, onClose, projectId, onPublish }) => {
   const [isPublishing, setIsPublishing] = useState(false);
@@ -32,7 +33,7 @@ const PublicarProyectoModal = ({ isOpen, onClose, projectId, onPublish }) => {
         <div className="text-center mb-6">
           <div
             className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+            style={{ background: GRADIENTS.primary }}
           >
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -125,7 +126,7 @@ const PublicarProyectoModal = ({ isOpen, onClose, projectId, onPublish }) => {
             className="flex-1 py-3 px-4 rounded-lg text-white font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
             style={{
               background: option && !isPublishing
-                ? 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'
+                ? GRADIENTS.primary
                 : '#E5E7EB'
             }}
           >

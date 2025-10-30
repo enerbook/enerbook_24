@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { supabase } from '../../../lib/supabaseClient';
 import { setupMilestones } from '../../../api/payments';
+import { COLORS } from '../../../shared/config/colors';
 
 export default function PaymentMethodSelector({ proyecto, onMethodSelected, onBack }) {
   const [templates, setTemplates] = useState([]);
@@ -63,7 +64,7 @@ export default function PaymentMethodSelector({ proyecto, onMethodSelected, onBa
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#f59e0b" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
         <Text className="text-sm text-gray-600 mt-4">Cargando opciones de pago...</Text>
       </View>
     );

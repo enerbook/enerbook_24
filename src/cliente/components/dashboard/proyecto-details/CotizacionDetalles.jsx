@@ -3,6 +3,7 @@ import PanelesInfo from './PanelesInfo';
 import InversoresInfo from './InversoresInfo';
 import EstructuraInfo from './EstructuraInfo';
 import SistemaElectricoInfo from './SistemaElectricoInfo';
+import { GRADIENTS } from '../../../../shared/config/gradients';
 
 const CotizacionDetalles = ({ cotizacion, onAcceptQuotation }) => {
   return (
@@ -84,7 +85,7 @@ const CotizacionDetalles = ({ cotizacion, onAcceptQuotation }) => {
           <button
             onClick={() => onAcceptQuotation(cotizacion)}
             className="px-6 py-3 rounded-lg text-white text-sm font-medium hover:opacity-90 transition-opacity"
-            style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)' }}
+            style={{ background: GRADIENTS.primary }}
           >
             Aceptar Cotización
           </button>

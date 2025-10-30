@@ -1,6 +1,7 @@
 
 import React from "react";
 import Reveal from "./Reveal";
+import { GRADIENTS } from '../../shared/config/gradients';
 
 export default function HowItWorks({ onNavigate, onOpenModal }) {
   return (
@@ -72,7 +73,8 @@ export default function HowItWorks({ onNavigate, onOpenModal }) {
             <div className="text-center pt-8 relative z-20">
               <button
                 onClick={onOpenModal}
-                className="inline-flex items-center justify-center bg-gradient-to-r from-[#F59E0B] to-[#FFCB45] hover:from-[#E3940B] hover:to-[#F0C040] text-white font-bold py-2 sm:py-3 md:py-3 lg:py-4 xl:py-4 px-3 sm:px-6 md:px-6 lg:px-8 xl:px-10 rounded-md sm:rounded-lg md:rounded-xl lg:rounded-xl uppercase transition-all duration-300 hover:scale-105 hover:shadow-2xl shadow-lg text-xs sm:text-sm md:text-sm lg:text-base xl:text-lg"
+                className="inline-flex items-center justify-center text-white font-bold py-2 sm:py-3 md:py-3 lg:py-4 xl:py-4 px-3 sm:px-6 md:px-6 lg:px-8 xl:px-10 rounded-md sm:rounded-lg md:rounded-xl lg:rounded-xl uppercase transition-all duration-300 hover:scale-105 hover:shadow-2xl shadow-lg text-xs sm:text-sm md:text-sm lg:text-base xl:text-lg"
+                style={{ background: GRADIENTS.primary }}
               >
                 CONECTAR RECIBO
               </button>

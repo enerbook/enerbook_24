@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { Platform } from 'react-native';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 // Usar SimpleWebCamera desde shared
 const CameraComponent = lazy(() => import('../../../shared/components/camera/SimpleWebCamera'));
@@ -226,7 +227,7 @@ export default function ReceiptUploadModal({ isOpen, onClose, onSubmit, ocrData,
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
             style={selectedFiles.length > 0 && !isLoading ? {
-              background: "linear-gradient(180deg, #F59E0B 0%, #FBBF24 100%)",
+              background: GRADIENTS.primary,
               boxShadow: "0 4px 12px rgba(245,158,11,.3)",
             } : {
               background: "#e5e7eb"

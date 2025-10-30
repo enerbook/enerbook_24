@@ -1,34 +1,34 @@
 import React, { useState } from "react";
 import { router } from "expo-router";
-import LoginNavbar from '../src/cliente/components/auth/LoginNavbar';
-import { useAuth } from '../src/context/AuthContext'; // Importado
+import { useAuth } from '../src/context/AuthContext';
+import AuthNavbar from '../src/shared/components/auth/AuthNavbar';
+import { GRADIENTS } from '../src/shared/config/gradients';
 
-export default function Login({ onNavigate }) {
-  const { clientLogin } = useAuth(); // Obtenemos la función de login
+export default function Login() {
+  const { clientLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(''); // Estado para el error
+  const [error, setError] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(''); // Limpiar error previo
-    
+    setError('');
+
     const { error } = await clientLogin(email, password);
 
     if (error) {
-      setError(error.message); // Establecer mensaje de error
+      setError(error.message);
     }
-    // La redirección la maneja _layout.jsx automáticamente
-    
+
     setIsLoading(false);
   };
 
   return (
     <>
-      <LoginNavbar onNavigate={onNavigate} />
+      <AuthNavbar currentPage="login" userType="cliente" />
       <div className="min-h-screen bg-white flex">
       {/* Lado izquierdo: formulario */}
       <section className="w-full lg:w-1/2 flex items-center justify-center px-6 lg:px-16 bg-white">
@@ -90,7 +90,7 @@ export default function Login({ onNavigate }) {
               <div
                 onClick={() => setRemember((v) => !v)}
                 className="w-10 h-6 rounded-full shadow-inner transition-colors duration-200 ease-in-out cursor-pointer"
-                style={remember ? {background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'} : {backgroundColor: '#e5e7eb'}}
+                style={remember ? {background: GRADIENTS.primary} : {backgroundColor: '#e5e7eb'}}
               >
                 <div
                   className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
@@ -113,8 +113,7 @@ export default function Login({ onNavigate }) {
               disabled={isLoading} // Deshabilitado mientras carga
               className="w-full py-3 px-4 rounded-lg text-white font-medium text-sm disabled:opacity-50"
               style={{
-                background:
-                  "linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)",
+                background: GRADIENTS.primary,
               }}
             >
               {isLoading ? 'Ingresando...' : 'Ingresar'}

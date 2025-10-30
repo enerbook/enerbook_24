@@ -4,6 +4,7 @@ import { SkeletonGrid } from '../common/SkeletonLoader';
 import SearchAndFilters from '../common/SearchAndFilters';
 import usePersistedFilters from '../../hooks/usePersistedFilters';
 import { useRouter } from 'expo-router';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const ProjectsTab = () => {
   const router = useRouter();
@@ -69,7 +70,7 @@ const ProjectsTab = () => {
 
   const getEstadoBadgeColor = (estado) => {
     // Todos los estados usan el degradado naranja Enerbook con letras blancas
-    return 'bg-gradient-to-br from-brand to-brandLight text-white';
+    return { background: GRADIENTS.primary };
   };
 
   const capitalizeFirstLetter = (str) => {
@@ -204,7 +205,8 @@ const ProjectsTab = () => {
                         {proyecto?.titulo || `Contrato ${contrato.numero_contrato}`}
                       </h3>
                       <span
-                        className={`inline-block self-start xs:self-auto px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium ${getEstadoBadgeColor(contrato.estado)}`}
+                        className="inline-block self-start xs:self-auto px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium text-white"
+                        style={getEstadoBadgeColor(contrato.estado)}
                       >
                         {capitalizeFirstLetter(contrato.estado)}
                       </span>

@@ -3,6 +3,7 @@ import { useClienteDashboardData } from '../../context/ClienteDashboardDataConte
 import { authService } from '../../services/authService';
 import { projectService } from '../../services/projectService';
 import { clientService } from '../../services/clientService';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const SolicitarCotizacionesModal = ({ isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -183,7 +184,7 @@ const SolicitarCotizacionesModal = ({ isOpen, onClose, onSuccess }) => {
                                 className="inline-block px-2 py-0.5 rounded-full text-white text-xs font-medium"
                                 style={{
                                   background: item.color === 'gradient'
-                                    ? 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'
+                                    ? GRADIENTS.primary
                                     : item.color === 'red'
                                       ? '#DC2626'
                                       : '#16A34A'
@@ -234,7 +235,7 @@ const SolicitarCotizacionesModal = ({ isOpen, onClose, onSuccess }) => {
               onClick={handleSolicitarCotizaciones}
               disabled={loading}
               className="flex-1 py-3 px-4 text-white rounded-xl font-medium transition-colors"
-              style={{background: loading ? '#9CA3AF' : 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
+              style={{background: loading ? '#9CA3AF' : GRADIENTS.primary}}
             >
               {loading ? 'Enviando...' : 'Solicitar Cotizaciones'}
             </button>

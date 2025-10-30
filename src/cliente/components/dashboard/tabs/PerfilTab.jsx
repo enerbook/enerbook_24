@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiUser, FiBell, FiLock, FiCreditCard } from 'react-icons/fi';
 import { useClienteDashboardData } from '../../../context/ClienteDashboardDataContext';
 import { useClienteAuth } from '../../../context/ClienteAuthContext';
+import { GRADIENTS } from '../../../../shared/config/gradients';
 
 // Import section components
 import PersonalSection from './perfil-sections/PersonalSection';
@@ -172,9 +173,10 @@ const PerfilTab = () => {
                   onClick={() => setActiveSubTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     isActive
-                      ? 'bg-gradient-to-r from-orange-500 to-yellow-400 text-white shadow-md'
+                      ? 'text-white shadow-md'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
+                  style={isActive ? { background: GRADIENTS.primary } : {}}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{tab.label}</span>

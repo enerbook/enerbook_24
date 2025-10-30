@@ -1,5 +1,6 @@
 // components/dashboard/MetricTile.jsx
 import React from "react";
+import { GRADIENTS } from '../../../../shared/config/gradients';
 
 const MetricTile = ({ title, value, subtitle }) => {
   return (
@@ -14,7 +15,7 @@ const MetricTile = ({ title, value, subtitle }) => {
       </div>
       <div
         className="w-8 h-8 rounded-full grid place-items-center flex-shrink-0"
-        style={{ background: "linear-gradient(135deg,#F59E0B 0%,#FFCB45 100%)" }}
+        style={{ background: GRADIENTS.primary }}
       >
         {/* “documento” blanco (igual al mockup) */}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">

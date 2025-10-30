@@ -4,6 +4,7 @@ import { formatProjectData } from '../../utils/dataFormatters';
 import { SkeletonGrid } from '../common/SkeletonLoader';
 import SearchAndFilters from '../common/SearchAndFilters';
 import usePersistedFilters from '../../hooks/usePersistedFilters';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const CotizacionesTab = ({ setSelectedProject, setShowProjectModal, setShowQuoteModal }) => {
   // Usar filtros persistidos
@@ -177,7 +178,7 @@ const CotizacionesTab = ({ setSelectedProject, setShowProjectModal, setShowQuote
                     setShowQuoteModal(true);
                   }}
                   className="flex-1 py-3 px-3 sm:px-4 text-white rounded-xl sm:rounded-2xl text-xs sm:text-sm font-medium transition-colors min-h-[44px]"
-                  style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
+                  style={{background: GRADIENTS.primary}}
                 >
                   Enviar Cotización
                 </button>

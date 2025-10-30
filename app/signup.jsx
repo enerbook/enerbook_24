@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { router } from 'expo-router';
-import LoginNavbar from '../src/cliente/components/auth/LoginNavbar';
 import { useAuth } from '../src/context/AuthContext';
 import PublicarProyectoModal from '../src/cliente/components/modals/PublicarProyectoModal';
+import AuthNavbar from '../src/shared/components/auth/AuthNavbar';
+import { GRADIENTS } from '../src/shared/config/gradients';
+import { COLORS } from '../src/shared/config/colors';
 
-export default function SignUp({ onNavigate }) {
+export default function SignUp() {
   const { clientSignup, migrateLeadToClient, userType, leadData } = useAuth();
   const [remember, setRemember] = useState(false);
   const [formData, setFormData] = useState({
@@ -108,7 +110,7 @@ export default function SignUp({ onNavigate }) {
 
   return (
     <>
-      <LoginNavbar onNavigate={onNavigate} />
+      <AuthNavbar currentPage="signup" userType="cliente" />
       <div className="min-h-screen bg-white flex overflow-hidden">
         {/* Lado izquierdo: formulario */}
         <section className="w-full lg:w-1/2 flex items-center justify-center px-6 lg:px-16 bg-white overflow-y-auto">
@@ -208,7 +210,7 @@ export default function SignUp({ onNavigate }) {
                 <div
                   onClick={() => setRemember((v) => !v)}
                   className="w-10 h-6 rounded-full shadow-inner transition-colors duration-200 ease-in-out cursor-pointer"
-                  style={remember ? {background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'} : {backgroundColor: '#e5e7eb'}}
+                  style={remember ? {background: GRADIENTS.primary} : {backgroundColor: '#e5e7eb'}}
                 >
                   <div
                     className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
@@ -231,7 +233,7 @@ export default function SignUp({ onNavigate }) {
                 disabled={isLoading}
                 className="w-full py-3 px-4 rounded-lg text-white font-medium text-sm disabled:opacity-50"
                 style={{
-                  background: "linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)",
+                  background: GRADIENTS.primary,
                 }}
               >
                 {isLoading ?
@@ -246,7 +248,7 @@ export default function SignUp({ onNavigate }) {
                 <a
                   href="#"
                   className="font-medium"
-                  style={{ color: "#F59E0B" }}
+                  style={{ color: COLORS.primary }}
                   onClick={(e) => {
                     e.preventDefault();
                     router.push('/login');

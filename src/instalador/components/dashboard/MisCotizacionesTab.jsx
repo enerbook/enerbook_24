@@ -5,6 +5,7 @@ import { SkeletonGrid } from '../common/SkeletonLoader';
 import SearchAndFilters from '../common/SearchAndFilters';
 import usePersistedFilters from '../../hooks/usePersistedFilters';
 import { quotationService } from '../../services/quotationService';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const MisCotizacionesTab = ({ setSelectedQuotation, setShowQuotationModal }) => {
   // Usar filtros persistidos
@@ -187,7 +188,7 @@ const MisCotizacionesTab = ({ setSelectedQuotation, setShowQuotationModal }) => 
                     <h3 className="text-base sm:text-lg font-bold text-gray-900">{quotation.projectName}</h3>
                     <span
                       className="inline-block self-start xs:self-auto px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium text-white"
-                      style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
+                      style={{background: GRADIENTS.primary}}
                     >
                       {quotation.status}
                     </span>

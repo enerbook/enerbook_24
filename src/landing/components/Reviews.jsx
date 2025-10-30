@@ -1,5 +1,6 @@
 import React from "react";
 import Reveal from "./Reveal";
+import { GRADIENTS } from '../../shared/config/gradients';
 
 const items = [
   {
@@ -33,7 +34,7 @@ const items = [
 ];
 
 const Reviews = () => (
-  <section id="reviews" className="min-h-screen flex items-center py-8 sm:py-12 md:py-16 relative" style={{background: 'linear-gradient(180deg, #F59E0B 0%, #FFCB45 100%)'}}>
+  <section id="reviews" className="min-h-screen flex items-center py-8 sm:py-12 md:py-16 relative" style={{background: GRADIENTS.primary}}>
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
       {/* Título REVIEWS centrado */}
       <div className="text-center mb-6 sm:mb-8">

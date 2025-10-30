@@ -1,5 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { COLORS } from '../../../../shared/config/colors';
+
+// Color palette for charts
+const CHART_COLORS = {
+  dark: '#C2640A',    // Dark orange
+  medium: COLORS.primary,  // Medium orange (brand)
+  light: COLORS.secondary  // Light yellow (brand)
+};
 
 // Helper functions for chart data processing
 const generatePath = (data, width, height, padding) => {
@@ -79,16 +87,16 @@ const ChartCard = ({ title, subtitle, className = "", data = [], chartType = "de
   const getPointColor = (value) => {
     if (chartType === 'consumo') {
       // High consumption = darker (alert)
-      if (value >= calculateThresholds.medium) return '#C2640A'; // Dark orange (high cost)
-      if (value >= calculateThresholds.low) return '#F59E0B';    // Medium orange (normal)
-      return '#FFCB45';                                           // Light yellow (efficient)
+      if (value >= calculateThresholds.medium) return CHART_COLORS.dark; // Dark orange (high cost)
+      if (value >= calculateThresholds.low) return CHART_COLORS.medium;  // Medium orange (normal)
+      return CHART_COLORS.light;                                          // Light yellow (efficient)
     } else if (chartType === 'irradiacion') {
       // High irradiation = darker (opportunity)
-      if (value >= calculateThresholds.medium) return '#C2640A'; // Dark orange (excellent)
-      if (value >= calculateThresholds.low) return '#F59E0B';    // Medium orange (good)
-      return '#FFCB45';                                           // Light yellow (moderate)
+      if (value >= calculateThresholds.medium) return CHART_COLORS.dark; // Dark orange (excellent)
+      if (value >= calculateThresholds.low) return CHART_COLORS.medium;  // Medium orange (good)
+      return CHART_COLORS.light;                                          // Light yellow (moderate)
     }
-    return '#F59E0B'; // Default color
+    return CHART_COLORS.medium; // Default color
   };
 
   // Get point size based on value
@@ -136,23 +144,23 @@ const ChartCard = ({ title, subtitle, className = "", data = [], chartType = "de
     if (chartType === 'consumo') {
       // Consumo Histórico: Simple gradiente de naranja Enerbook
       return [
-        { offset: '0%', color: '#f59f0b', opacity: 0.4 },    // Naranja Enerbook
-        { offset: '50%', color: '#FFCB45', opacity: 0.2 },   // Amarillo Enerbook
-        { offset: '100%', color: '#FFCB45', opacity: 0.05 }  // Amarillo muy transparente
+        { offset: '0%', color: COLORS.primary, opacity: 0.4 },    // Naranja Enerbook
+        { offset: '50%', color: COLORS.secondary, opacity: 0.2 },   // Amarillo Enerbook
+        { offset: '100%', color: COLORS.secondary, opacity: 0.05 }  // Amarillo muy transparente
       ];
     } else if (chartType === 'irradiacion') {
       // Irradiación Mensual: Gradiente más intenso para mostrar oportunidad
       return [
-        { offset: '0%', color: '#f59f0b', opacity: 0.5 },    // Naranja Enerbook
-        { offset: '50%', color: '#FFCB45', opacity: 0.25 },  // Amarillo Enerbook
-        { offset: '100%', color: '#FFCB45', opacity: 0.08 }  // Amarillo muy transparente
+        { offset: '0%', color: COLORS.primary, opacity: 0.5 },    // Naranja Enerbook
+        { offset: '50%', color: COLORS.secondary, opacity: 0.25 },  // Amarillo Enerbook
+        { offset: '100%', color: COLORS.secondary, opacity: 0.08 }  // Amarillo muy transparente
       ];
     } else {
       // Default: Original gradient
       return [
-        { offset: '0%', color: '#F59E0B', opacity: 0.3 },
-        { offset: '50%', color: '#FFCB45', opacity: 0.15 },
-        { offset: '100%', color: '#FFCB45', opacity: 0.05 }
+        { offset: '0%', color: COLORS.primary, opacity: 0.3 },
+        { offset: '50%', color: COLORS.secondary, opacity: 0.15 },
+        { offset: '100%', color: COLORS.secondary, opacity: 0.05 }
       ];
     }
   };
@@ -185,8 +193,8 @@ const ChartCard = ({ title, subtitle, className = "", data = [], chartType = "de
           <defs>
             {/* Gradient for line */}
             <linearGradient id={`line-gradient-${title.replace(/\s+/g, '-')}`} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#FFCB45" />
+              <stop offset="0%" stopColor={COLORS.primary} />
+              <stop offset="100%" stopColor={COLORS.secondary} />
             </linearGradient>
             {/* Gradient for area fill - dynamic based on chart type */}
             <linearGradient id={`area-gradient-${title.replace(/\s+/g, '-')}`} x1="0%" y1="0%" x2="0%" y2="100%">

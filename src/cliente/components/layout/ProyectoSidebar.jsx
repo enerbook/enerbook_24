@@ -2,6 +2,7 @@ import React from 'react';
 import { FiFileText, FiDollarSign, FiActivity, FiArrowLeft, FiClipboard, FiCreditCard } from 'react-icons/fi';
 import { useRouter } from 'expo-router';
 import NavButton from '../common/NavButton';
+import { COLORS } from '../../../shared/config/colors';
 
 const ProyectoSidebar = ({ activeTab, onTabChange, onClose, proyecto }) => {
   const router = useRouter();
@@ -70,7 +71,7 @@ const ProyectoSidebar = ({ activeTab, onTabChange, onClose, proyecto }) => {
           className="w-full flex items-center px-2 py-1.5 text-left rounded-md transition-colors text-gray-600 hover:bg-white hover:text-gray-900"
         >
           <div className="w-5 h-5 rounded-md flex items-center justify-center mr-2 bg-transparent">
-            <FiArrowLeft className="w-2.5 h-2.5" style={{ color: '#F59E0B' }} />
+            <FiArrowLeft className="w-2.5 h-2.5" style={{ color: COLORS.primary }} />
           </div>
           <span className="text-sm font-medium">Volver a Proyectos</span>
         </button>

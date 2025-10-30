@@ -1,4 +1,5 @@
 import React from 'react';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const SearchAndFilters = ({
   filters,
@@ -101,7 +102,7 @@ const SearchAndFilters = ({
         {/* Contador de filtros activos y botón limpiar */}
         {activeFiltersCount > 0 && (
           <div className="flex items-center gap-2 ml-auto">
-            <span className="px-3 py-1 rounded-full bg-gradient-to-br from-brand to-brandLight text-white text-xs font-medium">
+            <span className="px-3 py-1 rounded-full text-white text-xs font-medium" style={{ background: GRADIENTS.primary }}>
               {activeFiltersCount} {activeFiltersCount === 1 ? 'filtro activo' : 'filtros activos'}
             </span>
             <button

@@ -1,4 +1,5 @@
 import React from 'react';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const CertificationsTab = ({ certificationStatus, handleCertificationAction }) => {
   return (
@@ -8,7 +9,7 @@ const CertificationsTab = ({ certificationStatus, handleCertificationAction }) =
         <button
           onClick={() => handleCertificationAction('Nueva certificación', 'Agregar')}
           className="px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-          style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
+          style={{background: GRADIENTS.primary}}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>

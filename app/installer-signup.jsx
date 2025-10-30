@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { router } from 'expo-router';
-import InstallerNavbar from '../src/instalador/components/auth/InstallerNavbar';
+import AuthNavbar from '../src/shared/components/auth/AuthNavbar';
 import { useAuth } from '../src/context/AuthContext';
+import { GRADIENTS } from '../src/shared/config/gradients';
 
 const InstallerSignup = () => {
   const { installerSignup } = useAuth();
@@ -68,7 +69,7 @@ const InstallerSignup = () => {
 
   return (
     <>
-      <InstallerNavbar currentPage="signup" />
+      <AuthNavbar currentPage="signup" userType="instalador" />
       <div className="min-h-screen bg-black overflow-y-auto">
 
       {/* Main Content */}
@@ -184,7 +185,7 @@ const InstallerSignup = () => {
                 <div
                   onClick={() => setRememberMe(!rememberMe)}
                   className="w-10 h-6 rounded-full shadow-inner transition-colors duration-200 ease-in-out cursor-pointer"
-                  style={rememberMe ? {background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'} : {backgroundColor: '#e5e7eb'}}
+                  style={rememberMe ? {background: GRADIENTS.primary} : {backgroundColor: '#e5e7eb'}}
                 >
                   <div
                     className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
@@ -207,7 +208,7 @@ const InstallerSignup = () => {
                 disabled={isLoading}
                 className="w-full py-3 px-4 rounded-lg text-white font-medium text-sm disabled:opacity-50"
                 style={{
-                  background: "linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)",
+                  background: GRADIENTS.primary,
                 }}
               >
                 {isLoading ? 'Registrando...' : 'Unirme'}

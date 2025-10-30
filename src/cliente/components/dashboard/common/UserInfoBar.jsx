@@ -1,6 +1,7 @@
 import React from 'react';
 import { useClienteAuth } from '../../../context/ClienteAuthContext';
 import { useClienteDashboardData } from '../../../context/ClienteDashboardDataContext';
+import { GRADIENTS } from '../../../../shared/config/gradients';
 
 const UserInfoBar = ({ cotizacionInicial = null }) => {
   const { userType } = useClienteAuth();
@@ -44,7 +45,7 @@ const UserInfoBar = ({ cotizacionInicial = null }) => {
         </div>
         <div
           className="w-8 h-8 rounded-full grid place-items-center flex-shrink-0"
-          style={{ background: "linear-gradient(135deg,#F59E0B 0%,#FFCB45 100%)" }}
+          style={{ background: GRADIENTS.primary }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4Z" fill="white" />
@@ -66,7 +67,7 @@ const UserInfoBar = ({ cotizacionInicial = null }) => {
         </div>
         <div
           className="w-8 h-8 rounded-full grid place-items-center flex-shrink-0"
-          style={{ background: "linear-gradient(135deg,#F59E0B 0%,#FFCB45 100%)" }}
+          style={{ background: GRADIENTS.primary }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M12 11.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Zm0-9a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z" fill="white" />

@@ -1,6 +1,7 @@
 
 import React from "react";
 import '../../styles/global.css';
+import { GRADIENTS } from '../../shared/config/gradients';
 
 export default function Hero({ onNavigate, onOpenModal }) {
   return (
@@ -10,7 +11,7 @@ export default function Hero({ onNavigate, onOpenModal }) {
         {/* Columna de texto */}
         <div className="text-white text-center lg:text-left order-2 lg:order-1 px-0 sm:px-4 lg:-ml-8 xl:-ml-12 w-full lg:w-auto"> 
           <h1 className="font-extrabold leading-tight text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl">
-            <div className="bg-gradient-to-r from-[#F59E0B] to-[#FBBF24] bg-clip-text text-transparent lg:whitespace-nowrap">
+            <div className="bg-clip-text text-transparent lg:whitespace-nowrap" style={{ background: GRADIENTS.primary, WebkitBackgroundClip: 'text', backgroundClip: 'text' }}>
             La Plataforma Más Rápida
             </div>
             <div className="text-white mt-1 sm:mt-2 lg:whitespace-nowrap">
@@ -55,7 +56,7 @@ export default function Hero({ onNavigate, onOpenModal }) {
     onClick={onOpenModal}
     className="relative z-30 inline-flex items-center justify-center rounded-[12px] font-bold text-white border-2 border-[#F59E0B] px-4 sm:px-6 xl:px-8 py-3 sm:py-4 uppercase shadow-xl text-xs sm:text-sm xl:text-base transition-transform hover:scale-105 w-full sm:w-auto min-h-[48px]"
     style={{
-      background: "linear-gradient(180deg, #F59E0B 0%, #FBBF24 100%)",
+      background: GRADIENTS.primary,
       boxShadow: "0 0 0 2px rgba(245,158,11,.4), 0 8px 20px rgba(0,0,0,.3)",
     }}
   >

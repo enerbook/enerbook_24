@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiX } from 'react-icons/fi';
+import { GRADIENTS } from '../../../shared/config/gradients';
 
 const UploadDocumentModal = ({ uploadAction, setShowUploadModal, handleDocumentUpload }) => {
   return (
@@ -55,7 +56,7 @@ const UploadDocumentModal = ({ uploadAction, setShowUploadModal, handleDocumentU
           <button
             onClick={handleDocumentUpload}
             className="flex-1 px-4 py-2 text-white rounded-lg transition-colors"
-            style={{background: 'linear-gradient(135deg, #F59E0B 0%, #FFCB45 100%)'}}
+            style={{background: GRADIENTS.primary}}
           >
             {uploadAction.toUpperCase()}
           </button>
